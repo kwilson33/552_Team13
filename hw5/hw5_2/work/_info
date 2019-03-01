@@ -1,0 +1,143 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dI:/552/hw5_1
+vbitreg16
+Z0 V`JN@9S9cnhjKRR_L]QIcM3
+r1
+!s85 0
+31
+!i10b 1
+!s100 cin>1P8=A:7Q7QVQa9L6a2
+I@j3a<DVH;Ii5SPi;7Q7[81
+Z1 dI:/552/hw5_2
+w1551465814
+8I:/552/hw5_1/bitreg16.v
+FI:/552/hw5_1/bitreg16.v
+L0 3
+Z2 OE;L;10.3c;59
+!s108 1551467093.849000
+!s107 I:/552/hw5_1/bitreg16.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_1/bitreg16.v|
+!i113 0
+Z3 o-work work -L mtiAvm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+vclkrst
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 FaE?]096mYL`Ane;nz9[^2
+I<@Ef5;MY^Y?USMh@RGO^c3
+R1
+w1550782104
+8I:/552/hw5_2/clkrst.v
+FI:/552/hw5_2/clkrst.v
+L0 12
+R2
+!s108 1551467092.249000
+!s107 I:/552/hw5_2/clkrst.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_2/clkrst.v|
+!i113 0
+R3
+vdff
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 DVa?YbzHcj3n<l^8dH50?0
+IYU>jmN0U8LocQn2HSfTME2
+R1
+w1550782459
+8I:/552/hw5_2/dff.v
+FI:/552/hw5_2/dff.v
+Z4 L0 10
+R2
+!s108 1551467092.600000
+!s107 I:/552/hw5_2/dff.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_2/dff.v|
+!i113 0
+R3
+vrf
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 IEeOkXMRaMF4VnQ]:9WW=3
+IOGVcedSn2UIja525NgKNJ1
+R1
+w1551465841
+8I:/552/hw5_1/rf.v
+FI:/552/hw5_1/rf.v
+R4
+R2
+!s108 1551467094.175000
+!s107 I:/552/hw5_1/rf.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_1/rf.v|
+!i113 0
+R3
+vrf_bypass
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 NNR;Iz:NieZi:8>S@Yj?K2
+IJl`V>KDe2DYGA>cad0FCK1
+R1
+w1551467098
+8I:/552/hw5_2/rf_bypass.v
+FI:/552/hw5_2/rf_bypass.v
+L0 8
+R2
+!s108 1551467101.509000
+!s107 I:/552/hw5_2/rf_bypass.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_2/rf_bypass.v|
+!i113 0
+R3
+vrf_bypass_hier
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 P=[<KmY9I_S^?<=3iG?zZ3
+IC`Y<56PzUM3AZ3HnihC5m3
+R1
+w1550782765
+8I:/552/hw5_2/rf_bypass_hier.v
+FI:/552/hw5_2/rf_bypass_hier.v
+R4
+R2
+!s108 1551467093.185000
+!s107 I:/552/hw5_2/rf_bypass_hier.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_2/rf_bypass_hier.v|
+!i113 0
+R3
+vrf_bypass_hier_bench
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 d?4;WU;F5RA?[6KjZz6Gi2
+IzYdDiTao:C2aU=FaWSYb72
+R1
+w1550782751
+8I:/552/hw5_2/rf_bypass_hier_bench.v
+FI:/552/hw5_2/rf_bypass_hier_bench.v
+L0 7
+R2
+!s108 1551467093.497000
+!s107 I:/552/hw5_2/rf_bypass_hier_bench.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|I:/552/hw5_2/rf_bypass_hier_bench.v|
+!i113 0
+R3
