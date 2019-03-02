@@ -30,12 +30,25 @@ module rf (
            clk, rst, readReg1Sel, readReg2Sel, writeRegSel, writeData, writeEn
            );
 */
-   /* YOUR CODE HERE */
-wire[15:0] readOutput1, readOutput2; 
+
+// written data from the register file 
+wire [15:0] readOutput1, readOutput2;
+// determines whether to bypass or not 
+wire rfBypass1, rfBypass2;
 
 rf registerFile (.readData1(readOutput1), .readData2(readOutput2), .err(err), .clk(clk), .rst(rst), .readReg1Sel(readReg1Sel), .readReg2Sel(readReg2Sel), .writeRegSel(writeRegSel), .writeData(writeData), .writeEn(writeEn)); 
 
-assign readData1 = writeEn ? (writeRegSel == readReg1Sel ? writeData : readOutput1) : readOutput1; 
-assign readData2 = writeEn ? (writeRegSel == readReg2Sel ? writeData : readOutput2) : readOutput2; 
+// Bypass logic that allows data written in one cycle to also be read in one cycle
+// If both both the register to write to and the register to read from are the same,
+// assign the output of the writeData. Otherwise, give it the normal Register File output
+
+// See if we should be bypassing or not
+assign rfBypass1 = writeEn & (writeRegSel == readReg1Sel);
+assign rfBypass2 = writeEn & (writeRegSel == readReg2Sel);
+
+// If bypassing, set the written data to the read data
+assign readData1 = rfBypass1 ? writeData : readOutput1;
+assign readData2 = rfBypass2 ? writeData : readOutput2;
+
 
 endmodule
