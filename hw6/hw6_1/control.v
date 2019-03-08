@@ -62,8 +62,8 @@ module control (/*AUTOARG*/
 	localparam 	SLLI 		= 5'b10101; 
 	localparam	RORI 		= 5'b10110; 
 	localparam 	SRLI 		= 5'b10111; 
-	localparam	ST 			= 5'b10000; 
-	localparam 	LD 			= 5'b10001; 
+	localparam	ST 		= 5'b10000; 
+	localparam 	LD 		= 5'b10001; 
 	localparam	STU 		= 5'b10011; 
 
 	/* 
@@ -139,7 +139,6 @@ module control (/*AUTOARG*/
 	assign DMemWrite 	= DMemWriteRegister;
 	assign DMemEn 		= DMemEnRegister;
 	assign SESel 		= SESelRegister;
-	assign PCImm 		= PCImmRegister; 
 	assign ALUSrc2 		= ALUSrc2Register; 
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
@@ -167,7 +166,7 @@ module control (/*AUTOARG*/
 		// not memory
 		MemToRegRegister = no_assert;
 		
-		
+		PCImmRegister = no_assert; 
 		
 		// Will be set to 1 if using Rt was the second operand
 		// or 0 if using immediate as second operand
@@ -459,8 +458,9 @@ module control (/*AUTOARG*/
 				DMemDumpRegister = assert;
 			end
 			default : begin
-				
+			//	errRegister = assert; 
 			end
+			
 		endcase
 	end
 

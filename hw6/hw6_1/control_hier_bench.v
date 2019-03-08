@@ -47,5 +47,48 @@ module control_hier_bench(/*AUTOARG*/);
                     .Funct                        (Funct));
 
    /* YOUR CODE HERE */
+initial begin
+$display("Starting Mark's testbench");
+#200; 
+OpCode = 5'b00000; 
+#100; 
+OpCode = 5'b10000; //St
+#100; 
+OpCode = 5'b10001; //LD
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random; 
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random;  
+#100; 
+OpCode = $random; 
+
+end
+
 
 endmodule // control_hier_bench
