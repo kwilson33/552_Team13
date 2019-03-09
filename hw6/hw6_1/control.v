@@ -36,6 +36,7 @@ module control (/*AUTOARG*/
    output [2:0] SESel;
 
    /* YOUR CODE HERE */
+	reg errRegister;
 	reg JumpRegister; 
 	reg RegWriteRegister; 
 	reg DMemWriteRegister;
@@ -110,15 +111,18 @@ module control (/*AUTOARG*/
 
 	// Special instructions
 	localparam 	siic  		= 5'b00010;
-	localparam 	NOP 		= 5'b00011;
+	localparam 	NOP 		= 5'b00001;
+	localparam 	RTI 		= 5'b00011;
 	localparam 	HALT 		= 5'b00000;
 	///////////////////////////////////////////
 
 	
 	// err is 1 if any of the inputs have an unknown value (x). Check this by
 	// using a bitwise XOR to see if any bits unknown.
-	assign err = (^OpCode === 1'bx) ? 1'b1 : 
-		     (^Funct === 1'bx) ? 1'b1 : 1'b0;
+	// The control logic will also check, if for some reason we didn't correctly
+	// define an opcode correctly, err will be set
+	assign err = ((^OpCode === 1'bx) ? 1'b1 : 
+		     (^Funct === 1'bx) ? 1'b1 : 1'b0) | errRegister;
 			 
 	
 	/* //////////////////TODO/////////////////
@@ -186,7 +190,8 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b00; 
 				// ALU should use the 2nd register read from the register file
 				ALUSrc2Register = assert;
-					case(Funct)
+				
+					/*case(Funct)
 						ADD : begin
 
 						end
@@ -203,6 +208,7 @@ module control (/*AUTOARG*/
 						
 						end
 					endcase
+					*/
 			end 
 			ALU_2: begin
 				// R-format instructions mean that
@@ -210,6 +216,7 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b00; 
 				// ALU should use the 2nd register read from the register file
 				ALUSrc2Register = assert;
+					/*
 					case(Funct)
 						ROL : begin
 
@@ -227,6 +234,7 @@ module control (/*AUTOARG*/
 
 						end
 					endcase
+					*/
 			end
 			
 			ALU_3: begin
@@ -237,7 +245,8 @@ module control (/*AUTOARG*/
 				ALUSrc2Register = assert;
 				// use the lower two bits of the opcode to
 				// determine which comparison to do
-				case (OpCode[1:0])
+				/*case (OpCode[1:0])
+					
 					SEQ : begin
 
 					end
@@ -253,6 +262,7 @@ module control (/*AUTOARG*/
 					SCO : begin
 					end
 				endcase
+				*/
 			end
 			
 			/* This is also an ALU/R-format instruction but didn't easily
@@ -448,17 +458,23 @@ module control (/*AUTOARG*/
 			
 			NOP : begin
 				RegWriteRegister = no_assert; 
-				// use the PC given by the branch/jump
-				// NOT SURE IF RIGHT
-				PCSrcRegister = assert;
 			end	
 			
 			HALT : begin
 				RegWriteRegister = no_assert; 
 				DMemDumpRegister = assert;
 			end
+			
+			RTI : begin
+				// not writing to a register
+				RegWriteRegister = no_assert; 
+				// PC <- EPC
+				PCSrcRegister = assert;
+			end
+			
+			// If opcode not recognized, set error
 			default : begin
-			//	errRegister = assert; 
+				errRegister = assert; 
 			end
 			
 		endcase
