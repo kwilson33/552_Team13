@@ -141,11 +141,12 @@ module proc_hier_bench();
    assign MemWrite = (DUT.p0.decodeInstruction.control.DMemEn) && (DUT.p0.decodeInstruction.control.DMemWrite);
    // Is memory being written to (1 bit signal)
 
-   //TODO
-   //assign PC = DUT.p0.fetch0.pcCurrent;
-   //assign Inst = DUT.p0.fetch0.instr;
+   
+   assign PC = DUT.p0.fetchInstruction.PC_Register.writeData;
+   assign Inst = DUT.p0.fetchInstruction.instructionMemory.data_out;
 
-    //assign MemAddress = DUT.p0.memory0.aluResult;
+	//TODO
+   //assign MemAddress = DUT.p0.memory0.aluResult;
    // Address to access memory with (for both reads and writes to memory, 16 bits)
    
    //assign MemData = DUT.p0.memory0.writeData;
