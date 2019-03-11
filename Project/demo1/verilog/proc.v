@@ -25,7 +25,7 @@ module proc (/*AUTOARG*/
 
 
    // signals for the fetch, decode, memory, and execute
-   wire [15:0] currentPC, nextPC, instruction;
+   wire [15:0] currentPC, nextPC, instruction,
 			   data_out, data_in, writeData;
 			    
    wire enable, wr, createDump;

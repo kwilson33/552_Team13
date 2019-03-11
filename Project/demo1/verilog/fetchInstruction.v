@@ -1,6 +1,6 @@
 //Fetch instructionuction work in progress
 
-module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction)
+module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 
 	input [15:0] PC_In; 
 	input clk, dump, rst; 
