@@ -18,11 +18,40 @@ module proc (/*AUTOARG*/
    // OR all the err ouputs for every sub-module and assign it as this
    // err output
    
-   // As desribed in the homeworks, use the err signal to trap corner
+   // As described in the homeworks, use the err signal to trap corner
    // cases that you think are illegal in your statemachines
    
    
    /* your code here */
+
+
+   // signals for the memory modules
+   wire [15:0] data_in, addr, data_out;
+   wire enable, wr,  createdump;
+
+   // signals for decoder that reads instruction.
+   // Error output of processor comes from decoder
    
+
+   wire [15:0] instruction;
+
+   // instantiate memory module twice. One for instruction memory
+   // and another for data memory
+   memory2c instrMem (.data_in(data_in), .addr(addr),
+	                   .enable(enable), .wr(wr), .clk(clk), .rst(rst),
+	                   .createdump(createdump), .data_out(data_out)),
+
+	         dataMem   (.data_in(data_in), .addr(addr),
+	       	           .enable(enable), .wr(wr), .clk(clk), .rst(rst),
+	                    .createdump(createdump), .data_out(data_out));
+  
+  /*
+   * this module instantiates the control unit and the register file. The control decides what to do 
+   * with the instruction and the register file is told what to do. The control unit also makes
+   * signals like SESelect which the regFile doesn't use.
+   */
+  decodeInstruction instructionDecoder(.clk(clk), .rst(rst), .writeData(writeData), .instr(instruction),
+                                       .err(err));
+	 
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:

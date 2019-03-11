@@ -1,0 +1,2 @@
+          // checks jump and link with largest aligned immediate
+0000 33fe jal 1022
