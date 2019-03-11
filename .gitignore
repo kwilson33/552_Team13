@@ -1,0 +1,10 @@
+*.out
+*.ptrace
+*.trace
+*.vcd
+*.wlf
+*.dmem
+*.reg
+Project/demo1/verilog/verilogsim.log
+Project/demo1/verilog/transcript
+Project/demo1/verilog/__work/

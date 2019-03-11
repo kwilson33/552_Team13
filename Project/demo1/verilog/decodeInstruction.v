@@ -33,7 +33,7 @@ module decodeInstruction (//inputs
 	
 
 	assign err = (controlErr | regErr);
-
+	//assign err = 1'b0;
 	// control module determines all of the control logic for the processor
 	// and also which register to write to 
 	control control( // Outputs
@@ -53,9 +53,9 @@ module decodeInstruction (//inputs
 	// 11 - 111
 
 	// choose what reg to write to depending on output RegDstRegister of control
-	mux4_1 writeRegSelMux(.InA(instruction[4:2]), .InB(instruction[7:5]), 
-						  .InC(instruction[10:8]), .InD(3'b111),
-						  .S(RegDest), .Out(writeRegister));
+	mux4_1 #(.NUM_BITS(3)) writeRegSelMux (.InA(instruction[4:2]), .InB(instruction[7:5]), 
+					       .InC(instruction[10:8]), .InD(3'b111),
+					       .S(RegDest), .Out(writeRegister));
 
 	// Rd = writeRegister
 	// Rs = instr[10:8]

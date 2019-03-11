@@ -26,7 +26,7 @@ module proc (/*AUTOARG*/
 
 
    // signals for the memory modules
-   wire [15:0] data_in, addr, data_out;
+   wire [15:0] data_in, addr, data_out, writeData;
    wire enable, wr,  createdump;
 
    // signals for decoder that reads instruction.
@@ -50,7 +50,7 @@ module proc (/*AUTOARG*/
    * with the instruction and the register file is told what to do. The control unit also makes
    * signals like SESelect which the regFile doesn't use.
    */
-  decodeInstruction instructionDecoder(.clk(clk), .rst(rst), .writeData(writeData), .instr(instruction),
+  decodeInstruction decodeInstruction(.clk(clk), .rst(rst), .writeData(writeData), .instruction(instruction),
                                        .err(err));
 	 
 endmodule // proc
