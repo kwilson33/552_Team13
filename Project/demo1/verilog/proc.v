@@ -21,37 +21,33 @@ module proc (/*AUTOARG*/
    // As described in the homeworks, use the err signal to trap corner
    // cases that you think are illegal in your statemachines
    
-   
    /* your code here */
 
 
-   // signals for the memory modules
-   wire [15:0] data_in, addr, data_out, writeData;
-   wire enable, wr,  createdump;
+   // signals for the fetch, decode, memory, and execute
+   wire [15:0] currentPC, nextPC, instruction;
+			   data_out, data_in, writeData;
+			    
+   wire enable, wr, createDump;
 
-   // signals for decoder that reads instruction.
-   // Error output of processor comes from decoder
    
-
-   wire [15:0] instruction;
-
-   // instantiate memory module twice. One for instruction memory
-   // and another for data memory
-   memory2c instrMem (.data_in(data_in), .addr(addr),
-	                   .enable(enable), .wr(wr), .clk(clk), .rst(rst),
-	                   .createdump(createdump), .data_out(data_out)),
-
-	         dataMem   (.data_in(data_in), .addr(addr),
-	       	           .enable(enable), .wr(wr), .clk(clk), .rst(rst),
-	                    .createdump(createdump), .data_out(data_out));
-  
+   /*
+   * This module instantiates the instruction memory and the PC Register to keep track of the current PC
+   * there is also an adder instantiated here to increment the PC
+  */  
+  fetchInstruction instructionFetch(.clk(clk), .rst(rst), .PC_In(currentPC), 
+									.dump(createDump), .PC_Next(nextPC), 
+									.instruction(instruction));
+   
   /*
-   * this module instantiates the control unit and the register file. The control decides what to do 
+   * This module instantiates the control unit and the register file. The control decides what to do 
    * with the instruction and the register file is told what to do. The control unit also makes
    * signals like SESelect which the regFile doesn't use.
    */
-  decodeInstruction decodeInstruction(.clk(clk), .rst(rst), .writeData(writeData), .instruction(instruction),
-                                       .err(err));
+  decodeInstruction instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
+									  .instruction(instruction), .err(err));
+						
+  
 	 
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:
