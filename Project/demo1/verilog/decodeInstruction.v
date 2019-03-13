@@ -58,11 +58,11 @@ module decodeInstruction (//inputs
 					       .S(RegDest), .Out(writeRegister));
 
 	// Rd = writeRegister
-	// Rs = instr[10:8] = readData1
-	// Rt = instr[7:5] = readData2
+	// use bits [10:8] of instruction to figure out what Rs should be 
+	// use bits [7:5] of instruction to figure out what Rt should be 
 	rf regFile(// Outputs
 				 .readData1(readData1), .readData2(readData2), .err(regErr),
-				 //Inputs
+				  //Inputs
 				 .clk(clk), .rst(rst), .readReg1Sel(instruction[10:8]), 
 				 .readReg2Sel(instruction[7:5]), .writeRegSel(writeRegister), 
 			   	 .writeData(writeData), .writeEn(regWrite)); 

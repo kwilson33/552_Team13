@@ -2,22 +2,23 @@
 // Kevin most recent - removed err signal for now, not sure where to do that
 // also I renamed a bunch of signals for clarity
 // Super confused on which PC signals are for what
-module executeInstruction (instr, invA, invB, A, B, Cin, SESel, next_PC_normal, /*err*/ aluOutput, updatedPC, reg7_En); 
+module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC_normal, /*err*/ aluOutput, updatedPC, reg7_En); 
 
 
 	input[15:0] instr, next_PC_normal; 
 	input[15:0] A, B; 
 	input invA, invB, Cin;
+	// decide what goes to the ALU
 	input [2:0] SESel;
+	input ALUSrc2;
 
 	//output err;
 	output reg7_En; 
 	output[15:0] aluOutput; 
 	output[15:0] updatedPC; 
 
-
-	wire[15:0] muxIntermediate; 
-	wire[15:0] aluMuxedInput; 
+	// decided by SESel and ALUSrc2
+	wire[15:0] aluSecondInput; 
 
 	//Jumping enables
 	wire jump_enable, jump_select;
@@ -36,8 +37,8 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, next_PC_normal, 
 
 
 	//All Extensions for module in schematic happens here
-	wire[15:0] out_S_extend5, out_S_extend8, out_S_extend11; 
-	wire[15:0] out_Z_extend8, out_Z_extend5; 
+	wire[15:0] out_S_extend5, out_S_extend8, out_S_extend11,
+				out_Z_extend8, out_Z_extend5; 
 	//Sign extensions
 	signExt16_5		signExtend5(.in(instr[4:0]), .out(out_S_extend5));
 	signExt16_8		signExtend8(.in(instr[7:0]), .out(out_S_extend8));
@@ -47,23 +48,41 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, next_PC_normal, 
 	zeroExt16_5		zeroExtend5(.in(instr[4:0]), .out(out_Z_extend5)); 
 
 
-	// depending on instruction format, sign/zero/no extend the instruction a certain amount
-	mux4_1 #(.NUM_BITS(16)) mux1(.InA(B), .InB(out_S_extend5), .InC(out_Z_extend5), .InD(out_S_extend8), 
-				.S(SESel[1:0]), .Out(muxIntermediate)); 
+	reg [15:0] signExtendedImmediateReg;
+	// case statement to decide how to sign extend the immediate
+	always @(*) begin
+		case (SESel)
+			3'b000: begin
+				signExtendedImmediateReg = out_Z_extend5;
+			end
+			3'b001: begin
+				signExtendedImmediateReg = out_Z_extend8;
+			end
+			3'b01x: begin
+				signExtendedImmediateReg = out_S_extend5;
+			end
+			3'b10x: begin
+				signExtendedImmediateReg = out_S_extend8;
+			end
+			3'b11x: begin
+				signExtendedImmediateReg = out_S_extend11;
+			end
+		endcase 
+	end
 
-	// decide what second input to ALU should be 
-	mux2_1 #(.NUM_BITS(16)) mux2(.InA(muxIntermediate), .InB(out_Z_extend8), .S(SESel[2]), .Out(aluMuxedInput)); 	
+	// Set the second input to the ALU
+	assign aluSecondInput = ALUSrc2 ? (B) : signExtendedImmediateReg;
 
+	// Calculate the displacement for  JALR and jr instructions
+	rca_16b adder2(.A(out_S_extend8), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
+	// Set the new PC output to PC+2, or PC + branch offset, or PC + sign extended 11, or finally PC + 8 sign extended
+	assign updatedPC = jump_select ? (jalr_jr_displacement) : (calculatedPC);
 
-	//Set the new PC output to PC+2, or PC + branch offset, or PC + sign extended 11, or finally PC + 8 sign extended
-	mux2_1 #(.NUM_BITS(16)) mux3(.InA(calculatedPC), .InB(jalr_jr_displacement), .S(jump_select), .Out(updatedPC)); 
-
-	//logic module for branching and incrementing the PC below. If branching, use
-	// sign extended 8 bits of instruction. otherwise do nothing.
-	mux2_1	#(.NUM_BITS(16)) mux4(.InA(16'h0000), .InB(out_S_extend8), .S(branchEN), .Out(branchingOuput)); 
+ 	// If branching, use sign extended 8 bits of instruction. otherwise do nothing.
+	assign branchingOuput = branchEN ? (out_Z_extend8) : (16'h0000);
 
 	// If jumping, use sign extended 11 bits of instructions, otherwise use branch output from above
-	mux2_1	#(.NUM_BITS(16)) mux5(.InA(branchingOuput), .InB(out_S_extend11), .S(jump_enable), .Out(PC_Increment)); 
+	assign PC_Increment = jump_enable ? (out_S_extend11) : (branchingOuput);
 
 	jumpControlLogic jumpControl(.opcode(instr[15:11]), 
 								 .reg7_En(reg7_En), 
@@ -71,17 +90,11 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, next_PC_normal, 
 								 .jal_and_j_enable(jump_enable)); 
 
 	
-	
 	// Increment the PC by immediate value
 	rca_16b adder1(.A(PC_Increment), .B(next_PC_normal), .C_in(1'b0), .S(calculatedPC), .C_out(cout1)); 
-	// Calculate the displacement for  JALR and jr instructions
-	rca_16b adder2(.A(out_S_extend8), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
-
-
 	
 
-
-	alu 	mainALU( .A(A), .B(aluMuxedInput), .Cin(Cin), 
+	alu 	mainALU( .A(A), .B(aluSecondInput), .Cin(Cin), 
 					.Op(instr[15:11]), 
 					.Funct(instr[1:0]),
 					.invA(invA), .invB(invB),  
@@ -94,6 +107,4 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, next_PC_normal, 
 									 .neg_flag(neg_flag), 
 									 .zero_flag(zero_flag), 
 									 .branchEN(branchEN));
-
-
 endmodule
