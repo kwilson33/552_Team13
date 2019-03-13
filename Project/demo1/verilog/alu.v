@@ -1,9 +1,7 @@
 /*
 CS/ECE 552 Spring '19
 Homework #4, Problem 2
-
 Kevin, Mark, Apoorva
-
 A 16-bit ALU module.  It is designed to choose
 the correct operation to perform on 2 16-bit numbers 
 output zero, negative, and positive flags
@@ -36,9 +34,9 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	//rca_16b (A, B, C_in, S, C_out); << What module takes
 	rca_16b rippleCarryAdder(A, B, Cin, outRCA, coutRCA);
 	leftRotate	lr1(.In(A), .Cnt(B[3:0]), .Out(outLeftRotate));
-  rightRotate rr1(.In(A), .Cnt(B[3:0]), .Out(outRightRotate)); 
-  leftShift 	ls1(.In(A), .Cnt(B[3:0]), .Out(outLeftShift)); 
-  rightShift 	rs1(.In(A), .Cnt(B[3:0]), .Out(outRightShift)); 
+  	rightRotate rr1(.In(A), .Cnt(B[3:0]), .Out(outRightRotate)); 
+  	leftShift 	ls1(.In(A), .Cnt(B[3:0]), .Out(outLeftShift)); 
+  	rightShift 	rs1(.In(A), .Cnt(B[3:0]), .Out(outRightShift)); 
 /*
   //Decide which of the rotate or shifts we are going to assign out
   mux4_1	#(.NUM_BITS(16)) shiftRotateMux(.InA(outLeftRotate), .InB(outLeftShift), 
@@ -129,7 +127,6 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	assign tempNotA[13] = ~A[13]; 
 	assign tempNotA[14] = ~A[14]; 
 	assign tempNotA[15] = ~A[15]; 
-
 	assign tempNotB[0] = ~B[0]; 
 	assign tempNotB[1] = ~B[1]; 
 	assign tempNotB[2] = ~B[2];
@@ -146,8 +143,6 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	assign tempNotB[13] = ~B[13]; 
 	assign tempNotB[14] = ~B[14]; 
 	assign tempNotB[15] = ~B[15]; 
-
-
 	mux2_1 #(.NUM_BITS(16)) (.InA(tempNotA), .InB(A). .S(invA), .Out(newA)); 
 	mux2_1 #(.NUM_BITS(16)) (.InA(tempNotB), .InB(B). .S(invB), .Out(newB));
 */
@@ -229,7 +224,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 					end
 					
 					SCO : begin
-							outReg = 
+							//outReg = 
 					end
 				endcase
 			end
@@ -243,10 +238,10 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			// I-format 1 instructions mean that
 			// bits 7:5 represent the destination register
 			SUBI : begin
-				
+				outReg = RCAout;
 			end
 			ADDI : begin
-				
+				outReg = RCAout;
 			end
 			ANDNI : begin
 				
@@ -255,85 +250,85 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 				
 			end
 			ROLI : begin
-			
+				outReg = outLeftRotate; 
 			end
 			SLLI : begin
-			
+				outReg = outLeftShift; 
 			end 	 
 			RORI : begin
-			
+				outReg = outRightRotate; 
 			end	
 			SRLI : begin
-				
+				outReg = outRightShift; 
 			end	
 			ST : begin
-				
+				outReg = RCAout;
 			end
 			LD : begin
-				
+				outReg = RCAout;
 			end
 			// Write to Rs for STU
 			STU : begin	
-				
+				outReg = RCAout;
 			end	
 
 			/////////////////IFORMAT-2////////////////////
 			BNEZ : begin
-			
+				outReg = RCAout; 
 			end	
 			BEQZ : begin
-			
+				outReg = RCAout; 
 			end	
 			
 			BLTZ : begin
-				
+				outReg = RCAout; 
 			end	
 			
 			BGEZ : begin
-				
+				outReg = RCAout; 
 			end	
 			
 			// Write to Rs for LBI
 			LBI : begin
-			
+				outReg = B; 
 			end
 			// Write to Rs for SLBI
 			SLBI : begin
-				
+				outReg = ((A << 8) | B); 
 			end	
 			
 			JR : begin
-				
+				outReg = RCAout; 
 			end 	
 			
 			JALR : begin
-			
+				outReg = RCAout; 
 			end	
 			
 			///////////////////JUMP////////////////
 			J : begin
-			
+				outReg = RCAout; 
 			end	
 			
 			JAL : begin
-			
+				outReg = RCAout; 
 			end	
 			
 			////////////////SPECIAL///////////////
 			siic : begin
-
+				outReg = 16'hXXXX;
 			end
 			
 			NOP : begin
-			
+				outReg = 16'hXXXX;
 			end	
 			
 			HALT : begin
-			
+				outReg = 16'hXXXX;
 			end
 			
 			RTI : begin
-				
+				outReg = 16'hXXXX;
 			end
 			
 			// If Op not recognized, set error
