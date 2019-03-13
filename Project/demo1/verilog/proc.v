@@ -25,8 +25,9 @@ module proc (/*AUTOARG*/
 
 
    // signals for the fetch, decode, memory, and execute
-   wire [15:0] currentPC, nextPC, instruction, 
+   wire [15:0] updatedPC, next_PC_normal, instruction, 
 			   readData, writeData,
+         // alu_B is the register we're storing into memory
          aluOutput, alu_A, alu_B;
 
 			    
@@ -37,8 +38,8 @@ module proc (/*AUTOARG*/
    * This module instantiates the instruction memory and the PC Register to keep track of the current PC
    * there is also an adder instantiated here to increment the PC
   */  
-  fetchInstruction      instructionFetch(.clk(clk), .rst(rst), .PC_In(currentPC), 
-									                       .dump(createDump), .PC_Next(nextPC), 
+  fetchInstruction      instructionFetch(.clk(clk), .rst(rst), .PC_In(updatedPC), 
+									                       .dump(createDump), .PC_Next(next_PC_normal), 
 									                       .instruction(instruction));
    
   /*
@@ -49,21 +50,25 @@ module proc (/*AUTOARG*/
   decodeInstruction     instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
 									                        .instruction(instruction), .err(err));
 
-
+  /*comment*/
   executeInstruction    instructionExecute(.reg7_En(JAL_en), .instr(instruction), .invA(invA),
-                                           .invB(invB), .Cin(Cin), .aluSRC(instructionDecode.control.ALUSrc2),
-                                           .A(alu_A), .B(alu_B), .nextPC(currentPC), 
-                                           .result(aluOutput), .newPC(nextPC));
+                                           .invB(invB), .Cin(Cin), 
+                                           .SESel(instructionDecode.control.SESel),
+                                           .A(alu_A), .B(alu_B), .next_PC_normal(next_PC_normal), 
+                                           .aluOutput(aluOutput), .updatedPC(updatedPC));
 
-  // not sure if connected memRead and memWrite correctly??
+  /*comment*/
   memoryReadWrite       dataMemory (.clk(clk), .rst(rst), .writeData(alu_B),
-                                    .readData(readData), .memRead(instructionDecode.control.DMemEn), 
+                                    .readData(readData), 
+                                    .memRead(instructionDecode.control.DMemEn), 
                                     .memWrite(instructionDecode.control.DMemWrite),
                                     .aluOutput(aluOutput), .dump(createDump));
 
-
+ /*comment*/
   writebackOutput       instructionWriteback(.readData(readData), .writeData(writeData), .aluOutput(aluOutput),
-                                             .PC_Next(nextPC), .memToReg(instructionDecode.control.MemToReg), .JAL_en(JAL_en));
+                                             .PC_Next(next_PC_normal), 
+                                             .memToReg(instructionDecode.control.MemToReg), 
+                                             .JAL_en(JAL_en));
 						
   
 	 

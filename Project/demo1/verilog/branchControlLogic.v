@@ -21,18 +21,19 @@ module branchControlLogic(opcode, pos_flag, neg_flag, zero_flag, branchEN);
 
 	always@(*)begin
 		case(opcode)
+			// BGEZ
 			5'b01111 : begin
 				branchEnReg = (bgez) ? assert : no_assert; 
 			end
-
+			// BLTZ
 			5'b01110 : begin
 				branchEnReg = (neg_flag) ? assert : no_assert; 
 			end
-
+			// BEQZ
 			5'b01101 : begin
 				branchEnReg = (bnez) ? assert : no_assert; 
 			end
-
+			// BNEZ
 			5'b01100 : begin
 				branchEnReg = (zero_flag) ? assert : no_assert; 
 			end

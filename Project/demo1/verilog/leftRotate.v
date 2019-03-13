@@ -18,9 +18,9 @@ module leftRotate(In, Cnt, Out);
    assign leftRotate1 = {leftRotate2_out[14:0], leftRotate2_out[15]};
    
    // Use four 2-1 16 bit muxes to rotate left
-   mux2_1 	rotate8_mux		(In, leftRotate8, Cnt[3], leftRotate8_out),
-			rotate4_mux		(leftRotate8_out, leftRotate4, Cnt[2], leftRotate4_out),
-			rotate2_mux		(leftRotate4_out, leftRotate2, Cnt[1], leftRotate2_out),
-			rotate1_mux		(leftRotate2_out, leftRotate1, Cnt[0], Out);
+   mux2_1 	 #(.NUM_BITS(16)) rotate8_mux		(In, leftRotate8, Cnt[3], leftRotate8_out),
+                     			rotate4_mux		(leftRotate8_out, leftRotate4, Cnt[2], leftRotate4_out),
+                     			rotate2_mux		(leftRotate4_out, leftRotate2, Cnt[1], leftRotate2_out),
+                     			rotate1_mux		(leftRotate2_out, leftRotate1, Cnt[0], Out);
 
 endmodule

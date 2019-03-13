@@ -22,13 +22,14 @@ module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 	register_16bits PC_Register( .readData(PC_In), .clk(clk), .rst(rst), .writeData(currentPC), .writeEnable(stop)); 
 
 
-	//instruction Memory
+	// instruction Memory
+	// instruction comes from the current PC
 	memory2c instructionMemory (.data_in(16'b0), .addr(currentPC),
 								.enable(1'b1), .wr(wr), .clk(clk), .rst(rst),
 								.createdump(dump), .data_out(instruction)); 
 
 
-	//Adding 2 to the PC
+	// Adding 2 to the PC
 	rca_16b PC_Adder(.A(currentPC), .B(16'h0002), 
 					 .C_in(1'b0), .S(PC_Next), 
 					 .C_out(c_out));

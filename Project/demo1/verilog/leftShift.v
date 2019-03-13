@@ -18,7 +18,7 @@ module leftShift(In, Cnt, Out);
    assign leftShift1 = {leftShift2_out[14:0], {1'b0}};
    
    // Use four 2-1 16 bit muxes to shift left
-   mux2_1 			shiftLeft8_mux		(In, leftShift8, Cnt[3], leftShift8_out),
+   mux2_1 	#(.NUM_BITS(16))		shiftLeft8_mux		(In, leftShift8, Cnt[3], leftShift8_out),
 				shiftLeft4_mux		(leftShift8_out, leftShift4, Cnt[2], leftShift4_out),
 				shiftLeft2_mux		(leftShift4_out, leftShift2, Cnt[1], leftShift2_out),
 				shiftLeft1_mux		(leftShift2_out, leftShift1, Cnt[0], Out);

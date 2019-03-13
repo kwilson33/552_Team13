@@ -146,13 +146,14 @@ module proc_hier_bench();
    assign Inst = DUT.p0.instructionFetch.instructionMemory.data_out;
 
 	//TODO
-   //assign MemAddress = DUT.p0.memory0.aluResult;
+   assign MemAddress = DUT.p0.dataMemory.aluOutput;
    // Address to access memory with (for both reads and writes to memory, 16 bits)
    
-   //assign MemData = DUT.p0.memory0.writeData;
+   assign MemData = DUT.p0.dataMemory.writeData;
    // Data to be written to memory for memory writes (16 bits)
    
    //assign Halt = DUT.p0.memory0.halt;
+   assign Halt = 1'b0; //temporary for testing
    // Is processor halted (1 bit signal)
 
    /* Add anything else you want here */

@@ -17,7 +17,7 @@ module decodeInstruction (//inputs
 
 	// output of control
 	wire RegWrite, controlErr,
-		 DMemWrite, ALUSrc2, 
+		 DMemWrite, ALUSrc2,
 		 PCSrc, PCImm, 
 		 MemToReg, DMemEn, 
 		 DMemDump, Jump; 
@@ -37,9 +37,9 @@ module decodeInstruction (//inputs
 	// control module determines all of the control logic for the processor
 	// and also which register to write to 
 	control control( // Outputs
-					.err(controlErr), .RegDst(RegDest), .SESel(SESel), 
+					.err(controlErr), .RegDst(RegDest), .ALUSrc2(ALUSrc2), 
 					.RegWrite(RegWrite), .DMemWrite(DMemWrite), .DMemEn(DMemEn), 
-					.ALUSrc2(ALUSrc2), .PCSrc(PCSrc), .PCImm(PCImm), 
+					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), 
 					.MemToReg(MemToReg), .DMemDump(DMemDump), .Jump(Jump),
 					// Inputs
 					.OpCode(instruction[15:11]),
@@ -58,8 +58,8 @@ module decodeInstruction (//inputs
 					       .S(RegDest), .Out(writeRegister));
 
 	// Rd = writeRegister
-	// Rs = instr[10:8]
-	// Rt = instr[7:5]
+	// Rs = instr[10:8] = readData1
+	// Rt = instr[7:5] = readData2
 	rf regFile(// Outputs
 				 .readData1(readData1), .readData2(readData2), .err(regErr),
 				 //Inputs
