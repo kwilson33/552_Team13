@@ -40,7 +40,7 @@ module decodeInstruction (//inputs
 	//assign err = 1'b0;
 	// control module determines all of the control logic for the processor
 	// and also which register to write to 
-	control control( // Outputs
+	control controlUnit( // Outputs
 					.err(controlErr), .RegDst(RegDest), .ALUSrc2(ALUSrc2), 
 					.RegWrite(RegWrite), .DMemWrite(DMemWrite), .DMemEn(DMemEn), 
 					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), .Cin(Cin),

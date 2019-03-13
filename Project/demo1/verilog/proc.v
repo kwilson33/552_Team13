@@ -13,24 +13,13 @@ module proc (/*AUTOARG*/
 
    output err;
 
-   // None of the above lines can be modified
-
-   // OR all the err ouputs for every sub-module and assign it as this
-   // err output
-   
-   // As described in the homeworks, use the err signal to trap corner
-   // cases that you think are illegal in your statemachines
-   
-   /* your code here */
-
-
    // signals for the fetch, decode, memory, and execute
    wire [15:0] updatedPC, next_PC_normal, instruction, 
 			   readData, writeData,
          // alu_B is the register we're storing into memory
          aluOutput, alu_A, alu_B;
         
-   wire createDump, errDecode ,JAL_en;
+   wire createDump, errDecode , JAL_en;
 
    
    /*
@@ -52,11 +41,11 @@ module proc (/*AUTOARG*/
 
   /*comment*/
   executeInstruction    instructionExecute(.reg7_En(JAL_en), .instr(instruction), 
-                                           .invA(instructionDecode.control.invA),
-                                           .invB(instructionDecode.control.invB), 
+                                           .invA(instructionDecode.controlUnit.invA),
+                                           .invB(instructionDecode.controlUnit.invB), 
                                            .Cin(Cin), 
-                                           .SESel(instructionDecode.control.SESel),
-                                           .ALUSrc2(instructionDecode.control.ALUSrc2),
+                                           .SESel(instructionDecode.controlUnit.SESel),
+                                           .ALUSrc2(instructionDecode.controlUnit.ALUSrc2),
                                            .A(alu_A), .B(alu_B), 
                                            .next_PC_normal(next_PC_normal), 
                                            .aluOutput(aluOutput), .updatedPC(updatedPC));
@@ -64,15 +53,15 @@ module proc (/*AUTOARG*/
   /*comment*/
   memoryReadWrite       dataMemory (.clk(clk), .rst(rst), .writeData(alu_B),
                                     .readData(readData), 
-                                    .memRead(instructionDecode.control.DMemEn), 
-                                    .memWrite(instructionDecode.control.DMemWrite),
+                                    .memRead(instructionDecode.controlUnit.DMemEn), 
+                                    .memWrite(instructionDecode.controlUnit.DMemWrite),
                                     .aluOutput(aluOutput), .dump(createDump));
 
  /*comment*/
   writebackOutput       instructionWriteback(.readData(readData), .writeData(writeData), 
                                              .aluOutput(aluOutput),
                                              .PC_Next(next_PC_normal), 
-                                             .memToReg(instructionDecode.control.MemToReg), 
+                                             .memToReg(instructionDecode.controlUnit.MemToReg), 
                                              .JAL_en(JAL_en));
 						
   

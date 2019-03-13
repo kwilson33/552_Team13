@@ -22,9 +22,12 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	reg [15:0] outReg;
 	reg errRegister;
 
-	wire [15:0] outLeftRotate, outRightRotate; 
-	wire [15:0] outLeftShift, outRightShift; 
-	wire [15:0] shifRotMuxOut; 
+
+				// output wires for shifts
+	wire [15:0] outLeftRotate, outRightRotate,
+				outLeftShift, outRightShift,
+				// output for bit rotate
+				outBitRotate;
 
 	//Wire for if we need to NOT A and/or B
 	wire [15:0] newA, newB; 
@@ -46,6 +49,8 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
   	rightRotate rr1(.In(A), .Cnt(B[3:0]), .Out(outRightRotate)); 
   	leftShift 	ls1(.In(A), .Cnt(B[3:0]), .Out(outLeftShift)); 
   	rightShift 	rs1(.In(A), .Cnt(B[3:0]), .Out(outRightShift)); 
+  	// Bit rotate
+  	bitRotate   btr(.In(A), .Out(outBitRotate));
 
 	//////////////Ops//////////////////////
 
@@ -83,11 +88,10 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	ROR 		= 2'b10;
 	localparam 	SRL 		= 2'b11;
 
-	localparam ALU_3		= 5'b111xx;
-	localparam SEQ			= 2'b00;
-	localparam SLT			= 2'b01;
-	localparam SLE			= 2'b10;
-	localparam SCO			= 2'b11;
+	localparam SEQ			= 5'b11100;
+	localparam SLT			= 5'b11101;
+	localparam SLE			= 5'b11110;
+	localparam SCO			= 5'b11111;
 	////////////////////////////////////////
 
 	// I-format 2
@@ -109,48 +113,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	NOP 		= 5'b00001;
 	localparam 	RTI 		= 5'b00011;
 	localparam 	HALT 		= 5'b00000;
-	///////////////////////////////////////////
-/*
-	assign tempNotA[0] = ~A[0]; 
-	assign tempNotA[1] = ~A[1]; 
-	assign tempNotA[2] = ~A[2];
-	assign tempNotA[3] = ~A[3]; 
-	assign tempNotA[4] = ~A[4]; 
-	assign tempNotA[5] = ~A[5]; 
-	assign tempNotA[6] = ~A[6]; 
-	assign tempNotA[7] = ~A[7]; 
-	assign tempNotA[8] = ~A[8]; 
-	assign tempNotA[9] = ~A[9]; 
-	assign tempNotA[10] = ~A[10]; 
-	assign tempNotA[11] = ~A[11]; 
-	assign tempNotA[12] = ~A[12]; 
-	assign tempNotA[13] = ~A[13]; 
-	assign tempNotA[14] = ~A[14]; 
-	assign tempNotA[15] = ~A[15]; 
-	assign tempNotB[0] = ~B[0]; 
-	assign tempNotB[1] = ~B[1]; 
-	assign tempNotB[2] = ~B[2];
-	assign tempNotB[3] = ~B[3]; 
-	assign tempNotB[4] = ~B[4]; 
-	assign tempNotB[5] = ~B[5]; 
-	assign tempNotB[6] = ~B[6]; 
-	assign tempNotB[7] = ~B[7]; 
-	assign tempNotB[8] = ~B[8]; 
-	assign tempNotB[9] = ~B[9]; 
-	assign tempNotB[10] = ~B[10]; 
-	assign tempNotB[11] = ~B[11]; 
-	assign tempNotB[12] = ~B[12]; 
-	assign tempNotB[13] = ~B[13]; 
-	assign tempNotB[14] = ~B[14]; 
-	assign tempNotB[15] = ~B[15]; 
-	mux2_1 #(.NUM_BITS(16)) (.InA(tempNotA), .InB(A). .S(invA), .Out(newA)); 
-	mux2_1 #(.NUM_BITS(16)) (.InA(tempNotB), .InB(B). .S(invB), .Out(newB));
-*/
-
-
-
-
-
+	
 	//Set zero if all the bits of the ripple carry adder output are 0
 	assign Zero = ~(|outRCA); 
 	// check if output of RCA is positive or negative
@@ -170,12 +133,13 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			// bits 4:2 represent the destination register
 			ALU_1 : begin
 					case(Funct)
+						// Rs + Rt
 						ADD : begin
-								outReg = coutRCA;
+								outReg = outRCA;
 						end
-						
+						// Rt - Rs
 						SUB : begin
-								outReg = coutRCA;
+								outReg = outRCA;
 						end
 						
 						XOR : begin
@@ -206,31 +170,30 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 						end
 					endcase
 			end
-			
-			ALU_3: begin
-				case (Op[1:0])
-					
-					SEQ : begin
-							outReg = (Zero) ? 16'h0001 : 16'h0000; 
-					end
-					
-					SLT : begin
-							outReg = ((A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
-					end
-					
-					SLE : begin
-							outReg = ( Zero | (A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
-					end
-					
-					SCO : begin
-							//outReg = 
-					end
-				endcase
+
+			//Rs == Rt
+			SEQ : begin
+					// (is Rt - Rs == 0)
+					outReg = (Zero) ? 16'h0001 : 16'h0000; 
+			end
+			// Rs < Rt
+			SLT : begin
+					// (is A negative and B positive) or  (is Rt - Rs negative)
+					outReg = ((A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
+			end
+			// Rs <= Rt
+			SLE : begin
+					// (Is A neg and B pos or Rt - Rs == 0) or (is Rt -Rs negative)
+					outReg = ( Zero | (A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
 			end
 			
-			
+			// if Rs + Rt generates carry out
+			SCO : begin
+					outReg =  coutRCA;
+			end
+
 			BTR : begin
-				
+				outReg = outBitRotate;
 			end	
 			
 			////////////////////IFORMAT-1//////////////////////////
@@ -243,10 +206,11 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 				outReg = outRCA;
 			end
 			ANDNI : begin
-				
+				// B would be selected as an immediate in the execute module
+				outReg = A & B;
 			end
 			XORI : begin
-				
+				outReg = A ^ B;
 			end
 			ROLI : begin
 				outReg = outLeftRotate; 

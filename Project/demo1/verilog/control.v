@@ -188,6 +188,7 @@ module control (/*AUTOARG*/
 		// for every instruction
 		RegDstRegister = 2'bxx;
 		SESelRegister = 3'bxxx;
+		//SESelRegister = 3'bxxx;
 		
 
 		// use these for ADD,SUBI, ANDN, etc.
@@ -210,7 +211,7 @@ module control (/*AUTOARG*/
 						end
 						
 						SUB : begin
-							invB_Register = assert;
+							invA_Register = assert;
 							Cin_Register = assert;
 
 						end
@@ -351,6 +352,9 @@ module control (/*AUTOARG*/
 			ST : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
+
+				// not writing to a register
+				RegWriteRegister = no_assert; 
 				
 				//sign extend lower 5 bits
 				SESelRegister = 3'b01x;
@@ -379,7 +383,7 @@ module control (/*AUTOARG*/
 			STU : begin	
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
-				
+
 				//sign extend lower 5 bits
 				SESelRegister = 3'b01x;
 				
@@ -395,16 +399,12 @@ module control (/*AUTOARG*/
 			BNEZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
-				invB_Register = assert;
-				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
 			BEQZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
-				invB_Register = assert;
-				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -412,8 +412,6 @@ module control (/*AUTOARG*/
 			BLTZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
-				invB_Register = assert;
-				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -421,8 +419,6 @@ module control (/*AUTOARG*/
 			BGEZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
-				invB_Register = assert;
-				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -430,6 +426,7 @@ module control (/*AUTOARG*/
 			// Write to Rs for LBI
 			LBI : begin
 				// sign extend lower 8 bits
+				//SESelRegister = 3'b10x;
 				SESelRegister = 3'b10x;
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
@@ -509,5 +506,14 @@ module control (/*AUTOARG*/
 			
 		endcase
 	end
+
+/*
+	always @(*) begin
+		case (DMemDumpRegister)
+			1'b0: DMemDumpRegister = no_assert;
+			1'b1: DMemDumpRegister = no_assert;
+		endcase
+	end
+	*/
 
 endmodule

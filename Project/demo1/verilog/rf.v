@@ -30,6 +30,7 @@ module rf (
 	
 	// err is 1 if any of the inputs have an unknown value (x). Check this by
 	// using a bitwise XOR to see if any bits unknown.
+	/*
 	assign err = (^clk === 1'bx) ? 1'b1 : 
 	(^rst === 1'bx) ? 1'b1 : 
 	(^readReg1Sel === 1'bx) ? 1'b1 :
@@ -37,7 +38,9 @@ module rf (
 	(^writeRegSel === 1'bx) ? 1'b1 :
 	(^writeData === 1'bx) ? 1'b1 :
 	(^writeEn === 1'bx) ? 1'b1 : 1'b0;
-	
+	*/
+	assign err = 1'b0;
+
 	// 8 outputs for the 8x16 bit registers
 	// These will be the passed into the regiter_16bits module where 
 	// they will be passed into a 16 bit DFFs. In the DFF they will be the outputs.
@@ -48,6 +51,7 @@ module rf (
 	 * This decoder also has an enable. If enable is low, output will be
 	 * 0 no matter what.
 	*/
+
 	wire write0, write1, write2, write3, write4, write5, write6, write7;
 	assign write7 = writeEn & (writeRegSel == 7); 
 	assign write6 = writeEn & (writeRegSel == 6);

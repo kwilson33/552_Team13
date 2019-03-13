@@ -1,45 +1,43 @@
-// This module takes care of the logic for the BGEZ, BNEZ, 
-module branchControlLogic(opcode, pos_flag, neg_flag, zero_flag, branchEN);
+// This module takes care of the logic for the branch instructions
+module branchControlLogic(Op, pos_flag, neg_flag, zero_flag, branchEN);
 
-	input [4:0] opcode; 
+	input [4:0] Op; 
 	input  pos_flag, neg_flag, zero_flag; 
 
 	output branchEN; 
 
 	reg branchEnReg; 
 
-	localparam assert = 1'b1; 
-	localparam no_assert = 1'b0; 
-
 	//Branch if not equal zero, branch if greater than or equal to zero
 	wire bnez, bgez; 
 
 
-	assign bnez = (pos_flag | neg_flag) ? assert : no_assert;
-	assign bgez = (pos_flag | zero_flag) ? assert : no_assert; 
+	assign bnez = (pos_flag | neg_flag) ? 1'b1 : 1'b0;
+	assign bgez = (pos_flag | zero_flag) ? 1'b1 : 1'b0; 
 	assign branchEN = branchEnReg; 
 
 	always@(*)begin
-		case(opcode)
-			// BGEZ
+		branchEnReg = 1'b0; 
+		case(Op)
+			// BGEZ (Rs >= 0)
 			5'b01111 : begin
-				branchEnReg = (bgez) ? assert : no_assert; 
+				branchEnReg = (bgez) ? 1'b1 : 1'b0; 
 			end
-			// BLTZ
+			// BLTZ (Rs<0)
 			5'b01110 : begin
-				branchEnReg = (neg_flag) ? assert : no_assert; 
+				branchEnReg = (neg_flag) ? 1'b1 : 1'b0; 
 			end
-			// BEQZ
+			// BEQZ(Rs == 0)
 			5'b01101 : begin
-				branchEnReg = (bnez) ? assert : no_assert; 
+				branchEnReg = (bnez) ? 1'b1 : 1'b0; 
 			end
-			// BNEZ
+			// BNEZ (Rs!=0)
 			5'b01100 : begin
-				branchEnReg = (zero_flag) ? assert : no_assert; 
+				branchEnReg = (zero_flag) ? 1'b1 : 1'b0; 
 			end
 
 			default:  begin
-				branchEnReg = no_assert; 
+				branchEnReg = 1'b0; 
 			end	
 		endcase
 	end

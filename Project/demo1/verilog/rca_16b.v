@@ -6,12 +6,9 @@
 */
 module rca_16b(A, B, C_in, S, C_out);
 
-    // declare constant for size of inputs, outputs (N)
-    parameter   N = 16;
-
-    input [N-1: 0] A, B;
+    input [15: 0] A, B;
     input          C_in;
-    output [N-1:0] S;
+    output [15:0] S;
     output         C_out;
 	
 	// C_in1 is the carry in for the second 4-bit adder block. It's the carry out of the first 4-bit adder block

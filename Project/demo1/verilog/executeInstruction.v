@@ -28,11 +28,12 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 
 	//intermidiate wires
 	// calculatedPC and jalr_jr_displacement are used for jumping
-	wire[15:0] PC_Increment, branchingOuput, calculatedPC, jalr_jr_displacement; 
+	wire[15:0] PC_Increment, branchOffset, calculatedPC, jalr_jr_displacement; 
 
 	//Unused connections, don't care about the Cout of the adders?
 	wire cout1, cout2; 
 
+	// flags of ALU output and error signal
 	wire zero_flag, pos_flag, neg_flag, err;
 
 
@@ -75,14 +76,19 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 
 	// Calculate the displacement for  JALR and jr instructions
 	rca_16b adder2(.A(out_S_extend8), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
-	// Set the new PC output to PC+2, or PC + branch offset, or PC + sign extended 11, or finally PC + 8 sign extended
-	assign updatedPC = jump_select ? (jalr_jr_displacement) : (calculatedPC);
+	
+	// This modules decides if we're branching or not 
+	branchControlLogic branchControl(.Op(instr[15:11]), 
+									 .pos_flag(pos_flag), 
+									 .neg_flag(neg_flag), 
+									 .zero_flag(zero_flag), 
+									 .branchEN(branchEN));
 
- 	// If branching, use sign extended 8 bits of instruction. otherwise do nothing.
-	assign branchingOuput = branchEN ? (out_Z_extend8) : (16'h0000);
+ 	// If branching, use sign extended 8 bits of instruction as offset, otherwise 0.
+	assign branchOffset = branchEN ? (signExtendedImmediateReg) : (16'h0000);
 
 	// If jumping, use sign extended 11 bits of instructions, otherwise use branch output from above
-	assign PC_Increment = jump_enable ? (out_S_extend11) : (branchingOuput);
+	assign PC_Increment = jump_enable ? (signExtendedImmediateReg) : (branchOffset);
 
 	jumpControlLogic jumpControl(.opcode(instr[15:11]), 
 								 .reg7_En(reg7_En), 
@@ -90,8 +96,11 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 								 .jal_and_j_enable(jump_enable)); 
 
 	
-	// Increment the PC by immediate value
+	// Add PC + 2 (normal) + offset of branch,jump, or nothing
 	rca_16b adder1(.A(PC_Increment), .B(next_PC_normal), .C_in(1'b0), .S(calculatedPC), .C_out(cout1)); 
+	// Set the new PC output to PC+2, or PC + branch offset, 
+	// or PC + sign extended 11, or finally PC + 8 sign extended
+	assign updatedPC = jump_select ? (jalr_jr_displacement) : (calculatedPC);
 	
 
 	alu 	mainALU( .A(A), .B(aluSecondInput), .Cin(Cin), 
@@ -101,10 +110,4 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 					.Out(aluOutput), .err(err), 
 					.Zero(zero_flag), .Pos(pos_flag), .Neg(neg_flag)); 
 
-
-	branchControlLogic branchControl(.opcode(instr[15:11]), 
-									 .pos_flag(pos_flag), 
-									 .neg_flag(neg_flag), 
-									 .zero_flag(zero_flag), 
-									 .branchEN(branchEN));
 endmodule
