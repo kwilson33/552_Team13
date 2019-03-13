@@ -27,25 +27,25 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	wire [15:0] shifRotMuxOut; 
 
 	//Wire for if we need to NOT A and/or B
-	wire [15:0]	tempNotA, tempNotB, newA, newB; 
+	wire [15:0] newA, newB; 
+
+
+	//Check if inputs A or B should be inverted
+	assign newA = (invA) ? ~A : A;
+	assign newB = (invB) ? ~B : B;
+
 
 
 	//Instantiate Ripple Carry Adder// Can take in 16 bit inputs
 	//rca_16b (A, B, C_in, S, C_out); << What module takes
-	rca_16b rippleCarryAdder(A, B, Cin, outRCA, coutRCA);
+	rca_16b rippleCarryAdder(newA, newB, Cin, outRCA, coutRCA);
+
+
+	// Shift modules
 	leftRotate	lr1(.In(A), .Cnt(B[3:0]), .Out(outLeftRotate));
   	rightRotate rr1(.In(A), .Cnt(B[3:0]), .Out(outRightRotate)); 
   	leftShift 	ls1(.In(A), .Cnt(B[3:0]), .Out(outLeftShift)); 
   	rightShift 	rs1(.In(A), .Cnt(B[3:0]), .Out(outRightShift)); 
-/*
-  //Decide which of the rotate or shifts we are going to assign out
-  mux4_1	#(.NUM_BITS(16)) shiftRotateMux(.InA(outLeftRotate), .InB(outLeftShift), 
-					       .InC(outRightRotate), .InD(outRightShift),
-					       .S(), .Out(shifRotMuxOut);
-*/
-
-
-
 
 	//////////////Ops//////////////////////
 
@@ -58,8 +58,8 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	SLLI 		= 5'b10101; 
 	localparam	RORI 		= 5'b10110; 
 	localparam 	SRLI 		= 5'b10111; 
-	localparam	ST 		= 5'b10000; 
-	localparam 	LD 		= 5'b10001; 
+	localparam	ST 			= 5'b10000; 
+	localparam 	LD 			= 5'b10001; 
 	localparam	STU 		= 5'b10011; 
 
 	/* 
@@ -147,9 +147,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	mux2_1 #(.NUM_BITS(16)) (.InA(tempNotB), .InB(B). .S(invB), .Out(newB));
 */
 
-	//Check if inputs A or B should be inverted
-	assign newA = (invA) ? ~A : A;
-	assign newB = (invB) ? ~B : B;
+
 
 
 
@@ -160,6 +158,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	assign Neg =  (outRCA[15] | Zero );
 
 	assign err = errRegister;
+	assign Out = outReg;
 
 	// Rs = A
 	// Rt = B
@@ -238,10 +237,10 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			// I-format 1 instructions mean that
 			// bits 7:5 represent the destination register
 			SUBI : begin
-				outReg = RCAout;
+				outReg = outRCA;
 			end
 			ADDI : begin
-				outReg = RCAout;
+				outReg = outRCA;
 			end
 			ANDNI : begin
 				
@@ -262,30 +261,30 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 				outReg = outRightShift; 
 			end	
 			ST : begin
-				outReg = RCAout;
+				outReg = outRCA;
 			end
 			LD : begin
-				outReg = RCAout;
+				outReg = outRCA;
 			end
 			// Write to Rs for STU
 			STU : begin	
-				outReg = RCAout;
+				outReg = outRCA;
 			end	
 
 			/////////////////IFORMAT-2////////////////////
 			BNEZ : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			BEQZ : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			BLTZ : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			BGEZ : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			// Write to Rs for LBI
@@ -298,20 +297,20 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			end	
 			
 			JR : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end 	
 			
 			JALR : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			///////////////////JUMP////////////////
 			J : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			JAL : begin
-				outReg = RCAout; 
+				outReg = outRCA; 
 			end	
 			
 			////////////////SPECIAL///////////////

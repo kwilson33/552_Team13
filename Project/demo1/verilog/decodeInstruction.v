@@ -1,14 +1,16 @@
 module decodeInstruction (//inputs
 							instruction, clk, rst, writeData,
 						  //outputs
-						   err);
+						   err, dump, A, B, Cin);
 
 	//Inputs
 	input [15:0] instruction, writeData;
 	input 		 clk, rst; 
 
-	//Outputs
-	output err;
+	// Outputs
+	output err, dump, Cin;
+	// output of register file 
+	output [15:0] A, B;
 
 
 	// internal signals
@@ -20,27 +22,30 @@ module decodeInstruction (//inputs
 		 DMemWrite, ALUSrc2,
 		 PCSrc, PCImm, 
 		 MemToReg, DMemEn, 
-		 DMemDump, Jump; 
+		 DMemDump, Jump,
+		 invA, invB, Cin;
 
 	wire [1:0] RegDest;
 	wire [2:0] SESel; 
 
 	// output of register file
-	wire [15:0] readData1, readData2;
 	wire regErr;
 
 	//We plan to connect these by using the dot operator
 	
 
 	assign err = (controlErr | regErr);
+	assign dump = DMemDump;
+
 	//assign err = 1'b0;
 	// control module determines all of the control logic for the processor
 	// and also which register to write to 
 	control control( // Outputs
 					.err(controlErr), .RegDst(RegDest), .ALUSrc2(ALUSrc2), 
 					.RegWrite(RegWrite), .DMemWrite(DMemWrite), .DMemEn(DMemEn), 
-					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), 
+					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), .Cin(Cin),
 					.MemToReg(MemToReg), .DMemDump(DMemDump), .Jump(Jump),
+					.invA(invA), .invB(invB),
 					// Inputs
 					.OpCode(instruction[15:11]),
 					.Funct(instruction[1:0]));
@@ -61,11 +66,11 @@ module decodeInstruction (//inputs
 	// use bits [10:8] of instruction to figure out what Rs should be 
 	// use bits [7:5] of instruction to figure out what Rt should be 
 	rf regFile(// Outputs
-				 .readData1(readData1), .readData2(readData2), .err(regErr),
+				 .readData1(A), .readData2(B), .err(regErr),
 				  //Inputs
 				 .clk(clk), .rst(rst), .readReg1Sel(instruction[10:8]), 
 				 .readReg2Sel(instruction[7:5]), .writeRegSel(writeRegister), 
-			   	 .writeData(writeData), .writeEn(regWrite)); 
+			   	 .writeData(writeData), .writeEn(RegWrite)); 
 
 
 	

@@ -78,6 +78,4 @@ module rf (
 	assign readData2 = readReg2Sel[2] ? (readReg2Sel[1] ? (readReg2Sel[0] ? read7Data : read6Data) 
 	: (readReg2Sel[0] ? read5Data : read4Data)) : (readReg2Sel[1] ? (readReg2Sel[0] ? read3Data : read2Data)
 	: (readReg2Sel[0] ? read1Data : read0Data)); 
-
-
 endmodule

@@ -46,6 +46,8 @@ module proc_hier_bench();
          if (Halt || RegWrite || MemWrite) begin
             inst_count = inst_count + 1;
          end
+
+
          $fdisplay(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x",
                   DUT.c0.cycle_count,
                   PC,
@@ -80,7 +82,8 @@ module proc_hier_bench();
                          (inst_count-1),
                         PC,
                         WriteRegister,
-                        WriteData );
+                        WriteData,
+                        );
             end
          end else if (Halt) begin
             $fdisplay(sim_log_file, "SIMLOG:: Processor halted\n");
@@ -142,10 +145,12 @@ module proc_hier_bench();
    // Is memory being written to (1 bit signal)
 
    
-   assign PC = DUT.p0.instructionFetch.PC_Register.writeData;
-   assign Inst = DUT.p0.instructionFetch.instructionMemory.data_out;
+   //assign PC = DUT.p0.next_PC_normal;
+   assign PC = DUT.p0.instructionFetch.PC_Register.readData;
+   
+   assign Inst = DUT.p0.instructionFetch.instruction;
+   //assign Inst = DUT.p0.instruction;
 
-	//TODO
    assign MemAddress = DUT.p0.dataMemory.aluOutput;
    // Address to access memory with (for both reads and writes to memory, 16 bits)
    
@@ -153,12 +158,10 @@ module proc_hier_bench();
    // Data to be written to memory for memory writes (16 bits)
    
    //assign Halt = DUT.p0.memory0.halt;
-   assign Halt = 1'b0; //temporary for testing
+   assign Halt = DUT.p0.instructionFetch.dump; 
    // Is processor halted (1 bit signal)
 
    /* Add anything else you want here */
-
-   
 endmodule
 
 // DUMMY LINE FOR REV CONTROL :0:

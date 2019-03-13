@@ -29,9 +29,8 @@ module proc (/*AUTOARG*/
 			   readData, writeData,
          // alu_B is the register we're storing into memory
          aluOutput, alu_A, alu_B;
-
-			    
-   wire enable, wr, createDump, JAL_en;
+        
+   wire createDump, errDecode ,JAL_en;
 
    
    /*
@@ -48,13 +47,18 @@ module proc (/*AUTOARG*/
    * signals like SESelect which the regFile doesn't use.
    */
   decodeInstruction     instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
-									                        .instruction(instruction), .err(err));
+									                        .instruction(instruction), .err(errDecode), .dump(createDump),
+                                          .A(alu_A), .B(alu_B), .Cin(Cin));
 
   /*comment*/
-  executeInstruction    instructionExecute(.reg7_En(JAL_en), .instr(instruction), .invA(invA),
-                                           .invB(invB), .Cin(Cin), 
+  executeInstruction    instructionExecute(.reg7_En(JAL_en), .instr(instruction), 
+                                           .invA(instructionDecode.control.invA),
+                                           .invB(instructionDecode.control.invB), 
+                                           .Cin(Cin), 
                                            .SESel(instructionDecode.control.SESel),
-                                           .A(alu_A), .B(alu_B), .next_PC_normal(next_PC_normal), 
+                                           .ALUSrc2(instructionDecode.control.ALUSrc2),
+                                           .A(alu_A), .B(alu_B), 
+                                           .next_PC_normal(next_PC_normal), 
                                            .aluOutput(aluOutput), .updatedPC(updatedPC));
 
   /*comment*/
@@ -65,12 +69,14 @@ module proc (/*AUTOARG*/
                                     .aluOutput(aluOutput), .dump(createDump));
 
  /*comment*/
-  writebackOutput       instructionWriteback(.readData(readData), .writeData(writeData), .aluOutput(aluOutput),
+  writebackOutput       instructionWriteback(.readData(readData), .writeData(writeData), 
+                                             .aluOutput(aluOutput),
                                              .PC_Next(next_PC_normal), 
                                              .memToReg(instructionDecode.control.MemToReg), 
                                              .JAL_en(JAL_en));
 						
   
-	 
+	 assign err = (errDecode | instructionExecute.mainALU.err | instructionDecode.regFile.err );
+
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:

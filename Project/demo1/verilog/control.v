@@ -13,11 +13,14 @@ module control (/*AUTOARG*/
                 DMemWrite,
                 DMemEn,
                 ALUSrc2,
+                invA,
+                invB,
                 PCSrc,
                 PCImm,
                 MemToReg,
                 DMemDump,
                 Jump,
+                Cin,
                 // Inputs
                 OpCode,
                 Funct
@@ -31,13 +34,14 @@ module control (/*AUTOARG*/
    // outputs
    output       err;
    output       RegWrite, DMemWrite, DMemEn, ALUSrc2, PCSrc, 
-                PCImm, MemToReg, DMemDump, Jump;
+                PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin;
    output [1:0] RegDst;
    output [2:0] SESel;
 
    /* YOUR CODE HERE */
 	reg errRegister;
 	reg JumpRegister; 
+	reg invA_Register, invB_Register, Cin_Register;
 	reg RegWriteRegister; 
 	reg DMemWriteRegister;
 	reg DMemEnRegister;
@@ -63,8 +67,8 @@ module control (/*AUTOARG*/
 	localparam 	SLLI 		= 5'b10101; 
 	localparam	RORI 		= 5'b10110; 
 	localparam 	SRLI 		= 5'b10111; 
-	localparam	ST 		= 5'b10000; 
-	localparam 	LD 		= 5'b10001; 
+	localparam	ST 			= 5'b10000; 
+	localparam 	LD 			= 5'b10001; 
 	localparam	STU 		= 5'b10011; 
 
 	/* 
@@ -147,6 +151,9 @@ module control (/*AUTOARG*/
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
 	assign DMemDump 	= DMemDumpRegister; 
+	assign invA 		= invA_Register;
+	assign invB 		= invB_Register;
+	assign Cin 			= Cin_Register;
 
 
 	
@@ -174,13 +181,21 @@ module control (/*AUTOARG*/
 		
 		// Will be set to 1 if using Rt was the second operand
 		// or 0 if using immediate as second operand
-		ALUSrc2Register = 1'bx;
+		ALUSrc2Register = 1'b1;
+		//ALUSrc2Register = 1'bx;
 		
 		// Don't care in default case because not used
 		// for every instruction
 		RegDstRegister = 2'bxx;
 		SESelRegister = 3'bxxx;
 		
+
+		// use these for ADD,SUBI, ANDN, etc.
+		invA_Register = no_assert;
+		invB_Register = no_assert;
+
+		errRegister = no_assert;
+		Cin_Register = no_assert;
 		
 		case (OpCode)
 			/////////////////RFORMAT///////////////////////
@@ -189,14 +204,14 @@ module control (/*AUTOARG*/
 				// bits 4:2 represent the destination register
 				RegDstRegister = 2'b00; 
 				// ALU should use the 2nd register read from the register file
-				ALUSrc2Register = assert;
-				
-					/*case(Funct)
+					case(Funct)
 						ADD : begin
 
 						end
 						
 						SUB : begin
+							invB_Register = assert;
+							Cin_Register = assert;
 
 						end
 						
@@ -205,17 +220,16 @@ module control (/*AUTOARG*/
 						end
 						
 						ANDN : begin
-						
+							invB_Register = assert; 
 						end
 					endcase
-					*/
 			end 
 			ALU_2: begin
 				// R-format instructions mean that
 				// bits 4:2 represent the destination register (Rd)
 				RegDstRegister = 2'b00; 
 				// ALU should use the 2nd register read from the register file
-				ALUSrc2Register = assert;
+				
 					/*
 					case(Funct)
 						ROL : begin
@@ -242,27 +256,30 @@ module control (/*AUTOARG*/
 				// bits 4:2 represent the destination register (Rd)
 				RegDstRegister = 2'b00; 
 				// ALU should use the 2nd register read from the register file
-				ALUSrc2Register = assert;
+				
 				// use the lower two bits of the opcode to
 				// determine which comparison to do
-				/*case (OpCode[1:0])
+				case (OpCode[1:0])
 					
 					SEQ : begin
-
+						invB_Register = assert;
+						Cin_Register = assert;
 					end
 					
 					SLT : begin
-
+						invB_Register = assert;
+						Cin_Register = assert;
 					end
 					
 					SLE : begin
-
+						invB_Register = assert;
+						Cin_Register = assert;
 					end
 					
 					SCO : begin
 					end
 				endcase
-				*/
+				
 			end
 			
 			/* This is also an ALU/R-format instruction but didn't easily
@@ -284,6 +301,8 @@ module control (/*AUTOARG*/
 			SUBI : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
+				invA_Register = assert;
+				Cin_Register = assert;
 				//sign extend lower 5 bits
 				SESelRegister = 3'b01x;
 				RegDstRegister = 2'b01; 
@@ -317,6 +336,7 @@ module control (/*AUTOARG*/
 			end
 			SLLI : begin
 				RegDstRegister = 2'b01;
+				ALUSrc2Register = no_assert;
 			end 	 
 			RORI : begin
 				// ALU should use the immediate
@@ -375,12 +395,16 @@ module control (/*AUTOARG*/
 			BNEZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
+				invB_Register = assert;
+				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
 			BEQZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
+				invB_Register = assert;
+				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -388,6 +412,8 @@ module control (/*AUTOARG*/
 			BLTZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
+				invB_Register = assert;
+				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -395,6 +421,8 @@ module control (/*AUTOARG*/
 			BGEZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
+				invB_Register = assert;
+				Cin_Register = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 			end	
@@ -404,12 +432,14 @@ module control (/*AUTOARG*/
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
 				RegDstRegister = 2'b10;
+				ALUSrc2Register = no_assert;
 			end
 			// Write to Rs for SLBI
 			SLBI : begin
 				//zero extend lower 8 bits
 				SESelRegister = 3'b001;
 				RegDstRegister = 2'b10;
+				ALUSrc2Register = no_assert;
 			end	
 			
 			JR : begin

@@ -25,7 +25,6 @@ module proc_hier();
            .clk                         (clk),
            .rst                         (rst));   
    
-
 endmodule
 
 // DUMMY LINE FOR REV CONTROL :0:
