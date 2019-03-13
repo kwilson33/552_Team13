@@ -33,6 +33,8 @@ module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 	rca_16b PC_Adder(.A(currentPC), .B(16'h0002), 
 					 .C_in(1'b0), .S(PC_Next), 
 					 .C_out(c_out));
+
+	//assign currentPC = dump ? (PC_Next + 16'h2) : currentPC;   
 			 
 endmodule
 
