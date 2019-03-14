@@ -235,7 +235,6 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b00; 
 			end
 			
-			
 	
 			SEQ : begin
 				invB_Register = assert;
@@ -282,14 +281,14 @@ module control (/*AUTOARG*/
 				invA_Register = assert;
 				Cin_Register = assert;
 				//sign extend lower 5 bits
-				SESelRegister = 3'b01x;
+				SESelRegister = 3'b010;
 				RegDstRegister = 2'b01; 
 			end
 			ADDI : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
 				//sign extend lower 5 bits
-				SESelRegister = 3'b01x;
+				SESelRegister = 3'b010;
 				RegDstRegister = 2'b01; 
 
 			end
@@ -334,7 +333,7 @@ module control (/*AUTOARG*/
 				RegWriteRegister = no_assert; 
 				
 				//sign extend lower 5 bits
-				SESelRegister = 3'b01x;
+				SESelRegister = 3'b010;
 				
 				DMemWriteRegister = assert;
 				DMemEnRegister = assert;
@@ -348,7 +347,7 @@ module control (/*AUTOARG*/
 				ALUSrc2Register = no_assert;
 				
 				// sign extend lower 5 bits
-				SESelRegister = 3'b01x;
+				SESelRegister = 3'b010;
 				
 				DMemEnRegister = assert;
 				RegDstRegister = 2'b01;
@@ -362,7 +361,7 @@ module control (/*AUTOARG*/
 				ALUSrc2Register = no_assert;
 
 				//sign extend lower 5 bits
-				SESelRegister = 3'b01x;
+				SESelRegister = 3'b010;
 				
 				DMemEnRegister = assert;
 				DMemWriteRegister = assert;
@@ -375,7 +374,7 @@ module control (/*AUTOARG*/
 			/////////////////IFORMAT-2////////////////////
 			BNEZ : begin
 				// sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				// not writing to a register
@@ -387,7 +386,7 @@ module control (/*AUTOARG*/
 			end	
 			BEQZ : begin
 				// sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				// not writing to a register
@@ -400,7 +399,7 @@ module control (/*AUTOARG*/
 			
 			BLTZ : begin
 				// sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				// not writing to a register
@@ -413,7 +412,7 @@ module control (/*AUTOARG*/
 			
 			BGEZ : begin
 				// sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				// not writing to a register
@@ -427,7 +426,7 @@ module control (/*AUTOARG*/
 			// Write to Rs for LBI
 			LBI : begin
 				// sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
 			end
@@ -441,7 +440,7 @@ module control (/*AUTOARG*/
 			
 			JR : begin
 				//sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				JumpRegister = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
@@ -451,7 +450,7 @@ module control (/*AUTOARG*/
 			
 			JALR : begin
 				//sign extend lower 8 bits
-				SESelRegister = 3'b10x;
+				SESelRegister = 3'b100;
 				// Write to register 7 since the JALR
 				// instruction uses R7 to save context
 				JumpRegister = assert; 
@@ -463,7 +462,7 @@ module control (/*AUTOARG*/
 			///////////////////JUMP////////////////
 			J : begin
 				//sign extend lower 11 bits
-				SESelRegister = 3'b11x;
+				SESelRegister = 3'b110;
 				PCImmRegister = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
@@ -473,7 +472,7 @@ module control (/*AUTOARG*/
 			
 			JAL : begin
 				//sign extend lower 11 bits
-				SESelRegister = 3'b11x;
+				SESelRegister = 3'b110;
 				// Write to register 7 since the JAL
 				// instruction uses R7 to save context
 				PCImmRegister = assert;
