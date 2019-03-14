@@ -135,30 +135,38 @@ module proc_hier_bench();
    assign WriteRegister = DUT.p0.instructionDecode.writeRegSelMux.Out;
    // The name of the register being written to. (3 bit signal)
 
-   assign WriteData = DUT.p0.instructionDecode.writeData;
+   //What goes into file
+   //assign WriteData = DUT.p0.instructionDecode.writeData;
+   //assign WriteData = DUT.p0.instructionWriteback.writeData;
+   assign WriteData = DUT.p0.instructionDecode.regFile.writeData;
+
    // Data being written to the register. (16 bits)
    
    assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
    // Is memory being read, one bit signal (1 means yes, 0 means no)
    
-   assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEn) && (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+   //mEM to rEg from control module
+   assign MemWrite = (DUT.p0.instructionDecode.controlUnit.MemToReg) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
    // Is memory being written to (1 bit signal)
 
    
    //assign PC = DUT.p0.next_PC_normal;
    assign PC = DUT.p0.instructionFetch.PC_Register.readData;
    
+   //memory output Tanvi
    assign Inst = DUT.p0.instructionFetch.instruction;
    //assign Inst = DUT.p0.instruction;
 
-   assign MemAddress = DUT.p0.dataMemory.aluOutput;
+   //assign MemAddress = DUT.p0.dataMemory.aluOutput;
+   assign MemAddress = DUT.p0.instructionExecute.aluOutput;
    // Address to access memory with (for both reads and writes to memory, 16 bits)
    
-   assign MemData = DUT.p0.dataMemory.writeData;
+   assign MemData = DUT.p0.dataMemory.writeData;///////////////////////////////////////////output of second reg of register file
+   //assign MemData = DUT.p0.instructionExecute.aluSecondInput;
    // Data to be written to memory for memory writes (16 bits)
    
    //assign Halt = DUT.p0.memory0.halt;
-   assign Halt = DUT.p0.instructionFetch.dump; 
+   assign Halt = DUT.p0.instructionFetch.instructionMemory.createdump; 
    // Is processor halted (1 bit signal)
 
    /* Add anything else you want here */

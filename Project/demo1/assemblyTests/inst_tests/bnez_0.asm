@@ -4,6 +4,6 @@
 
 
 	//// This program tests a branch that is not taken
-	lbi r1, 11		// clears r1
+	lbi r1, 0		// clears r1
 	bnez r1, 10		// test branch
 	halt

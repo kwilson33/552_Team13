@@ -13,13 +13,13 @@ module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 	//wires that we don't care about
 	wire c_out; 
 
-	wire stop;
+	//wire stop;
 
-	assign stop = ~dump;
+	//assign stop = ~dump;
 
 	//Inputs: clk, rst, writeEnable, [15:0] writeData
 	//Output: [15:0]readData 
-	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(PC_In), .writeEnable(stop)); 
+	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(PC_In), .writeEnable(~dump)); 
 
 
 	// instruction Memory
@@ -33,8 +33,6 @@ module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 	rca_16b PC_Adder(.A(currentPC), .B(16'h0002), 
 					 .C_in(1'b0), .S(PC_Next), 
 					 .C_out(c_out));
-
-	//assign currentPC = dump ? (PC_Next + 16'h2) : currentPC;   
 			 
 endmodule
 

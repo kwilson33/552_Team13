@@ -41,7 +41,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 
 	//Instantiate Ripple Carry Adder// Can take in 16 bit inputs
 	//rca_16b (A, B, C_in, S, C_out); << What module takes
-	rca_16b rippleCarryAdder(newA, newB, Cin, outRCA, coutRCA);
+	rca_16b rippleCarryAdder(.A(newA), .B(newB), .C_in(Cin), .S(outRCA), .C_out(coutRCA));
 
 
 	// Shift modules
@@ -115,10 +115,16 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	HALT 		= 5'b00000;
 	
 	//Set zero if all the bits of the ripple carry adder output are 0
-	assign Zero = ~(|outRCA); 
+	assign Zero = ~(|Out); 
 	// check if output of RCA is positive or negative
-	assign Pos = ~(outRCA[15] | Zero );
-	assign Neg =  (outRCA[15] | Zero );
+	assign Pos = ~(Out[15] | Zero );
+	assign Neg =  (Out[15] | Zero );
+
+
+	//assign Zero = ~(|outRCA); s
+	// check if output of RCA is positive or negative
+	//assign Pos = ~(outRCA[15] | Zero );
+	//assign Neg =  (outRCA[15] | Zero );
 
 	assign err = errRegister;
 	assign Out = outReg;
@@ -279,19 +285,19 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			
 			////////////////SPECIAL///////////////
 			siic : begin
-				outReg = 16'hXXXX;
+				outReg = 16'h0000;
 			end
 			
 			NOP : begin
-				outReg = 16'hXXXX;
+				outReg = 16'h0000;
 			end	
 			
 			HALT : begin
-				outReg = 16'hXXXX;
+				outReg = 16'h0000;
 			end
 			
 			RTI : begin
-				outReg = 16'hXXXX;
+				outReg = 16'h0000;
 			end
 			
 			// If Op not recognized, set error

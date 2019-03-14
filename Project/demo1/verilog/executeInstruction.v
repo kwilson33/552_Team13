@@ -2,12 +2,12 @@
 // Kevin most recent - removed err signal for now, not sure where to do that
 // also I renamed a bunch of signals for clarity
 // Super confused on which PC signals are for what
-module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC_normal, /*err*/ aluOutput, updatedPC, reg7_En); 
+module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branching, next_PC_normal, /*err*/ aluOutput, updatedPC, reg7_En); 
 
 
-	input[15:0] instr, next_PC_normal; 
+	input[15:0] instr, next_PC_normal;
 	input[15:0] A, B; 
-	input invA, invB, Cin;
+	input invA, invB, Cin, Branching;
 	// decide what goes to the ALU
 	input [2:0] SESel;
 	input ALUSrc2;
@@ -21,7 +21,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 	wire[15:0] aluSecondInput; 
 
 	//Jumping enables
-	wire jump_enable, jump_select;
+	wire jal_and_j_enable, jr_and_jalr_enable;
 
 	//Branching enables
 	wire branchEN; 
@@ -72,7 +72,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
 	end
 
 	// Set the second input to the ALU
-	assign aluSecondInput = ALUSrc2 ? (B) : signExtendedImmediateReg;
+	assign aluSecondInput = Branching ? (16'h0000) : (ALUSrc2 ? (B) : signExtendedImmediateReg); 
 
 	// Calculate the displacement for  JALR and jr instructions
 	rca_16b adder2(.A(out_S_extend8), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
@@ -87,20 +87,20 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, next_PC
  	// If branching, use sign extended 8 bits of instruction as offset, otherwise 0.
 	assign branchOffset = branchEN ? (signExtendedImmediateReg) : (16'h0000);
 
-	// If jumping, use sign extended 11 bits of instructions, otherwise use branch output from above
-	assign PC_Increment = jump_enable ? (signExtendedImmediateReg) : (branchOffset);
 
 	jumpControlLogic jumpControl(.opcode(instr[15:11]), 
 								 .reg7_En(reg7_En), 
-								 .jr_and_jalr_enable(jump_select), 
-								 .jal_and_j_enable(jump_enable)); 
+								 .jr_and_jalr_enable(jr_and_jalr_enable), 
+								 .jal_and_j_enable(jal_and_j_enable)); 
+	// If jumping, use sign extended 11 bits of instructions, otherwise use branch output from above
+	assign PC_Increment = jal_and_j_enable ? (signExtendedImmediateReg) : (branchOffset);
 
 	
 	// Add PC + 2 (normal) + offset of branch,jump, or nothing
 	rca_16b adder1(.A(PC_Increment), .B(next_PC_normal), .C_in(1'b0), .S(calculatedPC), .C_out(cout1)); 
 	// Set the new PC output to PC+2, or PC + branch offset, 
 	// or PC + sign extended 11, or finally PC + 8 sign extended
-	assign updatedPC = jump_select ? (jalr_jr_displacement) : (calculatedPC);
+	assign updatedPC = jr_and_jalr_enable ? (jalr_jr_displacement) : (calculatedPC);
 	
 
 	alu 	mainALU( .A(A), .B(aluSecondInput), .Cin(Cin), 

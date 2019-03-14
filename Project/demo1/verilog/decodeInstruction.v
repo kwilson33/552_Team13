@@ -22,6 +22,7 @@ module decodeInstruction (//inputs
 		 DMemWrite, ALUSrc2,
 		 PCSrc, PCImm, 
 		 MemToReg, DMemEn, 
+		 Branching,
 		 DMemDump, Jump,
 		 invA, invB, Cin;
 
@@ -45,7 +46,7 @@ module decodeInstruction (//inputs
 					.RegWrite(RegWrite), .DMemWrite(DMemWrite), .DMemEn(DMemEn), 
 					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), .Cin(Cin),
 					.MemToReg(MemToReg), .DMemDump(DMemDump), .Jump(Jump),
-					.invA(invA), .invB(invB),
+					.invA(invA), .invB(invB), .Branching(Branching),
 					// Inputs
 					.OpCode(instruction[15:11]),
 					.Funct(instruction[1:0]));

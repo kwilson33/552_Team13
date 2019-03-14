@@ -46,6 +46,7 @@ module proc (/*AUTOARG*/
                                            .Cin(Cin), 
                                            .SESel(instructionDecode.controlUnit.SESel),
                                            .ALUSrc2(instructionDecode.controlUnit.ALUSrc2),
+                                           .Branching(instructionDecode.controlUnit.Branching),
                                            .A(alu_A), .B(alu_B), 
                                            .next_PC_normal(next_PC_normal), 
                                            .aluOutput(aluOutput), .updatedPC(updatedPC));

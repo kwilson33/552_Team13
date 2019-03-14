@@ -17,6 +17,7 @@ module control (/*AUTOARG*/
                 invB,
                 PCSrc,
                 PCImm,
+                Branching,
                 MemToReg,
                 DMemDump,
                 Jump,
@@ -34,7 +35,7 @@ module control (/*AUTOARG*/
    // outputs
    output       err;
    output       RegWrite, DMemWrite, DMemEn, ALUSrc2, PCSrc, 
-                PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin;
+                PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin, Branching;
    output [1:0] RegDst;
    output [2:0] SESel;
 
@@ -52,6 +53,8 @@ module control (/*AUTOARG*/
 	reg	DMemDumpRegister; 
 	reg [1:0] RegDstRegister;
 	reg [2:0] SESelRegister;
+	reg BranchingRegister;
+
 	
 	localparam 	assert		= 1'b1; 
 	localparam 	no_assert	= 1'b0; 
@@ -92,11 +95,10 @@ module control (/*AUTOARG*/
 	localparam 	ROR 		= 2'b10;
 	localparam 	SRL 		= 2'b11;
 
-	localparam ALU_3		= 5'b111xx;
-	localparam SEQ			= 2'b00;
-	localparam SLT			= 2'b01;
-	localparam SLE			= 2'b10;
-	localparam SCO			= 2'b11;
+	localparam SEQ			= 5'b11100;
+	localparam SLT			= 5'b11101;
+	localparam SLE			= 5'b11110;
+	localparam SCO			= 5'b11111;
 	////////////////////////////////////////
 
 	// I-format 2
@@ -154,6 +156,7 @@ module control (/*AUTOARG*/
 	assign invA 		= invA_Register;
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;
+	assign Branching 	= BranchingRegister;
 
 
 	
@@ -165,6 +168,7 @@ module control (/*AUTOARG*/
 		JumpRegister = no_assert;
 		DMemWriteRegister = no_assert; 
 		DMemEnRegister = no_assert; 
+		BranchingRegister = no_assert;
 		
 		// Only case this is asserted is for HALT
 		DMemDumpRegister = no_assert;
@@ -186,8 +190,8 @@ module control (/*AUTOARG*/
 		
 		// Don't care in default case because not used
 		// for every instruction
-		RegDstRegister = 2'bxx;
-		SESelRegister = 3'bxxx;
+		RegDstRegister = 2'b00;
+		SESelRegister = 3'b000;
 		//SESelRegister = 3'bxxx;
 		
 
@@ -225,64 +229,37 @@ module control (/*AUTOARG*/
 						end
 					endcase
 			end 
-			ALU_2: begin
+			ALU_2: begin // ROL, SLL, ROR, SRL
 				// R-format instructions mean that
 				// bits 4:2 represent the destination register (Rd)
 				RegDstRegister = 2'b00; 
-				// ALU should use the 2nd register read from the register file
-				
-					/*
-					case(Funct)
-						ROL : begin
-
-						end
-						
-						SLL : begin
-
-						end
-						
-						ROR : begin
-
-						end
-						
-						SRL : begin
-
-						end
-					endcase
-					*/
 			end
 			
-			ALU_3: begin
-				// R-format instructions mean that
-				// bits 4:2 represent the destination register (Rd)
+			
+	
+			SEQ : begin
+				invB_Register = assert;
 				RegDstRegister = 2'b00; 
-				// ALU should use the 2nd register read from the register file
-				
-				// use the lower two bits of the opcode to
-				// determine which comparison to do
-				case (OpCode[1:0])
-					
-					SEQ : begin
-						invB_Register = assert;
-						Cin_Register = assert;
-					end
-					
-					SLT : begin
-						invB_Register = assert;
-						Cin_Register = assert;
-					end
-					
-					SLE : begin
-						invB_Register = assert;
-						Cin_Register = assert;
-					end
-					
-					SCO : begin
-					end
-				endcase
-				
+				Cin_Register = assert;
 			end
 			
+			SLT : begin
+				invB_Register = assert;
+				Cin_Register = assert;
+				RegDstRegister = 2'b00; 
+			end
+			
+			SLE : begin
+				invB_Register = assert;
+				Cin_Register = assert;
+				RegDstRegister = 2'b00; 
+			end
+			
+			SCO : begin
+				RegDstRegister = 2'b00; 
+			end
+		
+		
 			/* This is also an ALU/R-format instruction but didn't easily
 			 * fit into any simple case
 			 * Take a single operand Rs and copies it into Rd
@@ -401,12 +378,24 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b10x;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert; 
+				BranchingRegister = assert;
+
+				// ALU should use the immediate
+				ALUSrc2Register = no_assert;
 			end	
 			BEQZ : begin
 				// sign extend lower 8 bits
 				SESelRegister = 3'b10x;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert; 
+				BranchingRegister = assert;
+
+				// ALU should use the immediate
+				ALUSrc2Register = no_assert;
 			end	
 			
 			BLTZ : begin
@@ -414,6 +403,12 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b10x;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert;
+				BranchingRegister = assert;
+
+				// ALU should use the immediate
+				ALUSrc2Register = no_assert; 
 			end	
 			
 			BGEZ : begin
@@ -421,12 +416,17 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b10x;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert; 
+				BranchingRegister = assert;
+
+				// ALU should use the immediate
+				ALUSrc2Register = no_assert;
 			end	
 			
 			// Write to Rs for LBI
 			LBI : begin
 				// sign extend lower 8 bits
-				//SESelRegister = 3'b10x;
 				SESelRegister = 3'b10x;
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
@@ -445,6 +445,8 @@ module control (/*AUTOARG*/
 				JumpRegister = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert; 
 			end 	
 			
 			JALR : begin
@@ -465,6 +467,8 @@ module control (/*AUTOARG*/
 				PCImmRegister = assert;
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				// not writing to a register
+				RegWriteRegister = no_assert; 
 			end	
 			
 			JAL : begin
@@ -488,7 +492,7 @@ module control (/*AUTOARG*/
 			end	
 			
 			HALT : begin
-				RegWriteRegister = no_assert; 
+				RegWriteRegister = no_assert;
 				DMemDumpRegister = assert;
 			end
 			
