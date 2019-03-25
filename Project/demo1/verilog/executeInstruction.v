@@ -52,7 +52,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branchi
 	reg [15:0] signExtendedImmediateReg;
 	// case statement to decide how to sign extend the immediate
 	always @(*) begin
-		case (SESel)
+		casex (SESel)
 			3'b000: begin
 				signExtendedImmediateReg = out_Z_extend5;
 			end

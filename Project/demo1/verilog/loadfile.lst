@@ -1,22 +1,4 @@
-          // Original test: ./bolanows/hw4/problem6/jalr_1.asm
-          // Author: bolanows
-          // Test source code follows
-          
-          
-          // Tests to jump to registers other than r7
-0000 c31a LBI r3 26
-0002 0800 Nop
-0004 0800 Nop
-0006 3b00 JALR r3, 0 // Should jump to Target, PC = 26
-0008 0800 Nop
-000a 0800 Nop
-000c 0800 Nop
-000e 0000 Halt
-0010 0800 Nop
-0012 0800 Nop
-0014 0800 Nop
-0016 0800 Nop
-0018 0800 Nop
-001a 0800 Nop // PC = 26 Target
-001c 0800 Nop
-001e 0000 Halt
+0000 c1ff lbi r1, 255
+0002 c2ff lbi r2, 255
+0004 d94c add r3, r1, r2
+0006 0000 halt

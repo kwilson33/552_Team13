@@ -235,6 +235,7 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b00; 
 			end
 			
+			
 	
 			SEQ : begin
 				invB_Register = assert;
@@ -509,4 +510,14 @@ module control (/*AUTOARG*/
 			
 		endcase
 	end
+
+/*
+	always @(*) begin
+		case (DMemDumpRegister)
+			1'b0: DMemDumpRegister = no_assert;
+			1'b1: DMemDumpRegister = no_assert;
+		endcase
+	end
+	*/
+
 endmodule
