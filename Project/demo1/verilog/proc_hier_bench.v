@@ -46,8 +46,6 @@ module proc_hier_bench();
          if (Halt || RegWrite || MemWrite) begin
             inst_count = inst_count + 1;
          end
-
-
          $fdisplay(sim_log_file, "SIMLOG:: Cycle %d PC: %8x I: %8x R: %d %3d %8x M: %d %d %8x %8x",
                   DUT.c0.cycle_count,
                   PC,
@@ -82,8 +80,7 @@ module proc_hier_bench();
                          (inst_count-1),
                         PC,
                         WriteRegister,
-                        WriteData,
-                        );
+                        WriteData );
             end
          end else if (Halt) begin
             $fdisplay(sim_log_file, "SIMLOG:: Processor halted\n");
