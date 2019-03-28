@@ -109,17 +109,23 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	JALR 		= 5'b00111;
 
 	// Special instructions
-	localparam 	siic  		= 5'b00010;
+	localparam 	SIIC  		= 5'b00010;
 	localparam 	NOP 		= 5'b00001;
 	localparam 	RTI 		= 5'b00011;
 	localparam 	HALT 		= 5'b00000;
 	
-	//Set zero if all the bits of the ripple carry adder output are 0
+
+	assign Zero = ~(|outRCA); 
+	// check if output of RCA is positive or negative
+	assign Pos = ~(outRCA[15] | Zero );
+	assign Neg =  (outRCA[15] & ~Zero );
+
+	/*
 	assign Zero = ~(|Out); 
 	// check if output of RCA is positive or negative
 	assign Pos = ~(Out[15] | Zero );
-	assign Neg =  (Out[15] | Zero );
-
+	assign Neg =  (Out[15] & ~Zero );
+*/
 
 	//assign Zero = ~(|outRCA); s
 	// check if output of RCA is positive or negative
@@ -141,19 +147,19 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 					case(Funct)
 						// Rs + Rt
 						ADD : begin
-								outReg = outRCA;
+							outReg = outRCA;
 						end
 						// Rt - Rs
 						SUB : begin
-								outReg = outRCA;
+							outReg = outRCA;
 						end
 						
 						XOR : begin
-							 outReg = (newA^newB);
+							outReg = (newA^newB);
 						end
 						
 						ANDN : begin
-							outReg = A & (~B);
+							outReg = newA & (~newB);
 						end
 					endcase
 			end 
@@ -185,7 +191,8 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			// Rs < Rt
 			SLT : begin
 					// (is A negative and B positive) or  (is Rt - Rs negative)
-					outReg = ((A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
+					outReg = ((Neg & ~(A[15] ^ B[15])) | (A[15] & ~B[15])) ? 16'h0001: 16'h0000;
+					//outReg = ((A[15] & ~B[15]) | (Neg & ~(A[15]^B[15]))) ? 16'h0001 : 16'h0000; 
 			end
 			// Rs <= Rt
 			SLE : begin
@@ -199,7 +206,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			end
 
 			BTR : begin
-				outReg = outBitRotate;
+					outReg = outBitRotate;
 			end	
 			
 			////////////////////IFORMAT-1//////////////////////////
@@ -213,10 +220,10 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			end
 			ANDNI : begin
 				// B would be selected as an immediate in the execute module
-				outReg = A & B;
+				outReg = newA & newB;
 			end
 			XORI : begin
-				outReg = A ^ B;
+				outReg = newA ^ newB;
 			end
 			ROLI : begin
 				outReg = outLeftRotate; 
@@ -259,11 +266,11 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			
 			// Write to Rs for LBI
 			LBI : begin
-				outReg = B; 
+				outReg = newB; 
 			end
 			// Write to Rs for SLBI
 			SLBI : begin
-				outReg = ((A << 8) | B); 
+				outReg = ((newA << 8) | newB); 
 			end	
 			
 			JR : begin
@@ -284,7 +291,7 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 			end	
 			
 			////////////////SPECIAL///////////////
-			siic : begin
+			SIIC : begin
 				outReg = 16'h0000;
 			end
 			

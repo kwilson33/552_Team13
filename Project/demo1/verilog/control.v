@@ -116,7 +116,7 @@ module control (/*AUTOARG*/
 	localparam 	JALR 		= 5'b00111;
 
 	// Special instructions
-	localparam 	siic  		= 5'b00010;
+	localparam 	SIIC  		= 5'b00010;
 	localparam 	NOP 		= 5'b00001;
 	localparam 	RTI 		= 5'b00011;
 	localparam 	HALT 		= 5'b00000;
@@ -225,7 +225,7 @@ module control (/*AUTOARG*/
 						end
 						
 						ANDN : begin
-							invB_Register = assert; 
+							//invB_Register = assert; 
 						end
 					endcase
 			end 
@@ -299,6 +299,7 @@ module control (/*AUTOARG*/
 				//zero extend lower 5 bits
 				SESelRegister = 3'b000;
 				RegDstRegister = 2'b01;
+				invB_Register = assert;
 			end
 			XORI : begin
 				// ALU should use the immediate
@@ -340,8 +341,6 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				
 				RegDstRegister = 2'b01;
-				// Write back to the output of data memory
-				MemToRegRegister = assert;
 			end
 			LD : begin
 				// ALU should use the immediate
@@ -353,7 +352,7 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				RegDstRegister = 2'b01;
 				
-				// Write back to the output of data memory
+				// Use memory contents instead of ALU to write to register
 				MemToRegRegister = assert;
 			end
 			// Write to Rs for STU
@@ -367,9 +366,6 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				DMemWriteRegister = assert;
 				RegDstRegister = 2'b10;
-				
-				// Write back to the output of data memory
-				MemToRegRegister = assert;
 			end	
 
 			/////////////////IFORMAT-2////////////////////
@@ -483,7 +479,7 @@ module control (/*AUTOARG*/
 			end	
 			
 			////////////////SPECIAL///////////////
-			siic : begin
+			SIIC : begin
 
 			end
 			
@@ -510,14 +506,5 @@ module control (/*AUTOARG*/
 			
 		endcase
 	end
-
-/*
-	always @(*) begin
-		case (DMemDumpRegister)
-			1'b0: DMemDumpRegister = no_assert;
-			1'b1: DMemDumpRegister = no_assert;
-		endcase
-	end
-	*/
 
 endmodule

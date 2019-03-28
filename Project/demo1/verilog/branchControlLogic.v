@@ -30,13 +30,9 @@ module branchControlLogic(Op, pos_flag, neg_flag, zero_flag, branchEN);
 			// BEQZ(Rs == 0)
 			5'b01101 : begin
 				branchEnReg = (zero_flag) ? 1'b1 : 1'b0; 
-
-				//branchEnReg = (bnez) ? 1'b1 : 1'b0; 
 			end
 			// BNEZ (Rs!=0)
 			5'b01100 : begin
-				//branchEnReg = (zero_flag) ? 1'b1 : 1'b0; 
-
 				branchEnReg = (bnez) ? 1'b1 : 1'b0; 
 			end
 

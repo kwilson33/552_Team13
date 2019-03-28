@@ -143,7 +143,7 @@ module proc_hier_bench();
    // Is memory being read, one bit signal (1 means yes, 0 means no)
    
    //mEM to rEg from control module
-   assign MemWrite = (DUT.p0.instructionDecode.controlUnit.MemToReg) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+   assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
    // Is memory being written to (1 bit signal)
 
    
