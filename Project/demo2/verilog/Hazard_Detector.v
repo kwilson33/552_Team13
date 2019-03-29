@@ -6,11 +6,17 @@ input
 output stall, pc_write_en, IF_ID_write_en; 
 
 //Stall conditions
-//Practice Midterm Solution --- JK don't use these it says not for general case!!!!
-//ED/EX.RegWrite = 1 and ID/EX.MemRead = 1 and IF/ID.Rs = ID/Ex.Rt
+//ID/EX.WriteRegister = IF/ID.ReadRegister1
 
-//ID/EX.RegWrite = 0 and EX/MEM.RegWrite = 1 and EX/MEM.MemRead = 1 and IF/ID.Rs = EX/MEM.Rd.
+//ID/EX.WriteRegister = IF/ID.ReadRegister2
 
-//EX/MEM.RegWrite = 1 and ID/EX.Rt
+//EX/MEM.WriteRegister = IF/ID.ReadRegister1
+
+//EX/MEM.WriteRegister = IF/ID.ReadRegister2
+
+//Mem/WB.WriteRegister = IF/ID.ReadRegister1
+
+//MEM/WB.WriteRegister = IF/ID.ReadRegister2
+
 
 endmodule
