@@ -2,7 +2,8 @@
 // Kevin most recent - removed err signal for now, not sure where to do that
 // also I renamed a bunch of signals for clarity
 // Super confused on which PC signals are for what
-module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branching, next_PC_normal, /*err*/ aluOutput, updatedPC, reg7_En); 
+module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branching, next_PC_normal, aluOutput, 							
+updatedPC, reg7_En); 
 
 
 	input[15:0] instr, next_PC_normal;
@@ -38,15 +39,15 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branchi
 
 
 	//All Extensions for module in schematic happens here
-	wire[15:0] out_S_extend5, out_S_extend8, out_S_extend11,
-				out_Z_extend8, out_Z_extend5; 
+	wire[15:0] S_extend5_out, S_extend8_out, S_extend11_out,
+				Z_extend8_out, Z_extend5_out; 
 	//Sign extensions
-	signExt16_5		signExtend5(.in(instr[4:0]), .out(out_S_extend5));
-	signExt16_8		signExtend8(.in(instr[7:0]), .out(out_S_extend8));
-	signExt16_11	signExtend11(.in(instr[10:0]), .out(out_S_extend11));
+	signExt16_5		signExtend5(.in(instr[4:0]), .out(S_extend5_out));
+	signExt16_8		signExtend8(.in(instr[7:0]), .out(S_extend8_out));
+	signExt16_11	signExtend11(.in(instr[10:0]), .out(S_extend11_out));
 	//Zero Extensions
-	zeroExt16_8		zeroExtend8(.in(instr[7:0]), .out(out_Z_extend8)); 
-	zeroExt16_5		zeroExtend5(.in(instr[4:0]), .out(out_Z_extend5)); 
+	zeroExt16_8		zeroExtend8(.in(instr[7:0]), .out(Z_extend8_out)); 
+	zeroExt16_5		zeroExtend5(.in(instr[4:0]), .out(Z_extend5_out)); 
 
 
 	reg [15:0] signExtendedImmediateReg;
@@ -54,19 +55,19 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branchi
 	always @(*) begin
 		casex (SESel)
 			3'b000: begin
-				signExtendedImmediateReg = out_Z_extend5;
+				signExtendedImmediateReg = Z_extend5_out;
 			end
 			3'b001: begin
-				signExtendedImmediateReg = out_Z_extend8;
+				signExtendedImmediateReg = Z_extend8_out;
 			end
 			3'b01x: begin
-				signExtendedImmediateReg = out_S_extend5;
+				signExtendedImmediateReg = S_extend5_out;
 			end
 			3'b10x: begin
-				signExtendedImmediateReg = out_S_extend8;
+				signExtendedImmediateReg = S_extend8_out;
 			end
 			3'b11x: begin
-				signExtendedImmediateReg = out_S_extend11;
+				signExtendedImmediateReg = S_extend11_out;
 			end
 		endcase 
 	end
@@ -75,7 +76,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branchi
 	assign aluSecondInput = Branching ? (16'h0000) : (ALUSrc2 ? (B) : signExtendedImmediateReg); 
 
 	// Calculate the displacement for  JALR and jr instructions
-	rca_16b adder2(.A(out_S_extend8), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
+	rca_16b adder2(.A(S_extend8_out), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
 	
 	// This modules decides if we're branching or not 
 	branchControlLogic branchControl(.Op(instr[15:11]), 

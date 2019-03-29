@@ -1,14 +1,14 @@
 module decodeInstruction (//inputs
 							instruction, clk, rst, writeData,
 						  //outputs
-						   err, dump, A, B, Cin);
+						   err, dump, A, B);
 
 	//Inputs
 	input [15:0] instruction, writeData;
 	input 		 clk, rst; 
 
 	// Outputs
-	output err, dump, Cin;
+	output err, dump;
 	// output of register file 
 	output [15:0] A, B;
 

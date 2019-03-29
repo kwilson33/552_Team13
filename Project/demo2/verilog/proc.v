@@ -54,7 +54,7 @@ module proc (/*AUTOARG*/
    // ################################################### DECODE #######################################################
   decodeInstruction     instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
 									                        .fetch_instruction_Out(IF_ID_instruction_out), .err(errDecode), .dump(createDump),
-                                          .A(alu_A), .B(alu_B), .Cin(Cin));
+                                          .A(alu_A), .B(alu_B));
 
   // ################################################### DETECT HAZARDS #######################################################
 
@@ -65,26 +65,65 @@ module proc (/*AUTOARG*/
 
   // ################################################### ID_EX Stage #######################################################
 
-  ID_EX_Latch           ID_EX_Stage (.clk(), .rst(), .en(),
-                                     .A_in(), .B_in(),
-                                     .A_out, .B_out(),
-                                     .PC_In(), .PC_Out(),
-                                     .S_extend5_in(), 
+  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(),
+
+                                     .A_in(), 
+                                     .A_out, 
+
+                                     .B_in(),
+                                     .B_out(),
+
+                                     .PC_In(), 
+                                     .PC_Out(),
+
+                                     .S_extend5_in(executeInstruction.signExtend5.S_extend5_out), 
                                      .S_extend5_out(),
-                                     .Z_extend5_in(), .Z_extend5_out(),
-                                     .S_extend8_in(), .S_extend8_out(),
-                                     .Z_extend8_in(), .Z_extend8_out(),
-                                     .S_extend11_in(), .S_extend11_out(),
-                                     .instruction_in(), .instruction_out(),
-                                     .RegWrite_in(),    .RegWrite_out(),
-                                     .DMemWrite_in(), .DMemWrite_out(),
-                                     .MemToReg_in(), .MemToReg_out(),
-                                     .DMemDump_in(), .DMemDump_out(),
-                                     .invA_in(), .invB_in(),
-                                     .Cin_in(), .Cin_out(),
-                                     .SESel_in(), .SESel_out(),
-                                     .RegDst_in(), .RegDst_out(),
-                                     .ALUSrc2_in(), .ALUSrc2_out(),
+
+                                     .Z_extend5_in(executeInstruction.zeroExtend5.Z_extend5_out), 
+                                     .Z_extend5_out(),
+
+                                     .S_extend8_in(executeInstruction.signExtend8.S_extend8_out), 
+                                     .S_extend8_out(),
+
+                                     .Z_extend8_in(executeInstruction.zeroExtend8.Z_extend8_out), 
+                                     .Z_extend8_out(),
+
+                                     .S_extend11_in(executeInstruction.signExtend11.S_extend11_out), 
+                                     .S_extend11_out(),
+
+                                     .instruction_in(), 
+                                     .instruction_out(),
+
+                                     .RegWrite_in(instructionDecode.controlUnit.RegWrite),
+                                     .RegWrite_out(),
+
+                                     .DMemWrite_in(instructionDecode.controlUnit.DMemWrite),
+                                     .DMemWrite_out(),
+
+                                     .MemToReg_in(instructionDecode.controlUnit.MemToReg),
+                                     .MemToReg_out(),
+
+                                     .DMemDump_in(instructionDecode.controlUnit.DMemDump), 
+                                     .DMemDump_out(),
+
+                                     .invA_in(instructionDecode.controlUnit.invA), 
+                                     .invA_out(),
+
+                                     .invB_in(instructionDecode.controlUnit.invB),
+                                     .invB_out(),
+
+                                     .Cin_in(instructionDecode.controlUnit.Cin), 
+                                     .Cin_out(),
+
+                                     .SESel_in(instructionDecode.controlUnit.SESel), 
+                                     .SESel_out(),
+
+                                     .RegDst_in(instructionDecode.controlUnit.RegDst), 
+                                     .RegDst_out(),
+
+                                     .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2), 
+                                     .ALUSrc2_out(),
+
                                      .stall());
 
 
@@ -94,7 +133,7 @@ module proc (/*AUTOARG*/
   executeInstruction    instructionExecute(.reg7_En(JAL_en), .instr(fetch_instruction_Out), 
                                            .invA(instructionDecode.controlUnit.invA),
                                            .invB(instructionDecode.controlUnit.invB), 
-                                           .Cin(Cin), 
+                                           .Cin(instructionDecode.controlUnit.Cin), 
                                            .SESel(instructionDecode.controlUnit.SESel),
                                            .ALUSrc2(instructionDecode.controlUnit.ALUSrc2),
                                            .Branching(instructionDecode.controlUnit.Branching),
