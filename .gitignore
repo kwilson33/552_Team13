@@ -5,6 +5,12 @@
 *.wlf
 *.dmem
 *.reg
+*.img
+*.lst
 Project/demo1/verilog/verilogsim.log
 Project/demo1/verilog/transcript
 Project/demo1/verilog/__work/
+
+Project/demo2/verilog/verilogsim.log
+Project/demo2/verilog/transcript
+Project/demo2/verilog/__work/
