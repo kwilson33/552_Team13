@@ -1,1 +1,23 @@
 // Write your answer to Problem 1 (b) here
+
+p1-1.asm
+This file necessitates execute to execute forwarding because the we have a RAW dependency. Forwarding can resolve this without any stalls, because the result from the ALU stored in the EX/M pipeline register can be forwarding back to the inputs of the ALU. 
+
+	F	D	X	!M	W
+		F	D	!X	M	W
+
+
+p1-2.asm
+This file will demonstrate memory to execute forwarding when pipelining is implemented. In this case, since there is an instruction in between the RAW, we do not have to include a stall. The value of $t2 can skip directly from $t2 as it is passing through M/WB back to an input to the ALU. 
+
+	F 	D 	X 	!M 	W
+		F 	D 	X 	M 	W
+			F 	D 	!X 	M 	W
+
+
+p1-3.asm
+This file shows Mem to Mem forwarding. It happens in the first and second instruction when the value that is loaded into $t0 is sent straight to the location in memory. The instructions before the NOP's are just meant to initialize the registers so you can see if it is testing correctly. 
+
+	F 	D 	X 	!M 	W
+		F 	D 	X 	!M 	W
+

@@ -1,0 +1,13 @@
+          // Write your assembly program for Problem 1 (a) #3 here.
+          
+          //Mem to Mem forwarding
+          
+0000 c003 lbi r0, 3
+0002 c402 lbi r4, 2
+0004 8400 st  r0, r4, 0
+0006 0800 NOP
+0008 0800 NOP
+000a 0800 NOP
+000c 8c00 ld r0, r4, 0
+000e 8000 st r0, r0, 0
+0010 0000 halt

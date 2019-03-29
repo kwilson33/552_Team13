@@ -1,1 +1,5 @@
 // Write your answer to Problem 2 (b) and (c) here
+
+b) To demonstrate branch prediction in this assembly test, we first load the values of 0 and 1 into r1 and r2 respectively. If r2 is less than r1 (which is not true), then r0 will be set to zero. Therefore, the branch will not be taken, and any branch prediction implementation will be demonstrated. Branch prediction helps improve processor performance because we don't have to wait for the writeback stage or the ALU opperation. 
+
+c) Branch prediction doesn't always take only one cycle since it is determined in the execute stage. For example, if we have a misprediction, we have to flush out two instructions that are located in the Fetch and Instruction Decode stages. 
