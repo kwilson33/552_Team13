@@ -65,7 +65,28 @@ module proc (/*AUTOARG*/
 
   // ################################################### ID_EX Stage #######################################################
 
-  ID_EX_Latch           ID_EX_Stage ();
+  ID_EX_Latch           ID_EX_Stage (.clk(), .rst(), .en(),
+                                     .A_in(), .B_in(),
+                                     .A_out, .B_out(),
+                                     .PC_In(), .PC_Out(),
+                                     .S_extend5_in(), 
+                                     .S_extend5_out(),
+                                     .Z_extend5_in(), .Z_extend5_out(),
+                                     .S_extend8_in(), .S_extend8_out(),
+                                     .Z_extend8_in(), .Z_extend8_out(),
+                                     .S_extend11_in(), .S_extend11_out(),
+                                     .instruction_in(), .instruction_out(),
+                                     .RegWrite_in(),    .RegWrite_out(),
+                                     .DMemWrite_in(), .DMemWrite_out(),
+                                     .MemToReg_in(), .MemToReg_out(),
+                                     .DMemDump_in(), .DMemDump_out(),
+                                     .invA_in(), .invB_in(),
+                                     .Cin_in(), .Cin_out(),
+                                     .SESel_in(), .SESel_out(),
+                                     .RegDst_in(), .RegDst_out(),
+                                     .ALUSrc2_in(), .ALUSrc2_out(),
+                                     .stall());
+
 
 
 
