@@ -195,22 +195,26 @@ module proc_hier_pbench();
    assign Halt = DUT.p0.haltxout;
    // Processor halted
    */
-   	  assign PC = DUT.p0.instructionFetch.PC_In;
-      assign Inst = DUT.p0.instructionFetch.instruction_out;
+   	  assign PC = DUT.p0.instructionFetch.PC_Register.readData;
+      assign Inst = DUT.p0.instructionFetch.instruction;
       
       assign RegWrite = DUT.p0.MEM_WB_Stage.dff_MEMWB_RegWrite_out.q;
 
       assign WriteRegister = DUT.p0.instructionDecode.writeRegister;
       assign WriteData = DUT.p0.instructionWriteback.writeData;
 
-      assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
-      assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+      //assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
+      assign MemRead =  DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q;
+      assign MemWrite = (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q);
+      //assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
 
       assign MemDataIn = DUT.p0.dataMemory.writeData;
       assign MemDataOut = DUT.p0.dataMemory.readData;
 
       assign MemAddress = DUT.p0.instructionExecute.aluOutput;
 
+      //TODO: So confused on this
+      //assign Halt = DUT.p0.instructionFetch.dump; 
       assign Halt = DUT.p0.dataMemory.dump; 
 
 

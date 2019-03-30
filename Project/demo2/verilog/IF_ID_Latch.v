@@ -7,15 +7,13 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       output [15:0] instruction_out, PC_Out; 
 
 
-
-
       // if rst is asserted, set instruction to the NOP opcode 
       wire [15:0] instruction_in_NOP_sel;
       assign instruction_in_NOP_sel = (rst) ? 16'b00001_xxxxxxxxxxx : instruction_in;
 
       // use 16 bit registers to decide if we should use current saved output or update output for
       // the PC and the instruction
-      register_16bits rf_instruction(.readData(instruction_out), .clk(clk), .rst(rst), 
+      register_16bits rf_instruction(.readData(instruction_out), .clk(clk), .rst(1'b0), /*TODO:this is what the git repo does for this, not sure if right. Spent awhile debugging only to realize this was the fix but now, output is initially red until clock goes high, so not sure how to fix*/
                                      .writeData(instruction_in), /*instruction_in_NOP_sel*/
                                      .writeEnable(en));
 

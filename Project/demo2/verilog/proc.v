@@ -45,8 +45,8 @@ module proc (/*AUTOARG*/
   */  
   // ################################################### FETCH #######################################################
   fetchInstruction      instructionFetch(.clk(clk), .rst(rst), .PC_In(updatedPC), 
-									                       .dump(createDump), .PC_Next(fetch_next_PC_normal), 
-									                       .instruction_out(fetch_instruction_Out));
+							/* TODO: fix dump  */		     .dump(createDump), .PC_Next(fetch_next_PC_normal), 
+									     .instruction(fetch_instruction_Out));
 
 
   // ################################################### IF_ID_Stage #######################################################
@@ -102,7 +102,7 @@ module proc (/*AUTOARG*/
                                      .DMemWrite_in(instructionDecode.controlUnit.DMemWrite),
                                      .DMemEn_in(instructionDecode.controlUnit.DMemEn),
                                      .MemToReg_in(instructionDecode.controlUnit.MemToReg),
-                                     .DMemDump_in(createDump), 
+                                     .DMemDump_in(instructionDecode.controlUnit.DMemDump), 			// TODO: Fix when dump is being asserted
                                      .invA_in(instructionDecode.controlUnit.invA), 
                                      .invB_in(instructionDecode.controlUnit.invB),
                                      .Cin_in(instructionDecode.controlUnit.Cin), 
@@ -145,7 +145,7 @@ module proc (/*AUTOARG*/
   // ################################################### EX_MEM Stage #######################################################
 
 
-  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), .en(), 
+  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), .en(1'b1), /*TODO: Fix enable */ 
 
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
@@ -181,7 +181,7 @@ module proc (/*AUTOARG*/
   // ################################################### MEM_WB Stage #######################################################
 
 
-  MEM_WB_Latch          MEM_WB_Stage (.clk(clk), .rst(rst), .en(), 
+  MEM_WB_Latch          MEM_WB_Stage (.clk(clk), .rst(rst), .en(1'b1), /*TODO: Fix enable */ 
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), // What are we doing with Branching signal??
 									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 

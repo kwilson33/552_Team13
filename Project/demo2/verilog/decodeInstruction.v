@@ -30,7 +30,8 @@ module decodeInstruction (//inputs
 	wire regErr;
 	
 
-	assign err = (controlErr | regErr);
+	assign err = 1'b0;
+	//assign err = (controlErr | regErr);
 	assign dump = DMemDump;
 
 	//assign err = 1'b0;
