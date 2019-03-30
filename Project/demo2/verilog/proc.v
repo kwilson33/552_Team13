@@ -46,7 +46,7 @@ module proc (/*AUTOARG*/
   // ################################################### FETCH #######################################################
   fetchInstruction      instructionFetch(.clk(clk), .rst(rst), .PC_In(updatedPC), 
 									                       .dump(createDump), .PC_Next(fetch_next_PC_normal), 
-									                       .fetch_instruction_Out(fetch_instruction_Out));
+									                       .instruction_out(fetch_instruction_Out));
 
 
   // ################################################### IF_ID_Stage #######################################################
@@ -54,8 +54,8 @@ module proc (/*AUTOARG*/
    //TODO: Maybe need another PC output???
    // Many of these signals probably not correct, including instruction_in. 3/29
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
-                                    .IF_ID_instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEnable), 
+                                    .instruction_out(IF_ID_instruction_Out),
+                                    .en(1'b1),  /* TODO: change to this IF_ID_WriteEnable*/
                                     .clk(clk), .rst(rst),
                                     .PC_In(fetch_next_PC_normal), .PC_Out(IF_ID_PC_Out));
 
@@ -83,7 +83,7 @@ module proc (/*AUTOARG*/
   // ################################################### ID_EX Stage #######################################################
 
   //TODO: connect a few signals
-  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(),
+  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(1'b1), //TODO: Fix Enable
                                      .A_in(alu_A), 
                                      .B_in(alu_B),
 
@@ -207,6 +207,7 @@ module proc (/*AUTOARG*/
                                              .JAL_en(MEM_WB_Stage.dff_MEMWB_Jump_in_out.q));
 						
   
+	 //assign err = 0;
 	 assign err = (errDecode | instructionExecute.mainALU.err | instructionDecode.regFile.err );
 
 endmodule // proc

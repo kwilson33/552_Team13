@@ -3,8 +3,8 @@ module EX_MEM_Latch (// Inputs
 					RegWrite_in, DMemWrite_in, DMemEn_in, 
 					DMemDump_in, Branching_in, Jump_in, MemToReg_in,
 					WriteRegister_in, WriteRegister_out,
-					aluOutput_in, B_in, updatedPC_in,
-					);
+					aluOutput_in, B_in, updatedPC_in);
+					
 
 	//TODO: Check if our branching and jump are connected to the correct signals
 	//TODO: Figure out hasAB

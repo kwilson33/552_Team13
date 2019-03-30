@@ -195,8 +195,8 @@ module proc_hier_pbench();
    assign Halt = DUT.p0.haltxout;
    // Processor halted
    */
-   	  assign PC = DUT.p0.instructionFetch.PC_Register.readData;
-      assign Inst = DUT.p0.instructionFetch.fetch_instruction_Out;
+   	  assign PC = DUT.p0.instructionFetch.PC_In;
+      assign Inst = DUT.p0.instructionFetch.instruction_out;
       
       assign RegWrite = DUT.p0.MEM_WB_Stage.dff_MEMWB_RegWrite_out.q;
 
@@ -211,7 +211,13 @@ module proc_hier_pbench();
 
       assign MemAddress = DUT.p0.instructionExecute.aluOutput;
 
-      assign Halt = DUT.p0.instructionFetch.instructionMemory.createdump; 
+      assign Halt = DUT.p0.dataMemory.dump; 
+
+
+       assign ICacheHit = 0;
+       assign DCacheReq = 0;
+       assign DCacheHit = 0;
+       assign ICacheReq = 0;
    
    /* Add anything else you want here */
 

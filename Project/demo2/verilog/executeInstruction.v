@@ -84,7 +84,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 	assign aluSecondInput = Branching ? (16'h0000) : (ALUSrc2 ? (B) : signExtendedImmediateReg); 
 
 	// Calculate the displacement for  JALR and jr instructions
-	rca_16b adder2(.A(S_extend8_out), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
+	rca_16b adder2(.A(S_extend8_in), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
 	
 	// This modules decides if we're branching or not 
 	branchControlLogic branchControl(.Op(instr[15:11]), 
