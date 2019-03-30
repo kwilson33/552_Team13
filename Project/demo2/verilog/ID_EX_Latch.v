@@ -1,10 +1,8 @@
 
 module ID_EX_Latch(clk, rst, en,
                    A_in, B_in,
-                   A_out, 
                    PC_In, 
                    S_extend5_in, 
-                   S_extend5_out,
                    Z_extend5_in, 
                    S_extend8_in, 
                    Z_extend8_in, 
@@ -14,12 +12,14 @@ module ID_EX_Latch(clk, rst, en,
                    RegWrite_in,
                    DMemWrite_in,
                    MemToReg_in, 
-                   DMemDump_in, 
+                   DMemDump_in,
+                   DMemEn_in,
                    invA_in, invB_in,
                    Cin_in, 
                    SESel_in, SESel_out,
                    RegDst_in, RegDst_out,
                    ALUSrc2_in,
+                   
                    stall);
 
       //TODO: Figure out what instruction_in is for
@@ -28,12 +28,22 @@ module ID_EX_Latch(clk, rst, en,
       //TODO: AluSrc signal?
 
       input [15:0] PC_In, A_in, B_in, S_extend5_in, Z_extend5_in, S_extend8_in, Z_extend8_in, S_extend11_in, instruction_in; 
-      input clk, rst, en, RegWrite_in, DMemWrite_in, MemToReg_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall; 
-      input [2:0] SESel_in; 
-      input [1:0] RegDst_in;
 
-      output [2:0] SESel_out; 
+      input [2:0] SESel_in;
+      output [2:0] SESel_out;  
+
+      input [1:0] RegDst_in;
       output [1:0] RegDst_out;
+
+      input clk, rst, en, RegWrite_in, DMemWrite_in, DMemEn_in, MemToReg_in,  
+            Branching_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall; 
+
+      wire [15:0] PC_Out, A_out, B_out, S_extend5_out, Z_extend5_out, S_extend8_out, Z_extend8_out, S_extend11_out, instruction_out; 
+      
+      wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out,  
+            Branching_out, DMemDump_out, invA_out, invB_out, Cin_out, ALUSrc2_out;
+
+
 
       register_16bits rf_IDEX_PC_Out(.readData(PC_Out), .clk(clk), .rst(rst), .writeData(PC_In), .writeEnable(en));
 
@@ -48,6 +58,7 @@ module ID_EX_Latch(clk, rst, en,
 
       dff dff_IDEX_RegWrite_out(.d(RegWrite_in), .q(RegWrite_out), .clk(clk), .rst(rst));
       dff dff_IDEX_DMemWrite_out(.d(DMemWrite_in), .q(DMemWrite_out), .clk(clk), .rst(rst));
+      dff dff_IDEX_DMemEn_in_out(.d(DMemEn_in), .q(DMemEn_out), .clk(clk), .rst(rst));
       dff dff_IDEX_MemToReg_out(.d(MemToReg_in), .q(MemToReg_out), .clk(clk), .rst(rst));
       dff dff_IDEX_DMemDump_out(.d(DMemDump_in), .q(DMemDump_out), .clk(clk), .rst(rst));
       dff dff_IDEX_invA_out(.d(invA_in), .q(invA_out), .clk(clk), .rst(rst));
@@ -57,12 +68,12 @@ module ID_EX_Latch(clk, rst, en,
       dff dff_IDEX_Branching_out(.d(Branching_in), .q(Branching_out), .clk(clk), .rst(rst));
 
       // dff for SESel and RegDst
-       dff dff_IDEX_SESel_out0(.d(SESel_in[0]), .q(SESel_out[0]), .clk(clk), .rst(rst));
-       dff dff_IDEX_SESel_out1(.d(SESel_in[1]), .q(SESel_out[1]), .clk(clk), .rst(rst));
-       dff dff_IDEX_SESel_out2(.d(SESel_in[2]), .q(SESel_out[2]), .clk(clk), .rst(rst));
+      dff dff_IDEX_SESel_out0(.d(SESel_in[0]), .q(SESel_out[0]), .clk(clk), .rst(rst));
+      dff dff_IDEX_SESel_out1(.d(SESel_in[1]), .q(SESel_out[1]), .clk(clk), .rst(rst));
+      dff dff_IDEX_SESel_out2(.d(SESel_in[2]), .q(SESel_out[2]), .clk(clk), .rst(rst));
 
-        dff dff_IDEX_RegDst_out0(.d(RegDst_in[0]), .q(RegDst_out[0]), .clk(clk), .rst(rst));
-        dff dff_IDEX_RegDst_out1(.d(RegDst_in[1]), .q(RegDst_out[1]), .clk(clk), .rst(rst));
+      dff dff_IDEX_RegDst_out0(.d(RegDst_in[0]), .q(RegDst_out[0]), .clk(clk), .rst(rst));
+      dff dff_IDEX_RegDst_out1(.d(RegDst_in[1]), .q(RegDst_out[1]), .clk(clk), .rst(rst));
 
 
       //Want to store a bunch of control signals here

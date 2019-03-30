@@ -14,11 +14,6 @@ module decodeInstruction (//inputs
 	// output of register file 
 	output [15:0] A, B;
 
-
-	// internal signals
-	// which register to write to. Input to regFile
-	wire [2:0] writeRegister;
-
 	// output of control
 	wire RegWrite, controlErr,
 		 DMemWrite, ALUSrc2,

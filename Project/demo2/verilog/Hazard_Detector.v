@@ -1,12 +1,9 @@
-module Hazard_Detector ();
+module Hazard_Detector (instruction, stall, PC_Write_Enable, IF_ID_WriteEnable);
 
 	input [15:0] instruction;
-	input 
-
-	output stall, pc_write_en, IF_ID_write_en; 
-
-
 	
+
+	output stall, PC_Write_Enable, IF_ID_WriteEnable; 
 
 	//Stall conditions
 	//ID/EX.WriteRegister = IF/ID.ReadRegister1

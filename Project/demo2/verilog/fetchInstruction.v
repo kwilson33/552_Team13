@@ -1,12 +1,12 @@
 //Fetch instructionuction work in progress
 
-module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
+module fetchInstruction(clk, rst, PC_In, dump, PC_Next, fetch_instruction_Out);
 
 	input [15:0] PC_In; 
 	input clk, dump, rst; 
 
 	output [15:0] PC_Next; 
-	output [15:0] instruction; 
+	output [15:0] fetch_instruction_Out; 
 
 	wire[15:0] currentPC; 
 
@@ -26,7 +26,7 @@ module fetchInstruction(clk, rst, PC_In, dump, PC_Next, instruction);
 	// instruction comes from the current PC
 	memory2c instructionMemory (.data_in(16'b0), .addr(currentPC),
 								.enable(1'b1), .wr(1'b0), .clk(clk), .rst(rst),
-								.createdump(dump), .data_out(instruction)); 
+								.createdump(dump), .data_out(fetch_instruction_Out)); 
 
 
 	// Adding 2 to the PC

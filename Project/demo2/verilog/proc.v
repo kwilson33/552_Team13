@@ -20,12 +20,23 @@ module proc (/*AUTOARG*/
          aluOutput, alu_A, alu_B;
 
   // Added 3/29
-  wire [15:0] IF_ID_instruction_Out, IF_ID_WriteEnable, IF_ID_PC_Out;
+  wire [15:0] IF_ID_instruction_Out, IF_ID_PC_Out;
 
   // write register that is calculated in execute stage. Goes into Hazard Detector
-  wire [2:0] writeRegister;
+  wire [2:0] executeWriteRegister;
+
+  // write regs after being pipelined through EX_MEM and MEM_WB
+  wire [2:0] EX_MEM_writeRegister_out, MEM_WB_writeRegister_out;
+
+
+  wire [2:0] ID_EX_SESel_out;
+  wire [1:0] ID_EX_RegDst_out;
+
         
    wire createDump, errDecode , JAL_en;
+
+   // signals for hazard detector
+   wire PC_WriteEn, IF_ID_WriteEn, stall;
 
    
    /*
@@ -43,7 +54,7 @@ module proc (/*AUTOARG*/
    //TODO: Maybe need another PC output???
    // Many of these signals probably not correct, including instruction_in. 3/29
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
-                                    .instruction_out(IF_ID_instruction_Out),
+                                    .IF_ID_instruction_out(IF_ID_instruction_Out),
                                     .en(IF_ID_WriteEnable), 
                                     .clk(clk), .rst(rst),
                                     .PC_In(fetch_next_PC_normal), .PC_Out(IF_ID_PC_Out));
@@ -56,15 +67,16 @@ module proc (/*AUTOARG*/
    */
    // ################################################### DECODE #######################################################
   decodeInstruction     instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
-									      .fetch_instruction_Out(IF_ID_instruction_out), 
+									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
-									      .writeRegister(0), /*writeRegister_MEM_WB),*/
+									      .writeRegister(MEM_WB_writeRegister_out),
                                           .A(alu_A), .B(alu_B));
 
   // ################################################### DETECT HAZARDS #######################################################
 
 
-  Hazard_Detector       detectHazards ();
+  Hazard_Detector       detectHazards (.IF_ID_WriteEnable(IF_ID_WriteEn), .stall(stall), 
+  									   .instruction(IF_ID_instruction_Out), .PC_Write_Enable(PC_WriteEn) );
 
 
 
@@ -72,52 +84,42 @@ module proc (/*AUTOARG*/
 
   //TODO: connect a few signals
   ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(),
-
                                      .A_in(alu_A), 
-                                    
                                      .B_in(alu_B),
-                                     
+
+                                     .stall(detectHazards.stall),
+
                                      .PC_In(IF_ID_PC_Out), 
-
                                      .instruction_in(IF_ID_instruction_Out), 
-
-                                     .S_extend5_in(decodeInstruction.signExtend5.out), 
-                                    
-                                     .Z_extend5_in(decodeInstruction.zeroExtend5.out), 
-                                     
-                                     .S_extend8_in(decodeInstruction.signExtend8.out), 
-                                     
-                                     .Z_extend8_in(decodeInstruction.zeroExtend8.out), 
-                                     
-                                     .S_extend11_in(decodeInstruction.signExtend11.out), 
-
-                                     .RegWrite_in(instructionDecode.controlUnit.RegWrite),
-                                
+                                      // Sign Extended Signals
+                                     .S_extend5_in(instructionDecode.signExtend5.out),                                    
+                                     .Z_extend5_in(instructionDecode.zeroExtend5.out),                                      
+                                     .S_extend8_in(instructionDecode.signExtend8.out),                                     
+                                     .Z_extend8_in(instructionDecode.zeroExtend8.out),  
+                                     .S_extend11_in(instructionDecode.signExtend11.out), 
+                                      // Control Signals
+                                     .RegWrite_in(instructionDecode.controlUnit.RegWrite),                                
                                      .DMemWrite_in(instructionDecode.controlUnit.DMemWrite),
-                                    
+                                     .DMemEn_in(instructionDecode.controlUnit.DMemEn),
                                      .MemToReg_in(instructionDecode.controlUnit.MemToReg),
-                                  
                                      .DMemDump_in(createDump), 
-                                     
                                      .invA_in(instructionDecode.controlUnit.invA), 
-                            
                                      .invB_in(instructionDecode.controlUnit.invB),
-
                                      .Cin_in(instructionDecode.controlUnit.Cin), 
+                                     .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2),
+                                     .Branching_in(instructionDecode.controlUnit.Branching),
 
                                      .SESel_in(instructionDecode.controlUnit.SESel), 
+                                     .SESel_out(ID_EX_SESel_out),
+                                     .RegDst_in(instructionDecode.controlUnit.RegDst),
+                                     .RegDst_out(ID_EX_RegDst_out));
 
-                                     .RegDst_in(instructionDecode.controlUnit.RegDst), 
-                                
-                                     .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2), 
-
-                                     .stall(detectHazards.stall));
-
-
+                                     
+                                     
 
    // ################################################### EXECUTE #######################################################
-  executeInstruction    instructionExecute(.reg7_En(JAL_en), 
-  										   .instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
+  executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
+  										   .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
   										   .A(ID_EX_Stage.rf_IDEX_Aout.readData), 
                                            .B(ID_EX_Stage.rf_IDEX_Bout.readData), 
                                            .S_extend5_in(ID_EX_Stage.rf_IDEX_S_extend5_out.readData), 
@@ -125,27 +127,40 @@ module proc (/*AUTOARG*/
   										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
 						  				   .Z_extend8_in(ID_EX_Stage.rf_IDEX_Z_extend8_out.readData), 
 						  				   .Z_extend5_in(ID_EX_Stage.rf_IDEX_Z_extend5_out.readData),
+
                                            .invA(ID_EX_Stage.dff_IDEX_invA_out.q),
                                            .invB(ID_EX_Stage.dff_IDEX_invB_out.q), 
                                            .Cin(ID_EX_Stage.dff_IDEX_Cin_out.q), 
                                            .ALUSrc2(ID_EX_Stage.dff_IDEX_ALUSrc2_out.q),
-                                           .SESel(ID_EX_Stage.SESel_out),
-                                           .RegDst(ID_EX_Stage.RegDst_out),
-                                           .Branching(ID_EX_Stage.dff_IDEX_Branching_out.q),
-                                           .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
+                                           .Branching(ID_EX_Stage.dff_IDEX_Branching_out.q), // I don' think we need branching after this
+
+                                           .SESel(ID_EX_SESel_out),
+                                           .RegDst(ID_EX_RegDst_out),
 
                                            	//OUTPUT
-                                           .writeRegister(writeRegister), // --> hazard detector
-                                           .aluOutput(aluOutput), .updatedPC(updatedPC));
+                                           .writeRegister(executeWriteRegister), // --> hazard detector
+                                           .aluOutput(aluOutput), .updatedPC(updatedPC), .reg7_En(JAL_en));
 
 
   // ################################################### EX_MEM Stage #######################################################
 
 
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), .en(), 
-									  .RegWrite_in(), .DMemWrite_in(), .MemToReg_in(), 
-									  .DMemDump_in(ID_EX_Stage.dff_IDEX_DMemDump_out.q), .Branching_in(), .Jump_in(),
-									  .aluOutput_in(), .B_in(), .updatedPC_in());
+
+									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
+									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
+									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
+									  .MemToReg_in(ID_EX_Stage.dff_IDEX_MemToReg_out.q),
+									  .DMemDump_in(ID_EX_Stage.dff_IDEX_DMemDump_out.q), 
+									  .Branching_in(ID_EX_Stage.dff_IDEX_Branching_out.q),
+
+									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
+
+									  .Jump_in(JAL_en),
+									  .aluOutput_in(aluOutput), 
+
+									  .B_in(ID_EX_Stage.rf_IDEX_Bout.readData), 
+									  .updatedPC_in(ID_EX_Stage.rf_IDEX_PC_Out.readData));
 									  
 
 
@@ -157,7 +172,7 @@ module proc (/*AUTOARG*/
 
   									.memWrite(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
         
-                                    .memRead(instructionDecode.controlUnit.DMemEn), //FIX
+                                    .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
                                     
                                     .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
                                     .readData(readData)); //output
@@ -167,17 +182,29 @@ module proc (/*AUTOARG*/
 
 
   MEM_WB_Latch          MEM_WB_Stage (.clk(clk), .rst(rst), .en(), 
-									  .Branching_in(), .RegWrite_in(), .MemToReg_in(),
-									  .aluOutput_in(), .readData_in());
 
+									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), // What are we doing with Branching signal??
+									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 
+									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
+									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
+									  
 
+									  .WriteRegister_in(EX_MEM_writeRegister_out), .WriteRegister_out(MEM_WB_writeRegister_out),
+
+									   .updatedPC_in(EX_MEM_Stage.rf_EXMEM_updatedPC_out.readData),
+									  .aluOutput_in(EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData), 
+									  .readData_in(readData));
 
   // ################################################### WRITEBACK #######################################################
-  writebackOutput       instructionWriteback(.readData(readData), .writeData(writeData), 
-                                             .aluOutput(aluOutput),
-                                             .PC_Next(fetch_next_PC_normal), 
-                                             .memToReg(instructionDecode.controlUnit.MemToReg), 
-                                             .JAL_en(JAL_en));
+  writebackOutput       instructionWriteback(.writeData(writeData), 
+
+  											 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
+  											 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
+  											 .PC_Next(MEM_WB_Stage.rf_MEMWB_updatedPC_in_out.readData), // Not sure if right
+
+                                             .memToReg(MEM_WB_Stage.dff_MEMWB_MemToReg_in_out.q),
+                                             .JAL_en(MEM_WB_Stage.dff_MEMWB_Jump_in_out.q));
 						
   
 	 assign err = (errDecode | instructionExecute.mainALU.err | instructionDecode.regFile.err );
