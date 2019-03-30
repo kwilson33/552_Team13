@@ -126,7 +126,7 @@ module proc_hier_pbench();
 
    // Edit the example below. You must change the signal
    // names on the right hand side
-    
+    /*
     //assign PC = DUT.p0.instructionFetch.PC_Register.readData;
    assign PC = DUT.PC_Out;
    assign Inst = DUT.Instruction_f;
@@ -138,39 +138,28 @@ module proc_hier_pbench();
      //assign RegWrite = DUT.p0.instructionDecode.controlUnit.RegWrite;
    // Is register being written, one bit signal (1 means yes, 0 means no)
       
-
-
-
    //assign WriteRegister = DUT.p0.instructionDecode.writeRegSelMux.Out;
    assign WriteRegister = DUT.p0.DstwithJmout;
    // The name of the register being written to. (3 bit signal)
    
 
-
    //assign WriteData = DUT.p0.instructionDecode.regFile.writeData;
    assign WriteData = DUT.p0.wData;
    // Data being written to the register. (16 bits)
    
-
-
    // assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
    assign MemRead =  (DUT.p0.memRxout & ~DUT.p0.notdonem);
    // Is memory being read, one bit signal (1 means yes, 0 means no)
    
 
-
    //assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
    assign MemWrite = (DUT.p0.memWxout & ~DUT.p0.notdonem);
    // Is memory being written to (1 bit signal)
-   
-
 
    //assign MemAddress = DUT.p0.instructionExecute.aluOutput;
    assign MemAddress = DUT.p0.data1out;
    // Address to access memory with (for both reads and writes to memory, 16 bits)
    
-
-
 
    //assign MemData = DUT.p0.dataMemory.writeData;///////////////////////////////////////////output of second reg of register file
    assign MemDataIn = DUT.p0.data2out;
@@ -180,37 +169,47 @@ module proc_hier_pbench();
    // Data read from memory for memory reads (16 bits)
 
 
-
-
    // new added 05/03
-   assign ICacheReq = DUT.p0.readData;
+   //assign ICacheReq = DUT.p0.readData;
+   assign ICacheReq = 0;
    // Signal indicating a valid instruction read request to cache
    // Above assignment is a dummy example
    
-   assign ICacheHit = DUT.p0.readData;
+   assign ICacheHit = 0;
+   //assign ICacheHit = DUT.p0.readData;
    // Signal indicating a valid instruction cache hit
    // Above assignment is a dummy example
 
-   assign DCacheReq = DUT.p0.readData;
+   assign DCacheReq = 0;
+   //assign DCacheReq = DUT.p0.readData;
    // Signal indicating a valid instruction data read or write request to cache
    // Above assignment is a dummy example
    //    
-   assign DCacheHit = DUT.p0.readData;
+   assign DCacheHit = 0;
+   //assign DCacheHit = DUT.p0.readData;
    // Signal indicating a valid data cache hit
    // Above assignment is a dummy example
    
 
-
-
-
    //assign Halt = DUT.p0.instructionFetch.instructionMemory.createdump; 
    assign Halt = DUT.p0.haltxout;
    // Processor halted
-   
+   */
+
+      assign Inst = DUT.p0.instructionFetch.instruction;
+      assign PC = DUT.p0.instructionFetch.PC_Register.readData;
+      assign RegWrite = DUT.p0.instructionDecode.controlUnit.RegWrite;
+      assign WriteRegister = DUT.p0.instructionDecode.writeRegSelMux.Out;
+      assign WriteData = DUT.p0.instructionDecode.regFile.writeData;
+      assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
+      assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+      assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+      assign MemData = DUT.p0.dataMemory.writeData;
+      assign MemAddress = DUT.p0.instructionExecute.aluOutput;
+      assign Halt = DUT.p0.instructionFetch.instructionMemory.createdump; 
    
    /* Add anything else you want here */
 
-   
 endmodule
 
 // DUMMY LINE FOR REV CONTROL :0:

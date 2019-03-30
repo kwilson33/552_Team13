@@ -1,11 +1,13 @@
 module decodeInstruction (//inputs
-							instruction, clk, rst, writeData,
+							instruction, clk, rst,
+						    writeData, writeRegister,
 						  //outputs
 						   err, dump, A, B);
 
 	//Inputs
 	input [15:0] instruction, writeData;
 	input 		 clk, rst; 
+	input [2:0] writeRegister; // comes from MEM_WB Stage
 
 	// Outputs
 	output err, dump;
@@ -31,8 +33,6 @@ module decodeInstruction (//inputs
 
 	// output of register file
 	wire regErr;
-
-	//We plan to connect these by using the dot operator
 	
 
 	assign err = (controlErr | regErr);
@@ -52,17 +52,6 @@ module decodeInstruction (//inputs
 					.Funct(instruction[1:0]));
 
 
-	//RegDstRegister
-	// 00 - 4:2
-	// 01 - 7:5
-	// 10 - 10:8
-	// 11 - 111
-
-	// choose what reg to write to depending on output RegDstRegister of control
-	mux4_1 #(.NUM_BITS(3)) writeRegSelMux (.InA(instruction[4:2]), .InB(instruction[7:5]), 
-					       .InC(instruction[10:8]), .InD(3'b111),
-					       .S(RegDest), .Out(writeRegister));
-
 	// Rd = writeRegister
 	// use bits [10:8] of instruction to figure out what Rs should be 
 	// use bits [7:5] of instruction to figure out what Rt should be 
@@ -73,6 +62,17 @@ module decodeInstruction (//inputs
 				 .readReg2Sel(instruction[7:5]), .writeRegSel(writeRegister), 
 			   	 .writeData(writeData), .writeEn(RegWrite)); 
 
+
+	//All Extensions for module in schematic happens here
+	wire[15:0] S_extend5_out, S_extend8_out, S_extend11_out,
+				Z_extend8_out, Z_extend5_out; 
+	//Sign extensions
+	signExt16_5		signExtend5(.in(instruction[4:0]), .out(S_extend5_out));
+	signExt16_8		signExtend8(.in(instruction[7:0]), .out(S_extend8_out));
+	signExt16_11	signExtend11(.in(instruction[10:0]), .out(S_extend11_out));
+	//Zero Extensions
+	zeroExt16_8		zeroExtend8(.in(instruction[7:0]), .out(Z_extend8_out)); 
+	zeroExt16_5		zeroExtend5(.in(instruction[4:0]), .out(Z_extend5_out)); 
 
 	
 endmodule

@@ -2,21 +2,30 @@
 // Kevin most recent - removed err signal for now, not sure where to do that
 // also I renamed a bunch of signals for clarity
 // Super confused on which PC signals are for what
-module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, Branching, next_PC_normal, aluOutput, 							
-updatedPC, reg7_En); 
+module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2, 
+						  Branching, next_PC_normal, aluOutput,
+						  S_extend5_in, S_extend8_in, S_extend11_in,
+						  Z_extend8_in, Z_extend5_in,	
+						  writeRegister,
+						  RegDst,				
+						  updatedPC, reg7_En); 
 
 
 	input[15:0] instr, next_PC_normal;
 	input[15:0] A, B; 
+	input [15:0]  S_extend5_in, S_extend8_in, S_extend11_in,
+				  Z_extend8_in, Z_extend5_in;
 	input invA, invB, Cin, Branching;
 	// decide what goes to the ALU
 	input [2:0] SESel;
+	input [1:0] RegDst;
 	input ALUSrc2;
 
 	//output err;
 	output reg7_En; 
 	output[15:0] aluOutput; 
 	output[15:0] updatedPC; 
+	output [2:0] writeRegister;
 
 	// decided by SESel and ALUSrc2
 	wire[15:0] aluSecondInput; 
@@ -38,36 +47,35 @@ updatedPC, reg7_En);
 	wire zero_flag, pos_flag, neg_flag, err;
 
 
-	//All Extensions for module in schematic happens here
-	wire[15:0] S_extend5_out, S_extend8_out, S_extend11_out,
-				Z_extend8_out, Z_extend5_out; 
-	//Sign extensions
-	signExt16_5		signExtend5(.in(instr[4:0]), .out(S_extend5_out));
-	signExt16_8		signExtend8(.in(instr[7:0]), .out(S_extend8_out));
-	signExt16_11	signExtend11(.in(instr[10:0]), .out(S_extend11_out));
-	//Zero Extensions
-	zeroExt16_8		zeroExtend8(.in(instr[7:0]), .out(Z_extend8_out)); 
-	zeroExt16_5		zeroExtend5(.in(instr[4:0]), .out(Z_extend5_out)); 
+	//RegDstRegister
+	// 00 - 4:2
+	// 01 - 7:5
+	// 10 - 10:8
+	// 11 - 111
 
+	// choose what reg to write to depending on output RegDstRegister of control
+	mux4_1 #(.NUM_BITS(3)) writeRegSelMux (.InA(instr[4:2]), .InB(instr[7:5]), 
+					       .InC(instr[10:8]), .InD(3'b111),
+					       .S(RegDst), .Out(writeRegister));
 
 	reg [15:0] signExtendedImmediateReg;
 	// case statement to decide how to sign extend the immediate
 	always @(*) begin
 		casex (SESel)
 			3'b000: begin
-				signExtendedImmediateReg = Z_extend5_out;
+				signExtendedImmediateReg = Z_extend5_in;
 			end
 			3'b001: begin
-				signExtendedImmediateReg = Z_extend8_out;
+				signExtendedImmediateReg = Z_extend8_in;
 			end
 			3'b01x: begin
-				signExtendedImmediateReg = S_extend5_out;
+				signExtendedImmediateReg = S_extend5_in;
 			end
 			3'b10x: begin
-				signExtendedImmediateReg = S_extend8_out;
+				signExtendedImmediateReg = S_extend8_in;
 			end
 			3'b11x: begin
-				signExtendedImmediateReg = S_extend11_out;
+				signExtendedImmediateReg = S_extend11_in;
 			end
 		endcase 
 	end
