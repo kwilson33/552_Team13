@@ -52,7 +52,7 @@ module decodeInstruction (//inputs
 	// Rd = writeRegister
 	// use bits [10:8] of instruction to figure out what Rs should be 
 	// use bits [7:5] of instruction to figure out what Rt should be 
-	rf regFile(// Outputs
+	rf_bypass regFile(// Outputs
 				 .readData1(A), .readData2(B), .err(regErr),
 				  //Inputs
 				 .clk(clk), .rst(rst), .readReg1Sel(instruction[10:8]), 

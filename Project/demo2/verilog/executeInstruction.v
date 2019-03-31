@@ -8,7 +8,8 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 						  Z_extend8_in, Z_extend5_in,	
 						  writeRegister,
 						  RegDst,				
-						  updatedPC, reg7_En); 
+						  updatedPC, reg7_En,
+						  branchingPCEnable_out); 
 
 
 	input[15:0] instr, next_PC_normal;
@@ -21,8 +22,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 	input [1:0] RegDst;
 	input ALUSrc2;
 
-	//output err;
-	output reg7_En; 
+	output reg7_En, branchingPCEnable_out; 
 	output[15:0] aluOutput; 
 	output[15:0] updatedPC; 
 	output [2:0] writeRegister;
@@ -109,6 +109,8 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 	rca_16b adder1(.A(PC_Increment), .B(next_PC_normal), .C_in(1'b0), .S(calculatedPC), .C_out(cout1)); 
 	// Set the new PC output to PC+2, or PC + branch offset, 
 	// or PC + sign extended 11, or finally PC + 8 sign extended
+
+	// Pass to EX_MEM, MEM_WB, back to fetch
 	assign updatedPC = jr_and_jalr_enable ? (jalr_jr_displacement) : (calculatedPC);
 	
 
@@ -118,5 +120,8 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 					.invA(invA), .invB(invB),  
 					.Out(aluOutput), .err(err), 
 					.Zero(zero_flag), .Pos(pos_flag), .Neg(neg_flag)); 
+
+	// add branch condition output- Pass to EX_MEM, MEM_WB, back to fetch
+	assign branchingPCEnable_out = branchEN | jr_and_jalr_enable | jal_and_j_enable;
 
 endmodule

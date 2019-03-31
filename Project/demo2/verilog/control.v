@@ -32,6 +32,7 @@ module control (/*AUTOARG*/
    // inputs
    input [4:0]  OpCode;
    input [1:0]  Funct;
+   input rst;
    
    // outputs
    output       err;
@@ -55,6 +56,7 @@ module control (/*AUTOARG*/
 	reg [1:0] RegDstRegister;
 	reg [2:0] SESelRegister;
 	reg BranchingRegister;
+
 
 	
 	localparam 	assert		= 1'b1; 
@@ -158,9 +160,8 @@ module control (/*AUTOARG*/
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;
 	assign Branching 	= BranchingRegister;
-
-
 	
+
 	always@(*) begin
 		// most instructions write to a register
 		RegWriteRegister = assert;
@@ -444,6 +445,7 @@ module control (/*AUTOARG*/
 				PCSrcRegister = assert;
 				// not writing to a register
 				RegWriteRegister = no_assert; 
+				ALUSrc2Register = no_assert;
 			end 	
 			
 			JALR : begin
@@ -455,6 +457,7 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b11; 
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				ALUSrc2Register = no_assert;
 			end	
 			
 			///////////////////JUMP////////////////
@@ -466,6 +469,7 @@ module control (/*AUTOARG*/
 				PCSrcRegister = assert;
 				// not writing to a register
 				RegWriteRegister = no_assert; 
+				ALUSrc2Register = no_assert;
 			end	
 			
 			JAL : begin
@@ -477,6 +481,7 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b11; 
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
+				ALUSrc2Register = no_assert;
 			end	
 			
 			////////////////SPECIAL///////////////
