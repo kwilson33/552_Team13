@@ -45,7 +45,8 @@ module decodeInstruction (//inputs
 					.invA(invA), .invB(invB), .Branching(Branching),
 					// Inputs
 					.OpCode(instruction[15:11]),
-					.Funct(instruction[1:0]));
+					.Funct(instruction[1:0]),
+					.rst(rst));
 
 
 	// Rd = writeRegister

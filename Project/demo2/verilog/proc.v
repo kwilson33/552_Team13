@@ -75,8 +75,18 @@ module proc (/*AUTOARG*/
   // ################################################### DETECT HAZARDS #######################################################
 
 
-  Hazard_Detector       detectHazards (.IF_ID_WriteEnable(IF_ID_WriteEn), .stall(stall), 
-  									   .instruction(IF_ID_instruction_Out), .PC_Write_Enable(PC_WriteEn) );
+  Hazard_Detector       detectHazards (.IF_ID_WriteEnable_out(IF_ID_WriteEn), .stall(stall), 
+  									   .instruction(IF_ID_instruction_Out), .PC_Write_Enable_out(PC_WriteEn),
+  									   .ID_EX_RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q),
+  									   .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+  									   .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+  									   .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
+  									   .MEMWB_RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
+  									   .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), 
+  									   .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), 
+  									   .ID_EX_RegDst_in(ID_EX_RegDst_out), //TODO: might be wrong
+  									   .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), 
+  									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out)); 
 
 
 

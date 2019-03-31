@@ -24,7 +24,8 @@ module control (/*AUTOARG*/
                 Cin,
                 // Inputs
                 OpCode,
-                Funct
+                Funct,
+                rst// use for checking if DMEMDump should be asserted
                 );
 
 
@@ -152,7 +153,7 @@ module control (/*AUTOARG*/
 	assign ALUSrc2 		= ALUSrc2Register; 
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
-	assign DMemDump 	= DMemDumpRegister; 
+	assign DMemDump 	= DMemDumpRegister & (~rst); // if rst is high, DMEMDump automatically is 0 to fix IF_ID Latch bug
 	assign invA 		= invA_Register;
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;
@@ -489,7 +490,7 @@ module control (/*AUTOARG*/
 			
 			HALT : begin
 				RegWriteRegister = no_assert;
-				DMemDumpRegister = assert;
+				DMemDumpRegister = assert; //If reset is high, don't assert DMemDumpRegister
 			end
 			
 			RTI : begin
