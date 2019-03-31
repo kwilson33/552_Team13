@@ -13,8 +13,8 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
 
       // use 16 bit registers to decide if we should use current saved output or update output for
       // the PC and the instruction
-      register_16bits rf_instruction(.readData(instruction_out), .clk(clk), .rst(1'b0), /*TODO:this is what the git repo does for this, not sure if right. Spent awhile debugging only to realize this was the fix but now, output is initially red until clock goes high, so not sure how to fix*/
-                                     .writeData(instruction_in), /*instruction_in_NOP_sel*/
+      register_16bits rf_instruction(.readData(instruction_out), .clk(clk), .rst(1'b1), /*TODO:this is what the git repo does for this, not sure if right. Spent awhile debugging only to realize this was the fix but now, output is initially red until clock goes high, so not sure how to fix*/
+                                     .writeData(instruction_in_NOP_sel), /*instruction_in_NOP_sel*/
                                      .writeEnable(en));
 
       register_16bits rf_PC(.readData(PC_Out), .clk(clk), 
