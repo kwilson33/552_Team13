@@ -1,4 +1,4 @@
 #!/bin/sh
-wsrun.pl -list ../verification/mytests/all.list proc_hier_pbench *.v
+wsrun.pl -pipe -list ../verification/mytests/all.list proc_hier_pbench *.v
 
-mv summary.log ../verfication/results/mytests.summary.log
+mv summary.log ../verification/results/mytests.summary.log
