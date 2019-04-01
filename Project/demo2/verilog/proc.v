@@ -48,7 +48,7 @@ module proc (/*AUTOARG*/
   // ################################################### FETCH #######################################################
   fetchInstruction     instructionFetch(.clk(clk), .rst(rst), 
                       .PC_In(MEM_WB_Stage.rf_MEMWB_updatedPC_out.readData), 
-								     	.dump(1'b0), // TODO: always 0????? createDump
+								     	.dump(createDump), // TODO: always 0????? createDump
 								     	.PC_Next(nextPC_from_fetch), 
                       .PC_WriteEn_in(PC_WriteEn_from_hazardDet),
 									    .instruction(fetch_instruction_Out),
@@ -195,13 +195,10 @@ module proc (/*AUTOARG*/
   memoryReadWrite       dataMemory (.clk(clk), .rst(rst), 
   									.writeData(EX_MEM_Stage.rf_EXMEM_B_out.readData),
   									.aluOutput(EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData),
-
   									.memWrite(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
-        
-                                    .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
-                                    
-                                    .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-                                    .readData(readData)); //output
+                    .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),  
+                    .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q), // TODO: change to MEM_WB dump maybe?? Or change back to EX/MEM??
+                    .readData(readData)); //output
 
 
   // ################################################### MEM_WB Stage #######################################################
@@ -214,8 +211,8 @@ module proc (/*AUTOARG*/
 									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
+                    .DMemDump_in(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
 									  
-
 									  .WriteRegister_in(EX_MEM_writeRegister_out), .WriteRegister_out(MEM_WB_writeRegister_out),
 
                     .nextPC_in(EX_MEM_Stage.rf_EXMEM_nextPC_out.readData), 
