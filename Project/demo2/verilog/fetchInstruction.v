@@ -1,6 +1,7 @@
 module fetchInstruction(clk, rst, 
 						PC_In,
-						branchingPCEnable_in, 
+						branchingPCEnable_in,
+						EXMEM_Branch,
 						dump, 
 						PC_Next, 
 						instruction,
@@ -11,12 +12,12 @@ module fetchInstruction(clk, rst,
 
 
 	input [15:0] PC_In; 
-	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall; 
+	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, EXMEM_Branch; 
 
 	output [15:0] PC_Next;
 	output [15:0] instruction; 
 
-	wire [15:0] currentPC, pc_increment;
+	wire [15:0] currentPC, pc_increment, pcUpdated;
 
 	//wires that we don't care about
 	wire c_out; 
@@ -24,9 +25,12 @@ module fetchInstruction(clk, rst,
 	// if we are branching or stalling halt the PC
 	assign pc_increment = (stall | branchingPCEnable_in) ? 16'h0 : 16'h2;
 
+///////////////////////////////////////////////////////////
+	assign pcUpdated = (EXMEM_Branch) ? PC_In : PC_Next; 
+
 	//Inputs: clk, rst, writeEnable, [15:0] writeData
 	//Output: [15:0]readData 
-	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(PC_In), .writeEnable(~dump)); 
+	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(pcUpdated), .writeEnable(~dump)); 
 
 
 	// instruction Memory

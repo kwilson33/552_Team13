@@ -1,4 +1,4 @@
-module Hazard_Detector ( instruction, ID_EX_RegWrite_in, 
+module Hazard_Detector (  ID_EX_RegWrite_in, 
 						EXMEM_RegWrite_in, 
 						EXMEM_DMemEn_in, 
 						EXMEM_DMemWrite_in, 
@@ -14,7 +14,6 @@ module Hazard_Detector ( instruction, ID_EX_RegWrite_in,
 						Rt_select,
 						Jumping_in);
 
-	input [15:0] instruction;
 	input ID_EX_RegWrite_in, EXMEM_RegWrite_in, EXMEM_DMemEn_in, 
 		  EXMEM_DMemWrite_in, //MEMWB_RegWrite_in
 		  Rt_select, Jumping_in;
@@ -47,7 +46,7 @@ module Hazard_Detector ( instruction, ID_EX_RegWrite_in,
 	assign EX_MEM_raw_Rs = (EX_Mem_WriteRegister_in == IF_ID_Rs_in) & (~Jumping_in); // If we are jumping, don't care about Rs 
 
 	//EX/MEM.WriteRegister = IF/ID.ReadRegister2 (for Mem to Mem (LD & ST) forwarding make sure you don't stall)
-	assign EX_MEM_raw_Rt = (EX_Mem_WriteRegister_in == IF_ID_Rt_in);
+	assign EX_MEM_raw_Rt = (EX_Mem_WriteRegister_in == IF_ID_Rt_in) & Rt_select; // If ALUSrc2 is 1, then we are using Rt
 
 	/*
 	//TODO : ask matt about this: fixed with bypassing

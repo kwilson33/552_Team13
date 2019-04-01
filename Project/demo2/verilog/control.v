@@ -22,6 +22,7 @@ module control (/*AUTOARG*/
                 DMemDump,
                 Jump,
                 Cin,
+                BranchingOrJumping,
                 // Inputs
                 OpCode,
                 Funct,
@@ -37,7 +38,8 @@ module control (/*AUTOARG*/
    // outputs
    output       err;
    output       RegWrite, DMemWrite, DMemEn, ALUSrc2, PCSrc, 
-                PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin, Branching;
+                PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin, 
+                Branching, BranchingOrJumping;
    output [1:0] RegDst;
    output [2:0] SESel;
 
@@ -56,6 +58,7 @@ module control (/*AUTOARG*/
 	reg [1:0] RegDstRegister;
 	reg [2:0] SESelRegister;
 	reg BranchingRegister;
+	reg BranchOrJumpRegister;
 
 
 	
@@ -160,6 +163,7 @@ module control (/*AUTOARG*/
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;
 	assign Branching 	= BranchingRegister;
+	assign BranchingOrJumping = BranchOrJumpRegister;
 	
 
 	always@(*) begin
@@ -171,6 +175,7 @@ module control (/*AUTOARG*/
 		DMemWriteRegister = no_assert; 
 		DMemEnRegister = no_assert; 
 		BranchingRegister = no_assert;
+		BranchOrJumpRegister = no_assert;
 		
 		// Only case this is asserted is for HALT
 		DMemDumpRegister = no_assert;
@@ -379,6 +384,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert; 
 				BranchingRegister = assert;
+				BranchOrJumpRegister = assert;
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
@@ -391,6 +397,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert; 
 				BranchingRegister = assert;
+				BranchOrJumpRegister = assert;
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
@@ -404,6 +411,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert;
 				BranchingRegister = assert;
+				BranchOrJumpRegister = assert;
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert; 
@@ -417,7 +425,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert; 
 				BranchingRegister = assert;
-
+				BranchOrJumpRegister = assert;
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
 			end	
@@ -446,6 +454,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert; 
 				ALUSrc2Register = no_assert;
+				BranchOrJumpRegister = assert;
 			end 	
 			
 			JALR : begin
@@ -458,6 +467,7 @@ module control (/*AUTOARG*/
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				ALUSrc2Register = no_assert;
+				BranchOrJumpRegister = assert;
 			end	
 			
 			///////////////////JUMP////////////////
@@ -470,6 +480,7 @@ module control (/*AUTOARG*/
 				// not writing to a register
 				RegWriteRegister = no_assert; 
 				ALUSrc2Register = no_assert;
+				BranchOrJumpRegister = assert;
 			end	
 			
 			JAL : begin
@@ -482,6 +493,7 @@ module control (/*AUTOARG*/
 				// use the PC given by the branch/jump
 				PCSrcRegister = assert;
 				ALUSrc2Register = no_assert;
+				BranchOrJumpRegister = assert;
 			end	
 			
 			////////////////SPECIAL///////////////
