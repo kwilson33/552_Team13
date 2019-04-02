@@ -61,7 +61,7 @@ module control (/*AUTOARG*/
 	reg [2:0] SESelRegister;
 	reg BranchingRegister;
 	reg BranchOrJumpRegister;
-	reg ReadingRsRegister, Using RtRegister;
+	reg ReadingRsRegister, ReadingRtRegister;
 
 
 	
