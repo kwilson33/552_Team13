@@ -23,6 +23,8 @@ module control (/*AUTOARG*/
                 Jump,
                 Cin,
                 BranchingOrJumping,
+				ReadingRs,
+				ReadingRt,
                 // Inputs
                 OpCode,
                 Funct,
@@ -39,7 +41,7 @@ module control (/*AUTOARG*/
    output       err;
    output       RegWrite, DMemWrite, DMemEn, ALUSrc2, PCSrc, 
                 PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin, 
-                Branching, BranchingOrJumping;
+                Branching, BranchingOrJumping,ReadingRs,ReadingRt;
    output [1:0] RegDst;
    output [2:0] SESel;
 
@@ -59,6 +61,7 @@ module control (/*AUTOARG*/
 	reg [2:0] SESelRegister;
 	reg BranchingRegister;
 	reg BranchOrJumpRegister;
+	reg ReadingRsRegister, Using RtRegister;
 
 
 	
@@ -164,6 +167,9 @@ module control (/*AUTOARG*/
 	assign Cin 			= Cin_Register;
 	assign Branching 	= BranchingRegister;
 	assign BranchingOrJumping = BranchOrJumpRegister;
+	assign ReadingRs 			  = ReadingRsRegister;
+	assign ReadingRt 			  = ReadingRtRegister;
+	
 	
 
 	always@(*) begin
@@ -176,6 +182,9 @@ module control (/*AUTOARG*/
 		DMemEnRegister = no_assert; 
 		BranchingRegister = no_assert;
 		BranchOrJumpRegister = no_assert;
+		
+		ReadingRsRegister = assert;
+		ReadingRtRegister = assert;
 		
 		// Only case this is asserted is for HALT
 		DMemDumpRegister = no_assert;
@@ -248,6 +257,7 @@ module control (/*AUTOARG*/
 				invB_Register = assert;
 				RegDstRegister = 2'b00; 
 				Cin_Register = assert;
+				
 			end
 			
 			SLT : begin
@@ -278,6 +288,7 @@ module control (/*AUTOARG*/
 				// R-format instructions mean that
 				// bits 4:2 represent the destination register (Rd)
 				RegDstRegister = 2'b00; 
+				ReadingRtRegister = no_assert;
 			end	
 			
 			////////////////////IFORMAT-1//////////////////////////
@@ -291,6 +302,7 @@ module control (/*AUTOARG*/
 				//sign extend lower 5 bits
 				SESelRegister = 3'b010;
 				RegDstRegister = 2'b01; 
+				ReadingRtRegister = no_assert;
 			end
 			ADDI : begin
 				// ALU should use the immediate
@@ -298,6 +310,7 @@ module control (/*AUTOARG*/
 				//sign extend lower 5 bits
 				SESelRegister = 3'b010;
 				RegDstRegister = 2'b01; 
+				ReadingRtRegister = no_assert;
 
 			end
 			ANDNI : begin
@@ -307,6 +320,7 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b000;
 				RegDstRegister = 2'b01;
 				invB_Register = assert;
+				ReadingRtRegister = no_assert;
 			end
 			XORI : begin
 				// ALU should use the immediate
@@ -314,25 +328,30 @@ module control (/*AUTOARG*/
 				//zero extend lower 5 bits
 				SESelRegister = 3'b000;
 				RegDstRegister = 2'b01;
+				ReadingRtRegister = no_assert;
 			end
 			ROLI : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
 				RegDstRegister = 2'b01;
+				ReadingRtRegister = no_assert;
 			end
 			SLLI : begin
 				RegDstRegister = 2'b01;
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
 			end 	 
 			RORI : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
 				RegDstRegister = 2'b01;
+				ReadingRtRegister = no_assert;
 			end	
 			SRLI : begin
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
 				RegDstRegister = 2'b01;
+				ReadingRtRegister = no_assert;
 			end	
 			ST : begin
 				// ALU should use the immediate
@@ -348,6 +367,7 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				
 				RegDstRegister = 2'b01;
+				ReadingRtRegister = no_assert;
 			end
 			LD : begin
 				// ALU should use the immediate
@@ -361,6 +381,7 @@ module control (/*AUTOARG*/
 				
 				// Use memory contents instead of ALU to write to register
 				MemToRegRegister = assert;
+				ReadingRtRegister = no_assert;
 			end
 			// Write to Rs for STU
 			STU : begin	
@@ -373,6 +394,7 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				DMemWriteRegister = assert;
 				RegDstRegister = 2'b10;
+				ReadingRtRegister = no_assert;
 			end	
 
 			/////////////////IFORMAT-2////////////////////
@@ -388,6 +410,7 @@ module control (/*AUTOARG*/
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
 			end	
 			BEQZ : begin
 				// sign extend lower 8 bits
@@ -401,6 +424,7 @@ module control (/*AUTOARG*/
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
 			end	
 			
 			BLTZ : begin
@@ -415,6 +439,7 @@ module control (/*AUTOARG*/
 
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert; 
+				ReadingRtRegister = no_assert;
 			end	
 			
 			BGEZ : begin
@@ -428,6 +453,7 @@ module control (/*AUTOARG*/
 				BranchOrJumpRegister = assert;
 				// ALU should use the immediate
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
 			end	
 			
 			// Write to Rs for LBI
@@ -436,6 +462,8 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b100;
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
+				ReadingRsRegister = no_assert;
 			end
 			// Write to Rs for SLBI
 			SLBI : begin
@@ -443,6 +471,7 @@ module control (/*AUTOARG*/
 				SESelRegister = 3'b001;
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
+				ReadingRtRegister = no_assert;
 			end	
 			
 			JR : begin
@@ -455,6 +484,7 @@ module control (/*AUTOARG*/
 				RegWriteRegister = no_assert; 
 				ALUSrc2Register = no_assert;
 				BranchOrJumpRegister = assert;
+				ReadingRtRegister = no_assert;
 			end 	
 			
 			JALR : begin
@@ -468,6 +498,7 @@ module control (/*AUTOARG*/
 				PCSrcRegister = assert;
 				ALUSrc2Register = no_assert;
 				BranchOrJumpRegister = assert;
+				ReadingRtRegister = no_assert;
 			end	
 			
 			///////////////////JUMP////////////////
@@ -481,6 +512,9 @@ module control (/*AUTOARG*/
 				RegWriteRegister = no_assert; 
 				ALUSrc2Register = no_assert;
 				BranchOrJumpRegister = assert;
+				ReadingRtRegister = no_assert;
+				ReadingRsRegister = no_assert;
+				
 			end	
 			
 			JAL : begin
@@ -494,20 +528,28 @@ module control (/*AUTOARG*/
 				PCSrcRegister = assert;
 				ALUSrc2Register = no_assert;
 				BranchOrJumpRegister = assert;
+				ReadingRtRegister = no_assert;
+				ReadingRsRegister = no_assert;
 			end	
 			
 			////////////////SPECIAL///////////////
 			SIIC : begin
+				ReadingRsRegister = no_assert;
+				ReadingRtRegister = no_assert;
 
 			end
 			
 			NOP : begin
 				RegWriteRegister = no_assert; 
+				ReadingRsRegister = no_assert;
+				ReadingRtRegister = no_assert;
 			end	
 			
 			HALT : begin
 				RegWriteRegister = no_assert;
 				DMemDumpRegister = assert; //If reset is high, don't assert DMemDumpRegister
+				ReadingRsRegister = no_assert;
+				ReadingRtRegister = no_assert;
 			end
 			
 			RTI : begin
@@ -515,6 +557,8 @@ module control (/*AUTOARG*/
 				RegWriteRegister = no_assert; 
 				// PC <- EPC
 				PCSrcRegister = assert;
+				ReadingRsRegister = no_assert;
+				ReadingRtRegister = no_assert;
 			end
 			
 			// If opcode not recognized, set error
