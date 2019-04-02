@@ -50,21 +50,21 @@ module proc (/*AUTOARG*/
    * This module instantiates the fetch_instruction_Out memory and the PC Register to keep track of the current PC
    * there is also an adder instantiated here to increment the PC
   */  
-  // ################################################### FETCH #######################################################
+  // ################################################### FETCH - GOOD #######################################################
   fetchInstruction     instructionFetch(.clk(clk), .rst(rst), 
                       .PC_In(MEM_WB_Stage.rf_MEMWB_updatedPC_out.readData), 
 								     	.dump(createDump), // TODO: always 0????? createDump
 								     	.PC_Next(nextPC_from_fetch), 
                       .PC_WriteEn_in(PC_WriteEn_from_hazardDet),
 									    .instruction(fetch_instruction_Out),
-                     // .branchingPCEnable_in(masterBorJ),
-                      .branchingPCEnable_in(instructionDecode.controlUnit.BranchingOrJumping),
+                      .branchingPCEnable_in(masterBorJ),
+                      //.branchingPCEnable_in(instructionDecode.controlUnit.BranchingOrJumping),
                       .stall(stall_from_HazardDet),
                       .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
 
 
   
-  // ################################################### IF_ID_Stage #######################################################
+  // ################################################### IF_ID_Stage - GOOD #######################################################
 
    //TODO: Maybe need another PC output???
    // Many of these signals probably not correct, including instruction_in. 3/29
@@ -83,30 +83,32 @@ module proc (/*AUTOARG*/
    * with the fetch_instruction_Out and the register file is told what to do. The control unit also makes
    * signals like SESelect which the regFile doesn't use.
    */
-   // ################################################### DECODE #######################################################
+   // ################################################### DECODE -GOOD #######################################################
   decodeInstruction     instructionDecode(.clk(clk), .rst(rst), .writeData(writeData), 
 									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
+                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
                         .A(alu_A), .B(alu_B));
 
   // ################################################### DETECT HAZARDS #######################################################
 
 
-  Hazard_Detector       detectHazards (.IF_ID_WriteEnable_out(IF_ID_WriteEn), .stall(stall_from_HazardDet), 
-  									                    .PC_Write_Enable_out(PC_WriteEn_from_hazardDet),
-                  									   .ID_EX_RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q),
-                  									   .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
-                  									   .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
-                  									   .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
-                  									   .MEMWB_RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
-                  									   .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), 
-                  									   .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), 
-                  									   .ID_EX_WriteRegister_in(executeWriteRegister), //TODO: might be wrong
-                  									   .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), 
-                  									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),
+  Hazard_Detector       detectHazards (.IF_ID_WriteEnable_out(IF_ID_WriteEn), //good
+                                        .stall(stall_from_HazardDet), //good
+  									                    .PC_Write_Enable_out(PC_WriteEn_from_hazardDet),//good
+                  									   .ID_EX_RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), //good
+                  									   .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),//good
+                  									   .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),//good
+                  									   .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q), //good
+                  									   .MEMWB_RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), //good
+                  									   .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), //good
+                  									   .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), //good
+                  									   .ID_EX_WriteRegister_in(executeWriteRegister), //TODO: might be wrong - still a possibility
+                  									   .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), //good 
+                  									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),//good
                                        .Rt_select(instructionDecode.controlUnit.ALUSrc2),
-                                       .Jumping_in(instructionDecode.controlUnit.Jump)); 
+                                       .Jumping_in(instructionDecode.controlUnit.PCImmRegister)); // probably fix!!!!! Connect to PCImmRegister because in J and JAL we don't care about Rs
 
 
 

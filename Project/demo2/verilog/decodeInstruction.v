@@ -1,12 +1,12 @@
 module decodeInstruction (//inputs
 							instruction, clk, rst,
-						    writeData, writeRegister,
+						    writeData, writeRegister, RegWrite_in,
 						  //outputs
 						   err, dump, A, B);
 
 	//Inputs
 	input [15:0] instruction, writeData;
-	input 		 clk, rst; 
+	input 		 clk, rst, RegWrite_in; 
 	input [2:0] writeRegister; // comes from MEM_WB Stage
 
 	// Outputs
@@ -58,7 +58,7 @@ module decodeInstruction (//inputs
 				  //Inputs
 				 .clk(clk), .rst(rst), .readReg1Sel(instruction[10:8]), 
 				 .readReg2Sel(instruction[7:5]), .writeRegSel(writeRegister), 
-			   	 .writeData(writeData), .writeEn(RegWrite)); 
+			   	 .writeData(writeData), .writeEn(RegWrite_in)); // enabled comes from MEM_WB latch
 
 
 	//All Extensions for module in schematic happens here

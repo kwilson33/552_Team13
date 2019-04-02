@@ -1,13 +1,13 @@
-          // addiTest
-          //
-          // test program for WISC-SP08 architecture
-          // for the addi instruction.
-          //
-          // CS/ECE 552, Spring 2008
-          // Abhishek Sinkar  15 March 2008
-          //
+          // Original test: ./tschaefe/hw4/problem6/j_2.asm
+          // Author: tschaefe
+          // Test source code follows
           
-          //Test of producing a zero
-0000 c1ff lbi r1, 0xff
-0002 4941 addi r2, r1, 0x1
-0004 0000 halt
+          
+          // j test 2
+          // Jump instruction should cause looping to earlier portion of program
+0000 c1fd lbi r1, 0xfd
+0002 4921 addi r1, r1, 0x01
+0004 7902 bgez r1, .done		//after 3 total executions of add, go to halt
+0006 27fa j 0x7fa
+0008      .done:
+0008 0000 halt

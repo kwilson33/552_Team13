@@ -1,0 +1,8 @@
+# vsim -c proc_hier_pbench -lib __work 
+# Start time: 23:35:02 on Apr 01,2019
+# ** Error: (vsim-3170) Could not find 'proc_hier_pbench'.
+#         Searched libraries:
+#             /afs/cs.wisc.edu/u/r/o/robbins/private/ece552/552_Team13/Project/demo2/verification/results/__work
+# Error loading design
+# End time: 23:35:02 on Apr 01,2019, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0
