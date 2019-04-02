@@ -108,7 +108,7 @@ module proc (/*AUTOARG*/
                   									   .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), //good 
                   									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),//good
                                        .Rt_select(instructionDecode.controlUnit.ALUSrc2),
-                                       .Jumping_in(instructionDecode.controlUnit.PCImmRegister)); // probably fix!!!!! Connect to PCImmRegister because in J and JAL we don't care about Rs
+                                       .J_and_JAL_in(instructionDecode.controlUnit.PCImmRegister)); // probably fix!!!!! Connect to PCImmRegister because in J and JAL we don't care about Rs
 
 
 
