@@ -1,7 +1,7 @@
 module fetchInstruction(clk, rst, 
 						PC_In,
 						branchingPCEnable_in,
-						EXMEM_Branch,
+						MEM_WB_Branch_in,
 						dump, 
 						PC_Next, 
 						instruction,
@@ -12,7 +12,7 @@ module fetchInstruction(clk, rst,
 
 
 	input [15:0] PC_In; 
-	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, EXMEM_Branch; 
+	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, MEM_WB_Branch_in; 
 
 	output [15:0] PC_Next;
 	output [15:0] instruction; 
@@ -26,7 +26,7 @@ module fetchInstruction(clk, rst,
 	assign pc_increment = (stall | branchingPCEnable_in) ? 16'h0 : 16'h2;
 
 ///////////////////////////////////////////////////////////
-	assign pcUpdated = (EXMEM_Branch) ? PC_In : PC_Next; 
+	assign pcUpdated = (MEM_WB_Branch_in) ? PC_In : PC_Next; 
 
 	//Inputs: clk, rst, writeEnable, [15:0] writeData
 	//Output: [15:0]readData 

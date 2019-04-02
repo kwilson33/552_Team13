@@ -40,7 +40,12 @@ module proc (/*AUTOARG*/
 
    wire EX_branchingPCEnable_to_EX_MEM;
 
+   wire ALUSrc2_connector, masterBorJ;
 
+   assign masterBorJ = (instructionDecode.controlUnit.BranchingOrJumping | 
+                        ID_EX_Stage.dff_IDEX_BorJ_out.q |
+                        EX_MEM_Stage.dff_EXMEM_BorJ_out.q |
+                        MEM_WB_Stage.dff_MEMWB_BorJ_out.q); 
    /*
    * This module instantiates the fetch_instruction_Out memory and the PC Register to keep track of the current PC
    * there is also an adder instantiated here to increment the PC
@@ -52,9 +57,10 @@ module proc (/*AUTOARG*/
 								     	.PC_Next(nextPC_from_fetch), 
                       .PC_WriteEn_in(PC_WriteEn_from_hazardDet),
 									    .instruction(fetch_instruction_Out),
-                      .branchingPCEnable_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q),
+                     // .branchingPCEnable_in(masterBorJ),
+                      .branchingPCEnable_in(instructionDecode.controlUnit.BranchingOrJumping),
                       .stall(stall_from_HazardDet),
-                      .EXMEM_Branch(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
+                      .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
 
 
   
@@ -68,7 +74,8 @@ module proc (/*AUTOARG*/
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
-                                    .BranchingOrJumping_in(instructionDecode.controlUnit.BranchingOrJumping));
+                                    .BranchingOrJumping_in(masterBorJ) //New Master Branch or Jump
+                                    );
 
 
   /*
@@ -92,11 +99,11 @@ module proc (/*AUTOARG*/
                   									   .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
                   									   .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
                   									   .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
-                  									   //.MEMWB_RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
+                  									   .MEMWB_RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
                   									   .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), 
                   									   .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), 
                   									   .ID_EX_WriteRegister_in(executeWriteRegister), //TODO: might be wrong
-                  									  // .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), 
+                  									   .MEM_WB_WriteRegister_in(MEM_WB_writeRegister_out), 
                   									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),
                                        .Rt_select(instructionDecode.controlUnit.ALUSrc2),
                                        .Jumping_in(instructionDecode.controlUnit.Jump)); 
@@ -107,7 +114,9 @@ module proc (/*AUTOARG*/
 
   //TODO: connect a few signals
   ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(1'b1), //TODO: Fix Enable??
-                                     .A_in(alu_A), 
+                                     .A_in(alu_A),
+                                       
+                                        
                                      .B_in(alu_B),
 
                                      .stall(stall_from_HazardDet),
@@ -129,32 +138,36 @@ module proc (/*AUTOARG*/
                                      .invA_in(instructionDecode.controlUnit.invA), 
                                      .invB_in(instructionDecode.controlUnit.invB),
                                      .Cin_in(instructionDecode.controlUnit.Cin), 
-                                     .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2),
+                                     .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2), ///////////////
+                                     
                                      .Branching_in(instructionDecode.controlUnit.Branching),
 
                                      .SESel_in(instructionDecode.controlUnit.SESel), 
                                      .SESel_out(ID_EX_SESel_out),
                                      .RegDst_in(instructionDecode.controlUnit.RegDst),
-                                     .RegDst_out(ID_EX_RegDst_out));
+                                     .RegDst_out(ID_EX_RegDst_out),
+
+                                     .BranchingOrJumping_in(instructionDecode.controlUnit.BranchingOrJumping));
 
                                      
                                      
 
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
-  										   .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
-  										   .A(ID_EX_Stage.rf_IDEX_Aout.readData), 
+  										                     .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
+  									                   	   .A(ID_EX_Stage.rf_IDEX_Aout.readData), 
                                            .B(ID_EX_Stage.rf_IDEX_Bout.readData), 
                                            .S_extend5_in(ID_EX_Stage.rf_IDEX_S_extend5_out.readData), 
-  										   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
-  										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
-						  				   .Z_extend8_in(ID_EX_Stage.rf_IDEX_Z_extend8_out.readData), 
-						  				   .Z_extend5_in(ID_EX_Stage.rf_IDEX_Z_extend5_out.readData),
+                    										   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
+                    										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
+                  						  				   .Z_extend8_in(ID_EX_Stage.rf_IDEX_Z_extend8_out.readData), 
+                  						  				   .Z_extend5_in(ID_EX_Stage.rf_IDEX_Z_extend5_out.readData),
 
                                            .invA(ID_EX_Stage.dff_IDEX_invA_out.q),
                                            .invB(ID_EX_Stage.dff_IDEX_invB_out.q), 
                                            .Cin(ID_EX_Stage.dff_IDEX_Cin_out.q), 
                                            .ALUSrc2(ID_EX_Stage.dff_IDEX_ALUSrc2_out.q),
+                                           //.Branching(MEM_WB_Stage.dff_MEMWB_Branching_out.q), // I don' think we need branching after this
                                            .Branching(ID_EX_Stage.dff_IDEX_Branching_out.q), // I don' think we need branching after this
 
                                            .SESel(ID_EX_SESel_out),
@@ -179,14 +192,15 @@ module proc (/*AUTOARG*/
 									  .Branching_in(ID_EX_Stage.dff_IDEX_Branching_out.q),
 
 									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
-
 									  .Jump_in(JAL_en),
 									  .aluOutput_in(aluOutput), 
-
 									  .B_in(ID_EX_Stage.rf_IDEX_Bout.readData), 
-									  .updatedPC_in(updatedPC),
+
+                    .nextPC_in(ID_EX_Stage.rf_IDEX_PC_Out.readData), // this is from ID_EX, not updated
+									  .updatedPC_in(updatedPC),  // this contains address a jump or branch should go to
+
                     .branchingPCEnable_in(EX_branchingPCEnable_to_EX_MEM),
-                    .nextPC_in(ID_EX_Stage.rf_IDEX_PC_Out.readData));
+                    .BranchingOrJumping_in(ID_EX_Stage.dff_IDEX_BorJ_out.q));
 									  
 
 
@@ -212,22 +226,25 @@ module proc (/*AUTOARG*/
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
                     .DMemDump_in(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
+
+                    .updatedPC_in(EX_MEM_Stage.rf_EXMEM_updatedPC_out.readData),
+                    .nextPC_in(EX_MEM_Stage.rf_EXMEM_nextPC_out.readData), 
 									  
 									  .WriteRegister_in(EX_MEM_writeRegister_out), .WriteRegister_out(MEM_WB_writeRegister_out),
 
-                    .nextPC_in(EX_MEM_Stage.rf_EXMEM_nextPC_out.readData), 
+                    
                     .branchingPCEnable_in(EX_MEM_Stage.dff_EXMEM_branchingPCEnable_out.q),
-
-									   .updatedPC_in(EX_MEM_Stage.rf_EXMEM_updatedPC_out.readData),
+                    .BranchingOrJumping_in(EX_MEM_Stage.dff_EXMEM_BorJ_out.q), 
+									   
 									  .aluOutput_in(EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData), 
 									  .readData_in(readData));
 
   // ################################################### WRITEBACK #######################################################
-  writebackOutput       instructionWriteback(.writeData(writeData), 
-
+  writebackOutput       instructionWriteback(
+                          .writeData(writeData), 
   											 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
   											 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
-  											 .PC_Next(MEM_WB_Stage.rf_MEMWB_updatedPC_out.readData), // Not sure if right
+  											 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData), // Not sure if right
 
                          .memToReg(MEM_WB_Stage.dff_MEMWB_MemToReg_in_out.q),
                          .JAL_en(MEM_WB_Stage.dff_MEMWB_Jump_in_out.q));

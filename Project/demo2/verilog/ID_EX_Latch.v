@@ -19,7 +19,7 @@ module ID_EX_Latch(clk, rst, en,
                    SESel_in, SESel_out,
                    RegDst_in, RegDst_out,
                    ALUSrc2_in,
-                   
+                   BranchingOrJumping_in,
                    stall);
 
       //TODO: Figure out what instruction_in is for
@@ -36,7 +36,8 @@ module ID_EX_Latch(clk, rst, en,
       output [1:0] RegDst_out;
 
       input clk, rst, en, RegWrite_in, DMemWrite_in, DMemEn_in, MemToReg_in,  
-            Branching_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall; 
+            Branching_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall, 
+            BranchingOrJumping_in; 
 
       wire [15:0] PC_Out, A_out, B_out, S_extend5_out, Z_extend5_out, S_extend8_out, Z_extend8_out, S_extend11_out, 
                   stall_or_instruction_out, stall_or_instruction_in; 
@@ -44,7 +45,7 @@ module ID_EX_Latch(clk, rst, en,
       wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out,  
             Branching_out, DMemDump_out, invA_out, invB_out, Cin_out, ALUSrc2_out,
             RegWrite_or_stall, MemWrite_or_stall, DMemEn_or_stall,
-             MemToReg_or_stall, DMemDump_or_stall;
+             MemToReg_or_stall, DMemDump_or_stall, BranchingOrJumping_out;
 
       assign stall_or_instruction_in = stall ? 16'b0000100000000000 : instruction_in;
 
@@ -85,7 +86,7 @@ module ID_EX_Latch(clk, rst, en,
 
       dff dff_IDEX_RegDst_out0(.d(RegDst_in[0]), .q(RegDst_out[0]), .clk(clk), .rst(rst));
       dff dff_IDEX_RegDst_out1(.d(RegDst_in[1]), .q(RegDst_out[1]), .clk(clk), .rst(rst));
-
+      dff dff_IDEX_BorJ_out(.d(BranchingOrJumping_in), .q(BranchingOrJumping_out), .clk(clk), .rst(rst)); 
 
       //Want to store a bunch of control signals here
       

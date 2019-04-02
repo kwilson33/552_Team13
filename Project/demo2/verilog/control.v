@@ -218,7 +218,7 @@ module control (/*AUTOARG*/
 				// ALU should use the 2nd register read from the register file
 					case(Funct)
 						ADD : begin
-
+							
 						end
 						
 						SUB : begin

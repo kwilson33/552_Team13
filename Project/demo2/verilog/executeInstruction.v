@@ -37,8 +37,8 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 	wire branchEN; 
 
 	//intermidiate wires
-	// calculatedPC and jalr_jr_displacement are used for jumping
-	wire[15:0] PC_Increment, branchOffset, calculatedPC, jalr_jr_displacement; 
+	// calculatedPC and jalr_jr_updatedPC are used for jumping
+	wire[15:0] PC_Increment, branchOffset, calculatedPC, jalr_jr_updatedPC; 
 
 	//Unused connections, don't care about the Cout of the adders?
 	wire cout1, cout2; 
@@ -84,7 +84,7 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 	assign aluSecondInput = Branching ? (16'h0000) : (ALUSrc2 ? (B) : signExtendedImmediateReg); 
 
 	// Calculate the displacement for  JALR and jr instructions
-	rca_16b adder2(.A(S_extend8_in), .B(A), .C_in(1'b0), .S(jalr_jr_displacement), .C_out(cout2)); 
+	rca_16b adder2(.A(S_extend8_in), .B(A), .C_in(1'b0), .S(jalr_jr_updatedPC), .C_out(cout2)); 
 	
 	// This modules decides if we're branching or not 
 	branchControlLogic branchControl(.Op(instr[15:11]), 
@@ -101,18 +101,22 @@ module executeInstruction (instr, invA, invB, A, B, Cin, SESel, ALUSrc2,
 								 .reg7_En(reg7_En), 
 								 .jr_and_jalr_enable(jr_and_jalr_enable), 
 								 .jal_and_j_enable(jal_and_j_enable)); 
+
+	
 	// If jumping, use sign extended 11 bits of instructions, otherwise use branch output from above
 	assign PC_Increment = jal_and_j_enable ? (signExtendedImmediateReg) : (branchOffset);
 
 	
+
 	// Add PC + 2 (normal) + offset of branch,jump, or nothing
 	rca_16b adder1(.A(PC_Increment), .B(next_PC_normal), .C_in(1'b0), .S(calculatedPC), .C_out(cout1)); 
 	// Set the new PC output to PC+2, or PC + branch offset, 
 	// or PC + sign extended 11, or finally PC + 8 sign extended
 
+
 	// Pass to EX_MEM, MEM_WB, back to fetch
-	assign updatedPC = jr_and_jalr_enable ? (jalr_jr_displacement) : (calculatedPC);
-	
+	assign updatedPC = jr_and_jalr_enable ? (jalr_jr_updatedPC) : (calculatedPC);
+
 
 	alu 	mainALU( .A(A), .B(aluSecondInput), .Cin(Cin), 
 					.Op(instr[15:11]), 

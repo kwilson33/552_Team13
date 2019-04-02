@@ -114,23 +114,20 @@ module alu (A, B, Cin, Op, Funct, invA, invB, Out, Zero, Neg, Pos, err);
 	localparam 	RTI 		= 5'b00011;
 	localparam 	HALT 		= 5'b00000;
 	
-
+	
 	assign Zero = ~(|outRCA); 
 	// check if output of RCA is positive or negative
 	assign Pos = ~(outRCA[15] | Zero );
 	assign Neg =  (outRCA[15] & ~Zero );
 
-	/*
+	/*	
 	assign Zero = ~(|Out); 
 	// check if output of RCA is positive or negative
 	assign Pos = ~(Out[15] | Zero );
 	assign Neg =  (Out[15] & ~Zero );
 */
 
-	//assign Zero = ~(|outRCA); s
-	// check if output of RCA is positive or negative
-	//assign Pos = ~(outRCA[15] | Zero );
-	//assign Neg =  (outRCA[15] | Zero );
+	
 
 	assign err = errRegister;
 	assign Out = outReg;
