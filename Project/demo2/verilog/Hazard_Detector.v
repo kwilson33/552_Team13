@@ -37,41 +37,42 @@ module Hazard_Detector (  ID_EX_RegWrite_in,
 			MEM_WB_raw_Rs,MEM_WB_raw_Rt,
 			ID_EX_stall, EX_MEM_stall, MEM_WB_stall;
 
-
-	assign ID_EX_raw_Rs = (ID_EX_WriteRegister_in == IF_ID_Rs_in) & ReadingRs; 
+	//TODO: Fix Rs and Rt Raw conditions
+	
+	
+	assign ID_EX_raw_Rs = (ID_EX_WriteRegister_in == IF_ID_Rs_in) & ReadingRs; //pipeline
 
 	//bits [7:5] = Rt = ReadReg2
 	//ID/EX.WriteRegister = IF/ID.ReadRegister2 
-	assign ID_EX_raw_Rt = (ID_EX_WriteRegister_in == IF_ID_Rt_in) & ReadingRt;
+	assign ID_EX_raw_Rt = (ID_EX_WriteRegister_in == IF_ID_Rt_in) & ReadingRt && EXMEM_RegWrite_in; //&& EX_MEM.RegWrite && IF_ID.ReadingRt
 
 	//EX/MEM.WriteRegister = IF/ID.ReadRegister1
-	assign EX_MEM_raw_Rs = (EX_Mem_WriteRegister_in == IF_ID_Rs_in) & ReadingRs;
+	assign EX_MEM_raw_Rs = (EX_Mem_WriteRegister_in == IF_ID_Rs_in) & ReadingRs; 
 
 	//EX/MEM.WriteRegister = IF/ID.ReadRegister2 (for Mem to Mem (LD & ST) forwarding make sure you don't stall)
-	assign EX_MEM_raw_Rt = (EX_Mem_WriteRegister_in == IF_ID_Rt_in) & ReadingRt;
-
+	assign EX_MEM_raw_Rt = (EX_Mem_WriteRegister_in == IF_ID_Rt_in) & ReadingRt && EXMEM_RegWrite_in; //&& (EX_MEM.RegWrite) && IF_ID.ReadingRt && ((ID_EX.Rd !=  IF_ID.Rt) || !ID_EX.RegWrite))
 	
+	
+	/*
 	//TODO : ask matt about this: fixed with bypassing
 	//Mem/WB.WriteRegister = IF/ID.ReadRegister1
 	assign MEM_WB_raw_Rs = (MEM_WB_WriteRegister_in == IF_ID_Rs_in) & ReadingRs;
 
 	//MEM/WB.WriteRegister = IF/ID.ReadRegister2 Rt 
 	assign MEM_WB_raw_Rt = (MEM_WB_WriteRegister_in == IF_ID_Rt_in) & ReadingRt; 
-    
+    */
 
 	//Stall Conditions
 	assign ID_EX_stall = ID_EX_RegWrite_in & (ID_EX_raw_Rs | ID_EX_raw_Rt);
-	assign EX_MEM_stall = EX_Mem_WriteRegister_in & (EX_MEM_raw_Rs | EX_MEM_raw_Rt);
+	assign EX_MEM_stall = EXMEM_RegWrite_in & (EX_MEM_raw_Rs | EX_MEM_raw_Rt);
 
 	// Since we're doing bypassing, don't have to worry about this 
-	assign MEM_WB_stall = MEM_WB_WriteRegister_in & (MEM_WB_raw_Rs | MEM_WB_raw_Rt);
+	assign MEM_WB_stall = MEMWB_RegWrite_in & (MEM_WB_raw_Rs | MEM_WB_raw_Rt);
 
 
 	// outputs of Hazard Detector
-	assign stall = (ID_EX_stall | EX_MEM_stall | MEM_WB_stall); // Since we're doing bypassing, don't have to worry about MEM_WB
+	assign stall = (ID_EX_stall | EX_MEM_stall /*| MEM_WB_stall*/); // Since we're doing bypassing, don't have to worry about MEM_WB
 	assign PC_Write_Enable_out = ~stall;
 	assign IF_ID_WriteEnable_out = ~stall;
-
-
 
 endmodule

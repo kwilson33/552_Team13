@@ -143,7 +143,8 @@ module proc (/*AUTOARG*/
                                      .ALUSrc2_in(instructionDecode.controlUnit.ALUSrc2), ///////////////
                                      
                                      .Branching_in(instructionDecode.controlUnit.Branching),
-
+									//.ReadingRs_in(instructionDecode.controlUnit.ReadingRs),
+									//.ReadingRt_in(instructionDecode.controlUnit.ReadingRt),
                                      .SESel_in(instructionDecode.controlUnit.SESel), 
                                      .SESel_out(ID_EX_SESel_out),
                                      .RegDst_in(instructionDecode.controlUnit.RegDst),
@@ -192,7 +193,8 @@ module proc (/*AUTOARG*/
 									  .MemToReg_in(ID_EX_Stage.dff_IDEX_MemToReg_out.q),
 									  .DMemDump_in(ID_EX_Stage.dff_IDEX_DMemDump_out.q), 
 									  .Branching_in(ID_EX_Stage.dff_IDEX_Branching_out.q),
-
+										//.ReadingRs_in(ID_EX_Stage.dff_IDEX_ReadingRs_out.q),
+									//.ReadingRt_in(ID_EX_Stage.dff_IDEX_ReadingRt_out.q),
 									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
 									  .Jump_in(JAL_en),
 									  .aluOutput_in(aluOutput), 
@@ -228,7 +230,8 @@ module proc (/*AUTOARG*/
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
                     .DMemDump_in(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-
+					//.ReadingRs_in(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q),
+									//.ReadingRt_in(EX_MEM_Stage.dff_EXMEM_ReadingRt_out.q),
                     .updatedPC_in(EX_MEM_Stage.rf_EXMEM_updatedPC_out.readData),
                     .nextPC_in(EX_MEM_Stage.rf_EXMEM_nextPC_out.readData), 
 									  
