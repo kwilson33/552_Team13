@@ -161,7 +161,7 @@ module control (/*AUTOARG*/
 	assign ALUSrc2 		= ALUSrc2Register; 
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
-	assign DMemDump 	= DMemDumpRegister & (~rst); // if rst is high, DMEMDump automatically is 0 to fix IF_ID Latch bug
+	assign DMemDump 	= DMemDumpRegister;// & (~rst); // if rst is high, DMEMDump automatically is 0 to fix IF_ID Latch bug
 	assign invA 		= invA_Register;
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;
@@ -367,7 +367,8 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				
 				RegDstRegister = 2'b01;
-				ReadingRtRegister = no_assert;
+				// WE ARE ACTUALLY READING FROM RT EVEN THOUGH IT SAYS RD
+				//10000 sss ddd iiiii ST Rd, Rs, immediate Mem[Rs + I(sign ext.)] <- Rd 
 			end
 			LD : begin
 				// ALU should use the immediate
@@ -381,7 +382,10 @@ module control (/*AUTOARG*/
 				
 				// Use memory contents instead of ALU to write to register
 				MemToRegRegister = assert;
+				
+				// Rd <- Mem[Rs + I(sign ext.)], Rd is actually Rt, same bits
 				ReadingRtRegister = no_assert;
+		
 			end
 			// Write to Rs for STU
 			STU : begin	
@@ -394,7 +398,9 @@ module control (/*AUTOARG*/
 				DMemEnRegister = assert;
 				DMemWriteRegister = assert;
 				RegDstRegister = 2'b10;
-				ReadingRtRegister = no_assert;
+
+				// WE ARE ACTUALLY READING FROM RT EVEN THOUGH IT SAYS RD
+				//10000 sss ddd iiiii ST Rd, Rs, immediate Mem[Rs + I(sign ext.)] <- Rd 
 			end	
 
 			/////////////////IFORMAT-2////////////////////
@@ -536,7 +542,6 @@ module control (/*AUTOARG*/
 			SIIC : begin
 				ReadingRsRegister = no_assert;
 				ReadingRtRegister = no_assert;
-
 			end
 			
 			NOP : begin

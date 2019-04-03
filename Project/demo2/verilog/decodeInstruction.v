@@ -43,7 +43,8 @@ module decodeInstruction (//inputs
 					.SESel(SESel), .PCSrc(PCSrc), .PCImm(PCImm), .Cin(Cin),
 					.MemToReg(MemToReg), .DMemDump(DMemDump), .Jump(Jump),
 					.invA(invA), .invB(invB), 
-					.Branching(Branching), .BranchingOrJumping(BranchingOrJumping), .ReadingRs(ReadingRs), 
+					.Branching(Branching), .BranchingOrJumping(BranchingOrJumping), 
+					.ReadingRs(ReadingRs), 
 					.ReadingRt(ReadingRt),
 					// Inputs
 					.OpCode(instruction[15:11]),

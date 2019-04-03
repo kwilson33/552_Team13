@@ -5,7 +5,8 @@ module EX_MEM_Latch (// Inputs
 					WriteRegister_in, WriteRegister_out,
 					aluOutput_in, B_in, updatedPC_in,
 					nextPC_in, branchingPCEnable_in,
-					BranchingOrJumping_in);
+					BranchingOrJumping_in,
+					ReadingRs_in, ReadingRt_in);
 					
 
 	//TODO: Check if our branching and jump are connected to the correct signals
@@ -14,7 +15,8 @@ module EX_MEM_Latch (// Inputs
 	input clk, rst, en, RegWrite_in, DMemWrite_in,
 		 DMemEn_in, MemToReg_in, 
 		 DMemDump_in, Branching_in, Jump_in,
-		 branchingPCEnable_in, BranchingOrJumping_in;
+		 branchingPCEnable_in, BranchingOrJumping_in,
+		 ReadingRs_in, ReadingRt_in;
 	input [15:0] aluOutput_in, B_in, updatedPC_in, nextPC_in; 
 	input [2:0] WriteRegister_in;
 
@@ -23,7 +25,8 @@ module EX_MEM_Latch (// Inputs
 	wire [15:0] aluOutput_out, B_out, updatedPC_out, nextPC_out; 
 	wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out, 
 		 DMemDump_out, Branching_out, Jump_out,
-		 branchingPCEnable_out, BranchingOrJumping_out; 
+		 branchingPCEnable_out, BranchingOrJumping_out,
+		 ReadingRs_out, ReadingRt_out; 
 
 
 	// use connection by reference to these modules to pass from EX_MEM to Memory and Writeback, Hazard Detection
@@ -40,6 +43,10 @@ module EX_MEM_Latch (// Inputs
 	dff dff_EXMEM_Branching_out(.d(Branching_in), 	.q(Branching_out), .clk(clk), .rst(rst));
 	dff dff_EXMEM_Jump_out		(.d(Jump_in), 	  	.q(Jump_out), .clk(clk), .rst(rst));
 	dff dff_EXMEM_branchingPCEnable_out	(.d(branchingPCEnable_in), 	  	.q(branchingPCEnable_out), .clk(clk), .rst(rst));
+
+	dff dff_EXMEM_ReadingRs_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst));
+	dff dff_EXMEM_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst));
+
 
 
 	// dff for WriteRegister

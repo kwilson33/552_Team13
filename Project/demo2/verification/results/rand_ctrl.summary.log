@@ -1,8 +1,8 @@
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_1_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_2_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_3_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_4_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_5_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_6_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_7_ctrl.asm FAILED
-/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_8_ctrl.asm FAILED
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_1_ctrl.asm SUCCESS CPI:2.1 CYCLES:1147 ICOUNT:551 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_2_ctrl.asm SUCCESS CPI:2.0 CYCLES:1183 ICOUNT:594 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_3_ctrl.asm SUCCESS CPI:2.0 CYCLES:1248 ICOUNT:615 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_4_ctrl.asm SUCCESS CPI:2.3 CYCLES:1111 ICOUNT:473 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_5_ctrl.asm SUCCESS CPI:2.0 CYCLES:1160 ICOUNT:566 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_6_ctrl.asm SUCCESS CPI:2.1 CYCLES:1230 ICOUNT:592 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_7_ctrl.asm SUCCESS CPI:2.0 CYCLES:1226 ICOUNT:608 IHITRATE: 0 DHITRATE: 0
+/u/s/i/sinclair/courses/cs552/spring2019/handouts/testprograms/public/rand_ctrl/t_8_ctrl.asm SUCCESS CPI:2.4 CYCLES:1119 ICOUNT:471 IHITRATE: 0 DHITRATE: 0
