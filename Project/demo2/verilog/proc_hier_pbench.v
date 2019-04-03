@@ -211,7 +211,8 @@ module proc_hier_pbench();
       assign MemDataIn = DUT.p0.dataMemory.writeData;
       assign MemDataOut = DUT.p0.dataMemory.readData;
 
-      assign MemAddress = DUT.p0.instructionExecute.aluOutput;
+     // assign MemAddress = DUT.p0.instructionExecute.aluOutput;
+      assign MemAddress = DUT.p0.EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData; 
 
       //TODO: So confused on this
       //assign Halt = DUT.p0.instructionFetch.dump; 
