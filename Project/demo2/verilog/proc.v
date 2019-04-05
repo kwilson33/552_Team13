@@ -25,7 +25,8 @@ module proc (/*AUTOARG*/
             // outputs of pipeline latches
             EX_MEM_writeRegister_out, 
             MEM_WB_writeRegister_out,  
-            ID_EX_SESel_out, ID_EX_RegDst_out;
+            ID_EX_SESel_out;
+  wire [1:0] ID_EX_RegDst_out;
 
    wire createDump, errDecode , JAL_en, 
         EX_branchingPCEnable_to_EX_MEM,

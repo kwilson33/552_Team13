@@ -58,7 +58,7 @@ module memory2c_align (data_out, data_in, addr, enable, wr, createdump, clk, rst
 
 //    assign data_temp_0 = mem[addr];
 //    assign data_temp_2 = mem[{addr+8'h1];
-    assign err = enable & addr[0]; //word aligned; odd address is invalid
+    assign err = enable & addr[0]; //not word aligned; odd address is invalid
 
     // unaligned access returns as if aligned
     assign data_out = addr[0] ? 
