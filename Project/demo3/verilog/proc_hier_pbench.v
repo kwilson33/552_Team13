@@ -136,8 +136,8 @@ module proc_hier_pbench();
     assign WriteData = DUT.p0.instructionWriteback.writeData;
 
     //assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
-    assign MemRead =  (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & ~(DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q);
-    assign MemWrite = (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q);
+    assign MemRead =  (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & ~(DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q) & Done;
+    assign MemWrite = (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q) & Done;
     //assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
 
     //assign MemDataIn = DUT.p0.EX_MEM_Stage.rf_EXMEM_B_out.readData;

@@ -114,6 +114,7 @@ module proc (/*AUTOARG*/
                                      .B_in(alu_B),
 
                                      .stall(stall_from_HazardDet),
+									 .stallMemStall(dataMemory.dataMemoryModule.Stall), //Kevin: added 4/7
 
                                      .PC_In(IF_ID_PC_Out), 
                                      .instruction_in(IF_ID_instruction_Out), 
