@@ -13,8 +13,10 @@ module memoryReadWrite (aluOutput, writeData, readData, memRead, memWrite, rst, 
 	assign memReadOrWrite = (memWrite | memRead);
 
 	// This module will create the output readData for the top level module
-	memory2c_align dataMemory(.data_out(readData), .data_in(writeData), .addr(aluOutput), 
-						.enable(memReadOrWrite), .wr(memWrite), 
-						.createdump(dump), .clk(clk), .rst(rst), .err(unalignedMemErr)); 
-
+	stallmem dataMemory			(.DataIn(16'b0), .Addr(currentPC),
+								 .Wr(memWrite), .clk(clk), .rst(rst), 
+								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
+								.Stall(instructionMemStall_out), .Rd(memRead), .CacheHit(cacheHit), //Rd == DMemEn (Mingyuan only did for LD instruction, I don't think this matters though if you look at stallmem.v)
+								.Done(instructionMemDone_out)); // probably do nothing with this
+								   
 endmodule

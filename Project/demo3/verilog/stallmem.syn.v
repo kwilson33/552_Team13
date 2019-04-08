@@ -56,7 +56,7 @@ module stallmem (DataOut, Done, Stall, CacheHit, err, Addr, DataIn, Rd, Wr, crea
    input          rst;
    output         err;
 
-   reg [7:0]      mem [0:63];
+   reg [7:0]      mem [0:65535];
    reg            loaded;
    reg [16:0]     largest;
    reg [31:0]     rand_pat;
@@ -84,25 +84,25 @@ module stallmem (DataOut, Done, Stall, CacheHit, err, Addr, DataIn, Rd, Wr, crea
       largest = 0;
 //      rand_pat = 32'b01010010011000101001111000001010;
       seed = 0;
-      //$value$plusargs("seed=%d", seed);
-      //$display("Using seed %d", seed);
-      //rand_pat = $random(seed);
-      //$display("rand_pat=%08x %32b", rand_pat, rand_pat);
+      $value$plusargs("seed=%d", seed);
+      $display("Using seed %d", seed);
+      rand_pat = $random(seed);
+      $display("rand_pat=%08x %32b", rand_pat, rand_pat);
       // initialize memories to 0 first
-      //for (i=0; i<=65535; i=i+1) begin
-      //   mem[i] = 8'd0;
-      //end 
+      for (i=0; i<=65535; i=i+1) begin
+         mem[i] = 8'd0;
+      end 
          
    end
 
    always @(posedge clk) begin
       if (rst) begin
-     /* 
+     
          if (!loaded) begin
             $readmemh("loadfile_all.img", mem);
             loaded = 1;
          end
-         */
+         
       end
       else begin
          rand_pat = (rand_pat >> 1) | (rand_pat[0] << 31);
@@ -112,7 +112,7 @@ module stallmem (DataOut, Done, Stall, CacheHit, err, Addr, DataIn, Rd, Wr, crea
             mem[Addr+1] = DataIn[7:0];    // The actual write
             if ({1'b0, Addr} > largest) largest = Addr;  // avoid negative numbers
          end
-         /*
+         
          if (createdump) begin
             mcd = $fopen("dumpfile");
             for (i=0; i<=largest; i=i+1) begin
@@ -120,7 +120,7 @@ module stallmem (DataOut, Done, Stall, CacheHit, err, Addr, DataIn, Rd, Wr, crea
             end
             $fclose(mcd);
          end
-         */
+         
       end
    end
 

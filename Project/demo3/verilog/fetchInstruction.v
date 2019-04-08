@@ -34,22 +34,15 @@ module fetchInstruction(clk, rst,
 	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(pcUpdated), .writeEnable(~dump)); 
 
 
-	/*
+	
 	// instruction Memory
 	// instruction comes from the current PC
 	stallmem instructionMemory (.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(1'b0), .clk(clk), .rst(rst),
 								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
-								.Stall(instructionMemStall_out), .Rd(1'b0), .CacheHit(cacheHit), 
-								.Done(instructionMemDone_out));
-								*/    
-
-	memory2c_align instructionMemory (.data_in(16'b0), .addr(currentPC),
-								.enable(1'b1), .wr(1'b0), .clk(clk), .rst(rst),
-								.createdump(dump), .data_out(instruction), .err(unalignedMemErr)); 
-
-	
-
+								.Stall(instructionMemStall_out), .Rd(1'b1), .CacheHit(cacheHit), 
+								.Done(instructionMemDone_out)); // probably do nothing with this
+								
 	// Adding 2 to the PC
 	rca_16b PC_Adder(.A(currentPC), .B(pc_increment), 
 					 .C_in(1'b0), .S(PC_Next), 
