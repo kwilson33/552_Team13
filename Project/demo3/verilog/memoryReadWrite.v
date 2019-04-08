@@ -16,7 +16,7 @@ module memoryReadWrite (aluOutput, writeData, readData, memRead, memWrite, rst, 
 	stallmem dataMemory			(.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(memWrite), .clk(clk), .rst(rst), 
 								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
-								.Stall(instructionMemStall_out), .Rd(memRead), .CacheHit(cacheHit), //Rd == DMemEn (Mingyuan only did for LD instruction, I don't think this matters though if you look at stallmem.v)
+								.Stall(instructionMemStall_out), .Rd(memRead), .CacheHit(cacheHit), // TODO: Do something with stall signal, all subsequent instructions (e.g., instructions in IF, ID, and EX in the above example) should be stopped and your processor would halt (not sure if this is for err or stall???)
 								.Done(instructionMemDone_out)); // probably do nothing with this
 								   
 endmodule

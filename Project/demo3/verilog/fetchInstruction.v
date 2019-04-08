@@ -24,7 +24,7 @@ module fetchInstruction(clk, rst,
 	wire c_out; 
 
 	// if we are branching or stalling halt the PC
-	assign pc_increment = (stall | branchingPCEnable_in /*| instructionMemStall_out*/) ? 16'h0 : 16'h2;
+	assign pc_increment = (stall | branchingPCEnable_in | instructionMemStall_out) ? 16'h0 : 16'h2;
  
 ///////////////////////////////////////////////////////////
 	assign pcUpdated = (MEM_WB_Branch_in) ? PC_In : PC_Next; 
