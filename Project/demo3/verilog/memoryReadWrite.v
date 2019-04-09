@@ -13,7 +13,7 @@ module memoryReadWrite (aluOutput, writeData, readData, memRead, memWrite, rst, 
 	assign memReadOrWrite = (memWrite | memRead);
 
 	// This module will create the output readData for the top level module
-	stallmem dataMemory			(.DataIn(16'b0), .Addr(currentPC),
+	stallmem dataMemoryModule	 (.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(memWrite), .clk(clk), .rst(rst), 
 								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								.Stall(instructionMemStall_out), .Rd(memRead), .CacheHit(cacheHit), // TODO: Do something with stall signal, all subsequent instructions (e.g., instructions in IF, ID, and EX in the above example) should be stopped and your processor would halt (not sure if this is for err or stall???)
