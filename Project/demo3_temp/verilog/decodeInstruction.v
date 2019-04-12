@@ -2,11 +2,11 @@ module decodeInstruction (//inputs
 							instruction, clk, rst,
 						    writeData, writeRegister, RegWrite_in,
 						  //outputs
-						   err, dump, A, B);
+						   err, dump, A, B, valid_in);
 
 	//Inputs
 	input [15:0] instruction, writeData;
-	input 		 clk, rst, RegWrite_in; 
+	input 		 clk, rst, RegWrite_in, valid_in; 
 	input [2:0] writeRegister; // comes from MEM_WB Stage
 
 	// Outputs
@@ -49,7 +49,8 @@ module decodeInstruction (//inputs
 					// Inputs
 					.OpCode(instruction[15:11]),
 					.Funct(instruction[1:0]),
-					.rst(rst));
+					.rst(rst),
+					.valid(valid_in));
 
 
 	// Rd = writeRegister

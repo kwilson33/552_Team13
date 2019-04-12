@@ -33,9 +33,15 @@ module proc (/*AUTOARG*/
         ALUSrc2_connector, 
         masterBorJ,
         // signals for hazard detector
-        PC_WriteEn_from_hazardDet, IF_ID_WriteEn;
+        PC_WriteEn_from_hazardDet, IF_ID_WriteEn,
+        instructionMemoryStall_out,
+        IF_ID_valid_out;
 
-   assign err = (errDecode | instructionExecute.mainALU.err | instructionDecode.regFile.err );
+   assign err = (errDecode |
+                 instructionExecute.mainALU.err | 
+                 instructionDecode.regFile.err /*|
+                 instructionFetch.instructionMemory.err*/);
+
    assign masterBorJ = (instructionDecode.controlUnit.BranchingOrJumping | 
                         ID_EX_Stage.dff_IDEX_BorJ_out.q |
                         EX_MEM_Stage.dff_EXMEM_BorJ_out.q |
@@ -55,6 +61,7 @@ module proc (/*AUTOARG*/
 									    .instruction(fetch_instruction_Out),
                       .branchingPCEnable_in(masterBorJ),
                       .stall(stall_from_HazardDet),
+                      .instructionMemoryStall_out(instructionMemoryStall_out),
                       .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
 
   // ################################################### IF_ID_Stage #######################################################
@@ -65,6 +72,8 @@ module proc (/*AUTOARG*/
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
+                                    .instructionMemoryStall(instructionMemoryStall_out),
+                                    .valid_out(IF_ID_valid_out),
                                     .BranchingOrJumping_in(masterBorJ));
 
   /*
@@ -78,7 +87,7 @@ module proc (/*AUTOARG*/
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
                         .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
-                        .A(alu_A), .B(alu_B));
+                        .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
 
   // ################################################### DETECT HAZARDS #######################################################
 
