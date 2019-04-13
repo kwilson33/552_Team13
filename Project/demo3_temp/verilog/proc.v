@@ -211,7 +211,7 @@ module proc (/*AUTOARG*/
   // ################################################### MEM_WB Stage #######################################################
 
   MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), .en(~dataMemoryStallOut), 
-                    //.en(1'b1),
+                   // .en(1'b1),
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
 									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 
@@ -235,7 +235,7 @@ module proc (/*AUTOARG*/
 
   // ################################################### WRITEBACK #######################################################
   writebackOutput       instructionWriteback(
-                          .writeData(writeData), 
+                         .writeData(writeData), 
   											 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
   											 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
   											 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData),
