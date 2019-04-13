@@ -136,14 +136,18 @@ module proc_hier_pbench();
     assign WriteData = DUT.p0.instructionWriteback.writeData;
 
     //assign MemRead =  DUT.p0.instructionDecode.controlUnit.DMemEn;
-    assign MemRead =  (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & ~(DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q);
-    assign MemWrite = (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemEn_out.q) & (DUT.p0.EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q);
-    //assign MemWrite = (DUT.p0.instructionDecode.controlUnit.DMemEnRegister) & (DUT.p0.instructionDecode.controlUnit.DMemWrite);
+    assign MemRead =    (DUT.p0.dataMemory.memRead) &
+                       ~(DUT.p0.dataMemory.memWrite) &// <-- 1 when should be 0
+                        (DUT.p0.dataMemory.dataMemoryModule.Done);
+
+    assign MemWrite =  (DUT.p0.dataMemory.memRead) & 
+                       (DUT.p0.dataMemory.memWrite) & // <-- 1 when should be 0
+                       (DUT.p0.dataMemory.dataMemoryModule.Done);
 
     //assign MemDataIn = DUT.p0.EX_MEM_Stage.rf_EXMEM_B_out.readData;
     assign MemDataIn = DUT.p0.dataMemory.writeData;
     assign MemDataOut = DUT.p0.dataMemory.readData;
-   // assign MemDataOut = DUT.p0.EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData;
+    //assign MemDataOut = DUT.p0.EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData;
 
      assign MemAddress = DUT.p0.EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData; 
 
@@ -152,7 +156,7 @@ module proc_hier_pbench();
     assign Halt = DUT.p0.dataMemory.dump; 
 
 
-     assign ICacheHit = 0; // Signal indicating a valid instruction cache hit
+     assign ICacheHit = DUT.p0.instructionFetch.instructionMemory.CacheHit; // Signal indicating a valid instruction cache hit
      assign DCacheReq = 0; // Signal indicating a valid instruction data read or write request to cache
      assign DCacheHit = 0; // Signal indicating a valid data cache hit
      assign ICacheReq = 0; // Signal indicating a valid instruction read request to cache

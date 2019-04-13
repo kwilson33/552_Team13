@@ -7,13 +7,14 @@ module fetchInstruction(clk, rst,
 						instruction,
 						PC_WriteEn_in,
 						stall,
-						instructionMemoryStall_out);
+						instructionMemoryStall_out,
+						dataMemoryStallOut);
 
 
 
 
 	input [15:0] PC_In; 
-	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, MEM_WB_Branch_in; 
+	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, MEM_WB_Branch_in, dataMemoryStallOut; 
 
 	output [15:0] PC_Next;
 	output [15:0] instruction; 
@@ -25,7 +26,7 @@ module fetchInstruction(clk, rst,
 	wire c_out; 
 
 	// if we are branching or stalling halt the PC
-	assign pc_increment = (stall | branchingPCEnable_in | instructionMemoryStall_out) ? 16'h0 : 16'h2;
+	assign pc_increment = (stall | branchingPCEnable_in | instructionMemoryStall_out /*| dataMemoryStallOut*/ ) ? 16'h0 : 16'h2;
 
 ///////////////////////////////////////////////////////////
 	assign pcUpdated = (MEM_WB_Branch_in) ? PC_In : PC_Next; 
@@ -34,13 +35,6 @@ module fetchInstruction(clk, rst,
 	//Output: [15:0]readData 
 	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(pcUpdated), .writeEnable(~dump)); 
 
-	/*
-	// instruction Memory
-	// instruction comes from the current PC
-	memory2c instructionMemory (.data_in(16'b0), .addr(currentPC),
-								.enable(1'b1), .wr(1'b0), .clk(clk), .rst(rst),
-								.createdump(dump), .data_out(instruction)); 
-	*/
 	
 	// instruction Memory
 	// instruction comes from the current PC

@@ -34,13 +34,14 @@ module proc (/*AUTOARG*/
         masterBorJ,
         // signals for hazard detector
         PC_WriteEn_from_hazardDet, IF_ID_WriteEn,
-        instructionMemoryStall_out,
+        instructionMemoryStall_out, dataMemoryStallOut,
         IF_ID_valid_out;
 
    assign err = (errDecode |
                  instructionExecute.mainALU.err | 
-                 instructionDecode.regFile.err /*|
-                 instructionFetch.instructionMemory.err*/);
+                 instructionDecode.regFile.err |
+                 instructionFetch.instructionMemory.err|
+                 dataMemory.dataMemoryModule.err);
 
    assign masterBorJ = (instructionDecode.controlUnit.BranchingOrJumping | 
                         ID_EX_Stage.dff_IDEX_BorJ_out.q |
@@ -62,13 +63,14 @@ module proc (/*AUTOARG*/
                       .branchingPCEnable_in(masterBorJ),
                       .stall(stall_from_HazardDet),
                       .instructionMemoryStall_out(instructionMemoryStall_out),
-                      .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
+                      .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q),
+                      .dataMemoryStallOut(dataMemoryStallOut));
 
   // ################################################### IF_ID_Stage #######################################################
 
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
                                     .instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEn), 
+                                    .en(IF_ID_WriteEn & ~dataMemoryStallOut), 
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
@@ -86,7 +88,7 @@ module proc (/*AUTOARG*/
 									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
-                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
+                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), // maybe add the stall from mem module  here 
                         .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
 
   // ################################################### DETECT HAZARDS #######################################################
@@ -109,7 +111,8 @@ module proc (/*AUTOARG*/
   // ################################################### ID_EX Stage #######################################################
 
   //TODO: connect a few signals
-  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(1'b1), //TODO: Fix Enable??
+  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), //.en(1'b1), //TODO: Fix Enable??
+                                     .en(~dataMemoryStallOut),
                                      .A_in(alu_A),
                                        
                                         
@@ -174,8 +177,8 @@ module proc (/*AUTOARG*/
   // ################################################### EX_MEM Stage #######################################################
 
 
-  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), .en(1'b1), /*TODO: Fix enable */ 
-
+  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
+                                      .en(~dataMemoryStallOut),
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
 									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
@@ -202,11 +205,13 @@ module proc (/*AUTOARG*/
   									.memWrite(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
                     .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),  
                     .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-                    .readData(readData)); //output
+                    .readData(readData),
+                    .dataMemoryStallOut(dataMemoryStallOut)); //output
 
   // ################################################### MEM_WB Stage #######################################################
 
-  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), .en(1'b1), 
+  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), .en(~dataMemoryStallOut), 
+                    //.en(1'b1),
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
 									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 

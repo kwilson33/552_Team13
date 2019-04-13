@@ -15,12 +15,11 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       // this goes into control.v and will determine if DMemDump should actually be asserted
       wire valid_in;
 
-      assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in | instructionMemoryStall) ?  16'b0000100000000000 : instruction_in;
+      assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in) ?  16'b0000100000000000 : instruction_in;
       
       // if we have a random stall from instr mem, then we should NOT halt
       assign valid_in = ~(rst | instructionMemoryStall);
-      //assign valid_out = valid_in;
-      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst));
+      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .en(en));
 
       // use 16 bit registers to decide if we should use current saved output or update output for
       // the PC and the instruction

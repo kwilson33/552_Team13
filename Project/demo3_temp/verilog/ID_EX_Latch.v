@@ -71,28 +71,28 @@ module ID_EX_Latch(clk, rst, en,
       register_16bits rf_IDEX_S_extend11_out(.readData(S_extend11_out), .clk(clk), .rst(rst), .writeData(S_extend11_in), .writeEnable(en));
       register_16bits rf_IDEX_instruction_out(.readData(stall_or_instruction_out), .clk(clk), .rst(rst), .writeData(stall_or_instruction_in), .writeEnable(en));
 
-      dff dff_IDEX_RegWrite_out(.d(RegWrite_or_stall), .q(RegWrite_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_DMemWrite_out(.d(DMemWrite_or_stall), .q(DMemWrite_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_DMemEn_in_out(.d(DMemEn_or_stall), .q(DMemEn_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_MemToReg_out(.d(MemToReg_or_stall), .q(MemToReg_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_DMemDump_out(.d(DMemDump_or_stall), .q(DMemDump_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_invA_out(.d(invA_in), .q(invA_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_invB_out(.d(invB_in), .q(invB_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_Cin_out(.d(Cin_in), .q(Cin_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_ALUSrc2_out(.d(ALUSrc2_in), .q(ALUSrc2_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_Branching_out(.d(Branching_in), .q(Branching_out), .clk(clk), .rst(rst));
+      dff dff_IDEX_RegWrite_out(.d(RegWrite_or_stall), .q(RegWrite_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_DMemWrite_out(.d(DMemWrite_or_stall), .q(DMemWrite_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_DMemEn_in_out(.d(DMemEn_or_stall), .q(DMemEn_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_MemToReg_out(.d(MemToReg_or_stall), .q(MemToReg_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_DMemDump_out(.d(DMemDump_or_stall), .q(DMemDump_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_invA_out(.d(invA_in), .q(invA_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_invB_out(.d(invB_in), .q(invB_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_Cin_out(.d(Cin_in), .q(Cin_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_ALUSrc2_out(.d(ALUSrc2_in), .q(ALUSrc2_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_Branching_out(.d(Branching_in), .q(Branching_out), .clk(clk), .rst(rst), .en(en));
 
-      dff dff_IDEX_ReadingRs_out(.d(ReadingRs_in), .q(ReadingRs_out), .clk(clk), .rst(rst));
-      dff dff_IDEX_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst));
+      dff dff_IDEX_ReadingRs_out(.d(ReadingRs_in), .q(ReadingRs_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .en(en));
 
       // dff for SESel and RegDst
-      dff dff_IDEX_SESel_out0(.d(SESel_in[0]), .q(SESel_out[0]), .clk(clk), .rst(rst));
-      dff dff_IDEX_SESel_out1(.d(SESel_in[1]), .q(SESel_out[1]), .clk(clk), .rst(rst));
-      dff dff_IDEX_SESel_out2(.d(SESel_in[2]), .q(SESel_out[2]), .clk(clk), .rst(rst));
+      dff dff_IDEX_SESel_out0(.d(SESel_in[0]), .q(SESel_out[0]), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_SESel_out1(.d(SESel_in[1]), .q(SESel_out[1]), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_SESel_out2(.d(SESel_in[2]), .q(SESel_out[2]), .clk(clk), .rst(rst), .en(en));
 
-      dff dff_IDEX_RegDst_out0(.d(RegDst_in[0]), .q(RegDst_out[0]), .clk(clk), .rst(rst));
-      dff dff_IDEX_RegDst_out1(.d(RegDst_in[1]), .q(RegDst_out[1]), .clk(clk), .rst(rst));
-      dff dff_IDEX_BorJ_out(.d(BranchingOrJumping_in), .q(BranchingOrJumping_out), .clk(clk), .rst(rst)); 
+      dff dff_IDEX_RegDst_out0(.d(RegDst_in[0]), .q(RegDst_out[0]), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_RegDst_out1(.d(RegDst_in[1]), .q(RegDst_out[1]), .clk(clk), .rst(rst), .en(en));
+      dff dff_IDEX_BorJ_out(.d(BranchingOrJumping_in), .q(BranchingOrJumping_out), .clk(clk), .rst(rst), .en(en)); 
 
       //Want to store a bunch of control signals here
       
