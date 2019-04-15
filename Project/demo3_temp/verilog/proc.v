@@ -210,11 +210,14 @@ module proc (/*AUTOARG*/
 
   // ################################################### MEM_WB Stage #######################################################
 
-  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), .en(~dataMemoryStallOut), 
-                   // .en(1'b1),
+  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), //.en(~dataMemoryStallOut), 
+                    .en(1'b1),
+
+                   //Send NOP into write regwrite_in
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
-									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 
+									//  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+									.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
 									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
