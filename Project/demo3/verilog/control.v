@@ -28,14 +28,15 @@ module control (/*AUTOARG*/
                 // Inputs
                 OpCode,
                 Funct,
-                rst// use for checking if DMEMDump should be asserted
+                rst,// use for checking if DMEMDump should be asserted
+                valid
                 );
 
 
    // inputs
    input [4:0]  OpCode;
    input [1:0]  Funct;
-   input rst;
+   input rst, valid;
    
    // outputs
    output       err;
@@ -161,7 +162,7 @@ module control (/*AUTOARG*/
 	assign ALUSrc2 		= ALUSrc2Register; 
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
-	assign DMemDump 	= DMemDumpRegister;// & (~rst); // if rst is high, DMEMDump automatically is 0 to fix IF_ID Latch bug
+	assign DMemDump 	= DMemDumpRegister & valid;
 	assign invA 		= invA_Register;
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;

@@ -1,7 +1,6 @@
 /* $Author: karu $ */
-/* $LastChangedDate: 2009-04-24 09:28:13 -0500 (Fri, 24 Apr 2009) $ */
-/* $Rev: 77 $ */
-
+/* $LastChangedDate: 2009-03-04 23:09:45 -0600 (Wed, 04 Mar 2009) $ */
+/* $Rev: 45 $ */
 // clock and reset generator
 // CS/ECE 552
 // Andy Phelps (TA)
@@ -36,13 +35,19 @@ module clkrst (clk, rst, err);
       end
     end
     always @(posedge clk) begin
-    	cycle_count = cycle_count + 1;
-	if (cycle_count > 1000000) begin
-		$display("hmm....more than 100000 cycles of simulation...error?\n");
-		$finish;
-	end
+       cycle_count = cycle_count + 1;
+	   /*
+	     MDS (3/25/19): change from 100000 cycles to 100004 cycles to
+	     allow tests that intentionally loop infinitely to pass in wiscalculator;
+	     without this change, such benchmarks will erroneously fail due to
+		 reset cycles at the beginning.
+		*/
+        if (cycle_count > 100004) begin
+          $display("hmm....more than 100004 cycles of simulation...error?\n");
+		  $finish;
+        end
     end
 
 
 endmodule
-// DUMMY LINE FOR REV CONTROL :9:
+// DUMMY LINE FOR REV CONTROL :0:

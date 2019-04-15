@@ -26,7 +26,6 @@ module proc (/*AUTOARG*/
             EX_MEM_writeRegister_out, 
             MEM_WB_writeRegister_out,  
             ID_EX_SESel_out;
-
   wire [1:0] ID_EX_RegDst_out;
 
    wire createDump, errDecode , JAL_en, 
@@ -34,14 +33,15 @@ module proc (/*AUTOARG*/
         ALUSrc2_connector, 
         masterBorJ,
         // signals for hazard detector
-        PC_WriteEn_from_hazardDet, IF_ID_WriteEn;
+        PC_WriteEn_from_hazardDet, IF_ID_WriteEn,
+        instructionMemoryStall_out, dataMemoryStallOut,
+        IF_ID_valid_out;
 
-   assign err = (errDecode | 
-                instructionExecute.mainALU.err | 
-                instructionDecode.regFile.err |
-                // these 2 errors are for unaligned memory. Phase 2.1
-                instructionFetch.instructionMemory.err |
-                dataMemory.dataMemory.err);
+   assign err = (errDecode |
+                 instructionExecute.mainALU.err | 
+                 instructionDecode.regFile.err |
+                 instructionFetch.instructionMemory.err|
+                 dataMemory.dataMemoryModule.err);
 
    assign masterBorJ = (instructionDecode.controlUnit.BranchingOrJumping | 
                         ID_EX_Stage.dff_IDEX_BorJ_out.q |
@@ -62,16 +62,20 @@ module proc (/*AUTOARG*/
 									    .instruction(fetch_instruction_Out),
                       .branchingPCEnable_in(masterBorJ),
                       .stall(stall_from_HazardDet),
-                      .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q));
+                      .instructionMemoryStall_out(instructionMemoryStall_out),
+                      .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q),
+                      .dataMemoryStallOut(dataMemoryStallOut));
 
   // ################################################### IF_ID_Stage #######################################################
 
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
                                     .instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEn), 
+                                    .en(IF_ID_WriteEn & ~dataMemoryStallOut), 
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
+                                    .instructionMemoryStall(instructionMemoryStall_out),
+                                    .valid_out(IF_ID_valid_out),
                                     .BranchingOrJumping_in(masterBorJ));
 
   /*
@@ -84,8 +88,8 @@ module proc (/*AUTOARG*/
 									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
-                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q),
-                        .A(alu_A), .B(alu_B));
+                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), // maybe add the stall from mem module  here 
+                        .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
 
   // ################################################### DETECT HAZARDS #######################################################
 
@@ -107,14 +111,14 @@ module proc (/*AUTOARG*/
   // ################################################### ID_EX Stage #######################################################
 
   //TODO: connect a few signals
-  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), .en(1'b1), //TODO: Fix Enable??
+  ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), //.en(1'b1), //TODO: Fix Enable??
+                                     .en(~dataMemoryStallOut),
                                      .A_in(alu_A),
                                        
                                         
                                      .B_in(alu_B),
 
-                                     .mainStall(stall_from_HazardDet),
-									                   .stallMemStall(dataMemory.dataMemoryModule.Stall), //Kevin: added 4/7
+                                     .stall(stall_from_HazardDet),
 
                                      .PC_In(IF_ID_PC_Out), 
                                      .instruction_in(IF_ID_instruction_Out), 
@@ -173,8 +177,8 @@ module proc (/*AUTOARG*/
   // ################################################### EX_MEM Stage #######################################################
 
 
-  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), .en(1'b1), /*TODO: Fix enable */ 
-
+  EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
+                                      .en(~dataMemoryStallOut),
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
 									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
@@ -201,20 +205,25 @@ module proc (/*AUTOARG*/
   									.memWrite(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
                     .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),  
                     .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-                    .readData(readData)); //output
+                    .readData(readData),
+                    .dataMemoryStallOut(dataMemoryStallOut)); //output
 
   // ################################################### MEM_WB Stage #######################################################
 
-  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), .en(1'b1), 
+  MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), //.en(~dataMemoryStallOut), 
+                    .en(1'b1),
+
+                   //Send NOP into write regwrite_in
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
-									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q), 
+									//  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+									.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
 									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
                     .DMemDump_in(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-					          .ReadingRs_in(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q),
-									  .ReadingRt_in(EX_MEM_Stage.dff_EXMEM_ReadingRt_out.q),
+					           .ReadingRs_in(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q),
+									   .ReadingRt_in(EX_MEM_Stage.dff_EXMEM_ReadingRt_out.q),
                     .updatedPC_in(EX_MEM_Stage.rf_EXMEM_updatedPC_out.readData),
                     .nextPC_in(EX_MEM_Stage.rf_EXMEM_nextPC_out.readData), 
 									  
@@ -229,7 +238,7 @@ module proc (/*AUTOARG*/
 
   // ################################################### WRITEBACK #######################################################
   writebackOutput       instructionWriteback(
-                          .writeData(writeData), 
+                         .writeData(writeData), 
   											 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
   											 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
   											 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData),
