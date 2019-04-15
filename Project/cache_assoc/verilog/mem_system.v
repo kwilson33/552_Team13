@@ -45,6 +45,8 @@ module mem_system(/*AUTOARG*/
                           .comp                 (),
                           .write                (),
                           .valid_in             ());
+
+   
    cache #(2 + memtype) c1(// Outputs
                           .tag_out              (),
                           .data_out             (),

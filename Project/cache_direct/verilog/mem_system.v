@@ -46,19 +46,34 @@ module mem_system(/*AUTOARG*/
                           .write                (),
                           .valid_in             ());
 
+
+
+   // Outputs of four_bank_mem
+   wire [15:0] four_bank_DataOut;
+   wire four_bank_stall_out, four_bank_busy_out, four_bank_ErrOut;
+
+   // Inputs to four bank mem
+   wire [15:0] four_bank_AddressIn, four_bank_DataIn; 
+   wire four_bank_Read, four_bank_Write; // outputs from FSM
+
+   // how git repo does it
+   // assign four_bank_AddressIn = {tag_mem, cAddr_sel[10:3], offset_mem};
+   // assign four_bank_DataIn = DataOut;
+
+
    four_bank_mem mem(// Outputs
                      .data_out          (),
                      .stall             (),
                      .busy              (),
-                     .err               (),
+                     .err               (four_bank_ErrOut),
                      // Inputs
-                     .clk               (),
-                     .rst               (),
-                     .createdump        (),
-                     .addr              (),
-                     .data_in           (),
-                     .wr                (),
-                     .rd                ());
+                     .clk               (clk),
+                     .rst               (rst),
+                     .createdump        (createdump),
+                     .addr              (four_bank_AddressIn),
+                     .data_in           (four_bank_DataIn),
+                     .wr                (four_bank_Write),
+                     .rd                (four_bank_Read));
 
    
    // your code here
