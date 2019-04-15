@@ -27,24 +27,24 @@ module mem_system(/*AUTOARG*/
     * needed for cache parameter */
    parameter memtype = 0;
    cache #(0 + memtype) c0(// Outputs
-                          .tag_out              (),
-                          .data_out             (),
-                          .hit                  (),
-                          .dirty                (),
-                          .valid                (),
-                          .err                  (),
+                          .tag_out              (ctag_out),
+                          .data_out             (cdata_out),
+                          .hit                  (chit),
+                          .dirty                (cdirty),
+                          .valid                (cvalid),
+                          .err                  (cerr),
                           // Inputs
-                          .enable               (),
-                          .clk                  (),
-                          .rst                  (),
-                          .createdump           (),
-                          .tag_in               (),
-                          .index                (),
-                          .offset               (),
-                          .data_in              (),
-                          .comp                 (),
-                          .write                (),
-                          .valid_in             ());
+                          .enable               (enable),
+                          .clk                  (clk),
+                          .rst                  (rst),
+                          .createdump           (createdump),
+                          .tag_in               (ctag_in),
+                          .index                (cindex),
+                          .offset               (coffset),
+                          .data_in              (c_data_in),
+                          .comp                 (comp),
+                          .write                (write),
+                          .valid_in             (valid_in));
 
 
 
@@ -59,6 +59,22 @@ module mem_system(/*AUTOARG*/
    // how git repo does it
    // assign four_bank_AddressIn = {tag_mem, cAddr_sel[10:3], offset_mem};
    // assign four_bank_DataIn = DataOut;
+
+      //Cache output wires
+   wire [4:0] ctag_out; 
+   wire [15:0] cdata_out; 
+   wire chit, cdirty, cvalid, cerr; 
+
+   //Cache input wires
+   wire [4:0] ctag_in;  
+   wire [7:0] cindex; 
+   wire [2:0] coffset;
+   wire comp, write, valid_in;  
+
+   reg enable; 
+   reg comp; 
+   reg write; 
+   reg [15:0] c_data_in; 
 
 
    four_bank_mem mem(// Outputs
@@ -81,4 +97,3 @@ module mem_system(/*AUTOARG*/
    
 endmodule // mem_system
 
-// DUMMY LINE FOR REV CONTROL :9:
