@@ -41,7 +41,7 @@ module mem_system_perfbench(/*AUTOARG*/);
                        .DataIn          (DataIn[15:0]),
                        .Rd              (Rd),
                        .Wr              (Wr),
-		               .createdump      (1'b0));
+		                  .createdump      (1'b0));
 
    wire [15:0]          DataOut_ref;
    wire                 Done_ref;

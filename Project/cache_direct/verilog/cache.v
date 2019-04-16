@@ -62,7 +62,7 @@ module cache (
    memc #(16) mem_w0 (w0,      index, data_in,  wr_word0, clk, rst, createdump, ram0_id);
    memc #(16) mem_w1 (w1,      index, data_in,  wr_word1, clk, rst, createdump, ram1_id);
    memc #(16) mem_w2 (w2,      index, data_in,  wr_word2, clk, rst, createdump, ram2_id);
-   memc #(16) mem_w3 (w3,      index, data_in,  wr_word3, clk, rst, createdump, ram3_id);
+   memc #(16) mem_w3 (w3,      index, data_in,  wr_word3, clk, rst, createdump, ram3_id);                             
 
    memc #( 5) mem_tg (tag_out, index, tag_in,   wr_tag,   clk, rst, createdump, ram4_id);
    memc #( 1) mem_dr (dirtybit,index, dirty_in, wr_dirty, clk, rst, createdump, ram5_id);

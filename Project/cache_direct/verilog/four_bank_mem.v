@@ -92,7 +92,7 @@ assign en[3] = sel3 & ~busy[3] & (wr | rd);
 assign stall = (wr | rd) & ~rst & ( (sel0 & busy[0])
                                    |(sel1 & busy[1])
                                    |(sel2 & busy[2])
-                                   |(sel3 & busy[3]) );
+                                   |(sel3 & busy[3]));
    
    
 final_memory m0 (data0_out, err0, data_in, addr[15:3], wr, rd, en[0],
@@ -109,9 +109,9 @@ assign data_out = data0_out | data1_out | data2_out | data3_out;
 assign err = (wr | rd) & (err0 | err1 | err2 | err3 | addr[0]==1); //word aligned; odd addresses are illegal
 
 wire [3:0] bsy0, bsy1, bsy2;
-dff b0 [3:0] (bsy0, en,    clk, rst);
-dff b1 [3:0] (bsy1, bsy0, clk, rst);
-dff b2 [3:0] (bsy2, bsy1, clk, rst);
+dff b0 [3:0] (bsy0, en,    clk, rst, 1'b1);
+dff b1 [3:0] (bsy1, bsy0, clk, rst, 1'b1);
+dff b2 [3:0] (bsy2, bsy1, clk, rst, 1'b1);
 
 assign busy = bsy0 | bsy1 | bsy2;
 
