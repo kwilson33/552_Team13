@@ -1,0 +1,8 @@
+# vsim "+addr_trace_file_name=.//verification//mem.addr" -c mem_system_perfbench -lib __work 
+# Start time: 17:00:28 on Apr 16,2019
+# ** Error: (vsim-3170) Could not find 'mem_system_perfbench'.
+#         Searched libraries:
+#             /afs/cs.wisc.edu/u/k/e/kevinw/private/CS552/552_Team13/Project/cache_direct/__work
+# Error loading design
+# End time: 17:00:28 on Apr 16,2019, Elapsed time: 0:00:00
+# Errors: 1, Warnings: 0

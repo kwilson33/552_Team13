@@ -147,8 +147,9 @@ module mem_system(/*AUTOARG*/
    assign cacheIndexIn = cacheAddressReg[10:3];
    assign cacheOffsetIn = cacheAddressReg[2:0];
 
-   assign four_bank_AddressIn = {memoryTag, cacheIndexIn, memoryOffset}; 
-
+   assign four_bank_AddressIn = {memoryTag, Addr[10:3], memoryOffset}; 
+ 
+   
    assign DataOut = cacheDataOut;
   
    assign err = cacheErrOut | four_bank_ErrOut;
@@ -159,7 +160,7 @@ module mem_system(/*AUTOARG*/
 
       //Initialize things here
       Done = no_assert; 
-      Stall = no_assert; 
+      Stall = assert; 
       four_bank_WriteReg = no_assert;
       four_bank_ReadReg = no_assert;
 
@@ -169,6 +170,7 @@ module mem_system(/*AUTOARG*/
       cacheWriteReg = no_assert; 
       cacheDataIn_Reg = DataIn;
       cacheAddressReg = Addr; 
+
 
       memSystemCacheHitReg = no_assert;
 
@@ -191,7 +193,8 @@ module mem_system(/*AUTOARG*/
 
         COMP_RD: begin
             cacheEnableReg = assert; 
-            cacheCompareTag = assert; 
+            cacheCompareTag = assert;
+
             // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
             nextState = (cacheHitOut & cacheValidOut) ? DONE : 
@@ -204,14 +207,16 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert; 
             cacheCompareTag = assert; 
             cacheWriteReg = assert; 
+
             // if (dirty & miss) nextState = EVICT_B0
             // if (!dirty & miss) nextState = RD_B0
             nextState = (cacheHitOut & cacheValidOut) ? DONE : 
                         (~cacheDirtyOut & (~cacheValidOut | ~cacheHitOut)) ? RD_B0 :
-                        (cacheDirtyOut) ? EVICT_B0 : COMP_WR; //TODO: Maybe or dirty with Wr?
+                        (cacheDirtyOut /*| Wr*/) ? EVICT_B0 : COMP_WR; // Kevin added the | Wr
         end
 
-                // cacheWriteReg should be 1 since you come here from CompWR, CompRd
+        // only change memoryTag when we want to be writing to the four bank mem, otherwise
+        // keep it at Addr[15:11]
         EVICT_B0 : begin
             four_bank_WriteReg = assert;
 
@@ -267,12 +272,11 @@ module mem_system(/*AUTOARG*/
 
         end 
 
-     
         RD_B0 : begin
-          // start reading bank 1 of four bank mem
+           // start reading bank 0 of four bank mem
             four_bank_ReadReg = assert; 
             memoryOffset = 3'b000;
-            
+
             nextState = (four_bank_stall_out) ? RD_B0 : RD_B1; 
         end
 
@@ -280,6 +284,8 @@ module mem_system(/*AUTOARG*/
             // start reading bank 1 of four bank mem
             four_bank_ReadReg = assert;
             memoryOffset = 3'b010;
+            //memoryTag = cacheTagOut; 
+            //cacheAddressReg = {Addr[15:3], 3'b010}; 
             nextState = (four_bank_stall_out) ? RD_B1 : RDB2_WRB0;  
         end
 
@@ -288,15 +294,13 @@ module mem_system(/*AUTOARG*/
             four_bank_ReadReg = assert;
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            memoryTag = cacheTagOut; 
-
 
             // start reading bank 2 of four bank mem
             memoryOffset = 3'b100;
-            cacheDataIn_Reg = four_bank_DataOut;
-
+           
             // write bank 0 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b000}; 
+            cacheDataIn_Reg = four_bank_DataOut;
 
             nextState = (four_bank_stall_out) ? RDB2_WRB0 : RDB3_WRB1; 
         end
@@ -304,16 +308,15 @@ module mem_system(/*AUTOARG*/
         RDB3_WRB1 : begin
             four_bank_ReadReg = assert;
             cacheWriteReg = assert;
-            cacheEnableReg = assert; 
-            memoryTag = cacheTagOut; 
-
+            cacheEnableReg = assert;  
 
             // start reading bank 3 of four bank mem
             memoryOffset = 3'b110;
-            cacheDataIn_Reg = four_bank_DataOut;
+          
 
             // write bank 1 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b010}; 
+            cacheDataIn_Reg = four_bank_DataOut;
 
             nextState = (four_bank_stall_out) ? RDB3_WRB1: WR_B2; 
         end
@@ -321,10 +324,10 @@ module mem_system(/*AUTOARG*/
         WR_B2 : begin 
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            memoryTag = cacheTagOut; 
-
+                      
             // write bank 2 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b100}; 
+            cacheDataIn_Reg = four_bank_DataOut;
 
             nextState = WR_B3; 
         end
@@ -332,18 +335,17 @@ module mem_system(/*AUTOARG*/
         WR_B3 : begin
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            memoryTag = cacheTagOut; 
-
+           
+            
             // write bank 3 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b110}; 
+            cacheDataIn_Reg = four_bank_DataOut;
 
             // done writing four bank mem into the cache, so now
             // we can finally write cache line with new data or 
             // if Wr wasn't high to begin with, skip writing
             nextState = (Wr & ~Rd) ? FINALLY_WRITE : WRITE_DONE; 
         end
-
-
 
         //If we originally intended to do a write when we first started, finally 
         //we can write that data to the cache. 
@@ -358,18 +360,22 @@ module mem_system(/*AUTOARG*/
          //When we are done writing, check if there is still more work to be done
         // so it's possible we can skip the idle and continue reading or writing
         WRITE_DONE : begin
-            Done = 1'b1;
+            Done = assert;
+            Stall = no_assert; 
+            cacheEnableReg = assert;
 
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
         end
 
-
         DONE : begin
             // Assert Done to say that we are done reading or writing
             // Assert CacheHit to say we didn't miss in the cache.
+            cacheEnableReg = assert;
             Done = assert;
             memSystemCacheHitReg = assert;
+            Stall = no_assert; 
+
 
             // check if there is still more work to be done
            // so it's possible we can skip the idle and continue reading or writing
@@ -377,15 +383,9 @@ module mem_system(/*AUTOARG*/
                         : (Rd) ? COMP_RD : COMP_WR; 
         end
 
-/*
-        ERROR : begin
-            nextState = (Wr & Rd) ? ERROR : IDLE; 
-        end
-*/
         default: begin
             nextState = IDLE;
         end
-
       endcase 
 
    end
