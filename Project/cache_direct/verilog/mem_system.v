@@ -122,7 +122,7 @@ module mem_system(/*AUTOARG*/
                           .data_in              (cacheDataIn_Reg),
                           .comp                 (cacheCompareTag),
                           .write                (cacheWriteReg),
-                          .valid_in             (cacheValidIn)); // maybe hardwire to 1 according to matt
+                          .valid_in             (cacheValidIn)); 
 
 
    four_bank_mem mem(// Outputs

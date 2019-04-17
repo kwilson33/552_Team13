@@ -82,20 +82,20 @@ module final_memory (
 //   clkrst clkmod(clk, rst, err);
    
    
-    dff ff0 (rd1, rd0, clk, rst);
-    dff ff1 (wr1, wr0, clk, rst);
-    dff reg0 [12:0] (addr_1c[12:0], addr, clk, rst);
-    dff reg1 [15:0] (data_in_1c, data_in, clk, rst);
+    dff ff0 (rd1, rd0, clk, rst, 1'b1);
+    dff ff1 (wr1, wr0, clk, rst. , 1'b1);
+    dff reg0 [12:0] (addr_1c[12:0], addr, clk, rst,  1'b1);
+    dff reg1 [15:0] (data_in_1c, data_in, clk, rst,  1'b1);
     assign addr_1c[13]=1'b0;
 
     wire [15:0] data_out_1c = rd1 ? {mem[addr_1c<<1], mem[(addr_1c<<1)+1]} : 0;
 
-    dff reg2 [15:0] (data_out, data_out_1c, clk, rst);
+    dff reg2 [15:0] (data_out, data_out_1c, clk, rst, 1'b1);
 
-    dff ff2 (rd2, rd1, clk, rst);
-    dff ff3 (wr2, wr1, clk, rst);
-    dff ff4 (rd3, rd2, clk, rst);
-    dff ff5 (wr3, wr2, clk, rst);
+    dff ff2 (rd2, rd1, clk, rst, 1'b1);
+    dff ff3 (wr2, wr1, clk, rst,  1'b1);
+    dff ff4 (rd3, rd2, clk, rst,  1'b1);
+    dff ff5 (wr3, wr2, clk, rst, 1'b1);
 
     assign busy = rd1 | rd2 | rd3 | wr1 | wr2 | wr3;
     assign err = ((rd0 | wr0) & busy)
