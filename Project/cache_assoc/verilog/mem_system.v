@@ -113,12 +113,11 @@ module mem_system(/*AUTOARG*/
   
    //###################################DATA OUT ##############################
    //Use below assign statements to set DataOut
-   //assign DataOut = way0_or_way1Hit_DataOut; 
-   assign DataOut = 16'b0001100000000000; 
+   assign DataOut = way0_or_way1Hit_DataOut;
   
    // Invert victimway based on whether we've read or written
    assign victimwayIN = (invertVictim) ? ~victimway : victimway; 
-   dff victimwayDFF (.d(victimwayIN), .q(victimway), .clk(clk),.rst(rst), .en(1'b1));
+   dff victimwayDFF (.d(victimwayIN), .q(victimway), .clk(clk),.rst(rst), .enable(1'b1));
 
    //checks if there is a (hit in cache0 AND cache 0 is valid) or visa versa for cache1
    assign way0_or_way1Hit_DataOut = way0_or_way1Hit ? cacheHit0_DataOut : bothNotValid_DataOut; 
@@ -175,7 +174,7 @@ module mem_system(/*AUTOARG*/
 //#########################################################################################################
 
 //###################################Same as Direct#################################
-   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .en(1'b1));
+   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .enable(1'b1));
 
    assign cacheTagIn =   cacheAddressReg [15:11]; 
    assign cacheValidIn = 1'b1;
@@ -241,7 +240,7 @@ module mem_system(/*AUTOARG*/
                      .rst               (rst),
                      .createdump        (createdump),
                      .addr              (four_bank_AddressIn),
-                     .data_in           (DataOut),
+                     .data_in           (DataIn),
                      .wr                (four_bank_WriteReg),
                      .rd                (four_bank_ReadReg));
 
