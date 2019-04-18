@@ -38,7 +38,7 @@ module mem_system(/*AUTOARG*/
 
    // how git repo does it
    // assign four_bank_AddressIn = {tag_mem, cAddr_sel[10:3], offset_mem};
-   // assign DataOut = hit ? (hit_sel0 ? cache_data_out0 : cache_data_out1) : (comp ? comp_data_sel : access_data_sel);
+   // assign DataOut = hit ? (hit_sel0 ? ) : (comp ? comp_data_sel : access_data_sel);
    //#########################################################################################################
 
 
@@ -178,13 +178,27 @@ module mem_system(/*AUTOARG*/
    assign err = cacheErrOut_0 | cacheErrOut_1 | four_bank_ErrOut; 
 
    // if cacheHit0 is low, select  cacheDataOut_1, even if cacheHit1 is also low.
-   assign DataOut = cacheHitOut_0 ? cacheDataOut_0 : cacheDataOut_1; 
+   assign DataOut = (way0_or_way1Hit) ? //checks if there is a (hit in cache0 AND cache 0 is valid) or visa versa for cache1
+   					(cacheHit0 ? cacheDataOut_0 : cacheDataOut_1) : // if above was true, use one of the hit outputs as a select
+   					
+   					//They both missed :(
+
+   					// if both not valid, select cache0 
+   					((~cacheValidOut_0 & ~cacheValidOut_1) ? cacheDataOut_0 : 
+   					// check if cache 0 is valid
+   					((cacheValidOut_0) ? 
+   					// if it is, check if cache 1 is valid
+   					((cacheValidOut_1) ?  
+   					 // if both are valid, check victimway 
+   					(victimway ? cacheDataOut_1 : cacheDataOut_0) :
+   					// Finally, valid0 is false, which means valid1 is true, so select cacheData0 (by the choose other policy)  
+   					 cacheDataOut_0); 
 
    assign way0_or_way1TagOut = //TODO
 
    // FSM stuff - TODO, are dirty and hit assigned right??
    assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1); 
-   assign way0_or_way1Hit = cacheHitOut_0 | cacheHitOut_1;
+   assign way0_or_way1Hit = (cacheHitOut_0 & cacheValidOut_0) | (cacheHitOut_1 & cacheValidOut_1);
    assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
 
    // depend
