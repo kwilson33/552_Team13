@@ -169,8 +169,6 @@ module mem_system(/*AUTOARG*/
    //#########################################################################################################
    
 
-   
-
    // check dirty and valid
    assign cacheDirty0AndValid = cacheDirtyOut_0 & cacheValidOut_0;
    assign cacheDirty1AndValid = cacheDirtyOut_1 & cacheValidOut_1;
@@ -178,7 +176,7 @@ module mem_system(/*AUTOARG*/
    wire way0_or_way1Dirty;
     assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1); 
 
-   //assign way0_and_way1Dirty = (cacheDirty0AndValid & cacheDirty1AndValid);
+   assign way0_and_way1Dirty = (cacheDirty0AndValid & cacheDirty1AndValid);
    
 
    // check cache hits and valid
@@ -187,12 +185,10 @@ module mem_system(/*AUTOARG*/
    assign way0_or_way1HitAndValid = cacheHit0AndValid | cacheHit1AndValid;
 
    wire onlyOneValid;
-   assign onlyOneValid = (cacheValidOut_0 ^ cacheValidOut_1);
+   assign onlyOneValid = (cacheHit0AndValid ^ cacheHit1AndValid);
 
    assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
 
-
-  
 
    /*
     For the D cache, do not invert victimway for instructions that do not read or write cache, 
@@ -319,14 +315,14 @@ module mem_system(/*AUTOARG*/
 
         COMP_RD: begin
             cacheEnableReg = assert; 
-             updateCacheSelect = assert; 
+             //updateCacheSelect = assert; 
 
             cacheCompareTag = assert;
            
 
              // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
-            nextState = (way0_or_way1HitAndValid) ? DONE : 
+            nextState = (way0_or_way1HitAndValid) ? DONE : // tried with just one cache hit and valid, but same results
                         ((~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0)) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 : 
                         (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_RD; 
         end
@@ -336,7 +332,7 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert; 
             cacheCompareTag = assert; 
             cacheWriteReg = assert; 
-            updateCacheSelect = assert; 
+           // updateCacheSelect = assert; 
 
                nextState = (way0_or_way1HitAndValid) ? DONE : 
                         ((~cacheDirtyOut_0 & (~cacheValidOut_0) | ~cacheHitOut_0) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 :
@@ -509,6 +505,7 @@ module mem_system(/*AUTOARG*/
             Stall = no_assert; 
             cacheEnableReg = assert;
             invertVictim = assert; 
+            updateCacheSelect = assert;
          
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
@@ -521,6 +518,7 @@ module mem_system(/*AUTOARG*/
             Done = assert;
             memSystemCacheHitReg = assert;
             Stall = no_assert;   
+            updateCacheSelect = assert;
         
             invertVictim = assert; 
             // check if there is still more work to be done
