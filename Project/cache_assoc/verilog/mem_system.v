@@ -315,9 +315,9 @@ module mem_system(/*AUTOARG*/
 
             // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
-            nextState = (way0_or_way1HitAndValid & onlyOneValid) ? DONE : 
-                        (~way0_and_way1Dirty & (~way0_or_way1Valid | ~way0_or_way1HitAndValid)) ? RD_B0 :
-                        (way0_and_way1Dirty) ? EVICT_B0 : COMP_RD; 
+            nextState = (way0_or_way1HitAndValid) ? DONE : 
+                        ~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0) | ~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1) ? RD_B0 :
+                        (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_RD; 
         end
 
 
@@ -330,9 +330,9 @@ module mem_system(/*AUTOARG*/
 
             // if (dirty & miss) nextState = EVICT_B0
             // if (!dirty & miss) nextState = RD_B0
-            nextState = (way0_or_way1HitAndValid & onlyOneValid) ? DONE : 
-                        (~way0_and_way1Dirty & (~way0_or_way1Valid | ~way0_or_way1HitAndValid)) ? RD_B0 :
-                        (way0_and_way1Dirty) ? EVICT_B0 : COMP_WR; 
+             nextState = (way0_or_way1HitAndValid) ? DONE : 
+                        ~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0) | ~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1) ? RD_B0 :
+                        (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_WR;
         end
 
         // only change memoryTag when we want to be writing to the four bank mem, otherwise
