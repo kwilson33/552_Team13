@@ -166,17 +166,19 @@ module mem_system(/*AUTOARG*/
 //////////////////////SPECIFIC TO 2-WAY////////////////////////////
 
    wire victimwayIN, victimway,  way0_or_way1Dirty, 
-        way0_or_way1Valid, way0_or_way1Hit;
+        way0_or_way1Valid, way0_or_way1Hit,
+        cacheHit0AndValid, cacheHit1AndValid;
 
    wire [4:0] way0_or_way1TagOut;
 
-   reg invertVictim; 
+   reg invertVictim, cacheSelect; 
 
    dff victimwayDFF (.d(victimwayIN), .q(victimway), .clk(clk),.rst(rst), .en(1'b1));
    assign victimwayIN = (invertVictim) ? ~victimway : victimway; 
 
    assign err = cacheErrOut_0 | cacheErrOut_1 | four_bank_ErrOut; 
 
+/*
    // if cacheHit0 is low, select  cacheDataOut_1, even if cacheHit1 is also low.
    assign DataOut = (way0_or_way1Hit) ? //checks if there is a (hit in cache0 AND cache 0 is valid) or visa versa for cache1
    					(cacheHit0 ? cacheDataOut_0 : cacheDataOut_1) : // if above was true, use one of the hit outputs as a select
@@ -189,25 +191,50 @@ module mem_system(/*AUTOARG*/
    					// check if cache 0 is valid
    						(cacheValidOut_0 ? 
    					// if it is, check if cache 1 is valid
-   							(cacheValidOut_1 ?  
-   					 // if both are valid, check victimway 
-   					(victimway ? cacheDataOut_1 : cacheDataOut_0)) :
-   					// valid0 is true, valid1 is false, choose data1 
-   					cacheDataOut_1 : 
+   							(cacheValidOut_1 ? (victimway ? cacheDataOut_1 : cacheDataOut_0)) : cacheDataOut_1 : 
    					// Finally, valid0 is false, which means valid1 is true, so select cacheData0 (by the choose other policy)  
    					 cacheDataOut_0); 
+*/
 
-   assign way0_or_way1TagOut = //TODO
+   	wire [15:0] victimWay_DataOut, 
+			   	cacheHit0_DataOut, 
+			   	bothNotValid_DataOut, 
+			   	way0_or_way1Hit_DataOut,
+			   	cacheValid0_DataOut,
+			   	cacheValid1_DataOut;
+
+ 
+   assign way0_or_way1Hit_DataOut = way0_or_way1Hit ? cacheHit0_DataOut : bothNotValid_DataOut; 
+
+   assign cacheHit0_DataOut = cacheHit0 ? cacheDataOut_0 : cacheDataOut_1;
+
+   assign bothNotValid_DataOut =  ~cacheValidOut_0 & ~cacheValidOut_1 ? cacheDataOut_0 : cacheValid0_DataOut;
+
+   assign cacheValid0_DataOut = cacheValidOut_0 ? cacheValid1_DataOut : cacheDataOut_0;
+
+   assign cacheValid1_DataOut = cacheValidOut_1 ? victimWay_DataOut : cacheDataOut_1;
+
+   assign victimWay_DataOut = victimway ? cacheDataOut_1 : cacheDataOut_0;
+
+
+
+   assign DataOut = way0_or_way1Hit_DataOut; 
+
+   // cacheSelect = 0 means we want cache 0
+   assign way0_or_way1TagOut = ~cacheSelect ? cacheTagOut_0 : cacheTagOut_1; 
 
    // FSM stuff - TODO, are dirty and hit assigned right??
-   assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1); 
-   assign way0_or_way1Hit = (cacheHitOut_0 & cacheValidOut_0) | (cacheHitOut_1 & cacheValidOut_1);
+   assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1);
+
+   assign cacheHit0AndValid = cacheHitOut_0 & cacheValidOut_0;
+   assign cacheHit1AndValid = cacheHitOut_1 & cacheValidOut_1;
+   assign way0_or_way1Hit = cacheHit0AndValid | cacheHit1AndValid;
+
    assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
 
-   // depend
-   assign cacheWrite0 = (cacheWriteReg) ? () : no_assert; //TODO
-   assign cacheWrite1 = (cacheWriteReg) ? () : no_assert;//TODO
-
+   // cacheSelect = 0 means we enable write to cache 0
+   assign cacheWrite0 = cacheWriteReg & ~cacheSelect;
+   assign cacheWrite1 = cacheWriteReg & cacheSelect;
 
    /*
     For the D cache, do not invert victimway for instructions that do not read or write cache, 
@@ -218,9 +245,8 @@ module mem_system(/*AUTOARG*/
     memtype = 1 ==> data memory
     memtype = 0 ==> instruction memory
     */
-
+    
 ///////////////////////////////////////////////////////////////////
-
 
 //////////////////////Same as Direct//////////////////////////
    dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .en(1'b1));
@@ -249,9 +275,10 @@ module mem_system(/*AUTOARG*/
       cacheEnableReg = no_assert; 
       cacheWriteReg = no_assert; 
       cacheDataIn_Reg = DataIn;
-      cacheAddressReg = Addr; 
+      cacheAddressReg = Addr;  
 
-
+      // Default installing a line to cache 0
+      cacheSelect = no_assert;
 
       memSystemCacheHitReg = no_assert;
 
@@ -267,6 +294,12 @@ module mem_system(/*AUTOARG*/
             Stall = no_assert; 
             cacheEnableReg = assert; 
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
          end
@@ -274,7 +307,14 @@ module mem_system(/*AUTOARG*/
 
         COMP_RD: begin
             cacheEnableReg = assert; 
+
             cacheCompareTag = assert;
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
@@ -288,6 +328,12 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert; 
             cacheCompareTag = assert; 
             cacheWriteReg = assert; 
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // if (dirty & miss) nextState = EVICT_B0
             // if (!dirty & miss) nextState = RD_B0
@@ -304,6 +350,12 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert;
             cacheAddressReg = {Addr[15:3], 3'b000}; 
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b000;
 
@@ -317,6 +369,12 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert;
             cacheAddressReg = {Addr[15:3], 3'b010}; 
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b010;
             
@@ -329,6 +387,12 @@ module mem_system(/*AUTOARG*/
 
             cacheEnableReg = assert;
             cacheAddressReg = {Addr[15:3], 3'b100};
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b100; 
@@ -344,6 +408,12 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert; 
             cacheAddressReg = {Addr[15:3], 3'b110}; 
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             memoryOffset = 3'b110;
             memoryTag = way0_or_way1TagOut; 
             // after done evicting line from the cache and writing it
@@ -358,6 +428,12 @@ module mem_system(/*AUTOARG*/
             four_bank_ReadReg = assert; 
             memoryOffset = 3'b000;
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             nextState = (four_bank_stall_out) ? RD_B0 : RD_B1; 
         end
 
@@ -365,6 +441,13 @@ module mem_system(/*AUTOARG*/
             // start reading bank 1 of four bank mem
             four_bank_ReadReg = assert;
             memoryOffset = 3'b010;
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             //memoryTag = cacheTagOut; 
             //cacheAddressReg = {Addr[15:3], 3'b010}; 
             nextState = (four_bank_stall_out) ? RD_B1 : RDB2_WRB0;  
@@ -378,6 +461,12 @@ module mem_system(/*AUTOARG*/
 
             // start reading bank 2 of four bank mem
             memoryOffset = 3'b100;
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
            
             // write bank 0 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b000}; 
@@ -393,6 +482,12 @@ module mem_system(/*AUTOARG*/
 
             // start reading bank 3 of four bank mem
             memoryOffset = 3'b110;
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
           
 
             // write bank 1 of four bank mem to the cache
@@ -410,6 +505,12 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b100}; 
             cacheDataIn_Reg = four_bank_DataOut;
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             nextState = WR_B3; 
         end
 
@@ -421,6 +522,12 @@ module mem_system(/*AUTOARG*/
             // write bank 3 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b110}; 
             cacheDataIn_Reg = four_bank_DataOut;
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // done writing four bank mem into the cache, so now
             // we can finally write cache line with new data or 
@@ -435,6 +542,12 @@ module mem_system(/*AUTOARG*/
             cacheWriteReg = assert;
             cacheCompareTag = assert; 
 
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             nextState = WRITE_DONE; 
         end
 
@@ -445,6 +558,13 @@ module mem_system(/*AUTOARG*/
             Stall = no_assert; 
             cacheEnableReg = assert;
             invertVictim = assert; 
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
         end
@@ -456,6 +576,12 @@ module mem_system(/*AUTOARG*/
             Done = assert;
             memSystemCacheHitReg = assert;
             Stall = no_assert; 
+
+            // cacheSelect = 0 means we enable write to cache 0
+      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+      		cacheSelect =  ~( cacheHit0AndValid |  
+      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             invertVictim = assert; 
             // check if there is still more work to be done
