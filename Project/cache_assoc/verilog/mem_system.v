@@ -185,12 +185,15 @@ module mem_system(/*AUTOARG*/
 
    					// if both not valid, select cache0 
    					((~cacheValidOut_0 & ~cacheValidOut_1) ? cacheDataOut_0 : 
+
    					// check if cache 0 is valid
-   					((cacheValidOut_0) ? 
+   						(cacheValidOut_0 ? 
    					// if it is, check if cache 1 is valid
-   					((cacheValidOut_1) ?  
+   							(cacheValidOut_1 ?  
    					 // if both are valid, check victimway 
-   					(victimway ? cacheDataOut_1 : cacheDataOut_0) :
+   					(victimway ? cacheDataOut_1 : cacheDataOut_0)) :
+   					// valid0 is true, valid1 is false, choose data1 
+   					cacheDataOut_1 : 
    					// Finally, valid0 is false, which means valid1 is true, so select cacheData0 (by the choose other policy)  
    					 cacheDataOut_0); 
 
