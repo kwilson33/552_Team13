@@ -1,0 +1,162 @@
+# 
+# LOG: ReqNum  629 Cycle     5977 ReqCycle     5968 Wr Addr 0x2250 Value 0xb29f ValueRef 0xb29f Hit: 0
+# 
+# LOG: ReqNum  630 Cycle     5987 ReqCycle     5978 Wr Addr 0x3aaa Value 0x5feb ValueRef 0x5feb Hit: 0
+# 
+# LOG: ReqNum  631 Cycle     5996 ReqCycle     5988 Rd Addr 0x27a0 Value 0x18e6 ValueRef 0x18e6 Hit: 0
+# 
+# LOG: ReqNum  632 Cycle     6005 ReqCycle     5997 Rd Addr 0x0f2c Value 0x3391 ValueRef 0x3391 Hit: 0
+# 
+# LOG: ReqNum  633 Cycle     6013 ReqCycle     6005 Rd Addr 0x25f0 Value 0x640a ValueRef 0x640a Hit: 0
+# 
+# LOG: ReqNum  634 Cycle     6023 ReqCycle     6014 Wr Addr 0xcfac Value 0xd9bd ValueRef 0xd9bd Hit: 0
+# 
+# LOG: ReqNum  635 Cycle     6036 ReqCycle     6024 Rd Addr 0x2770 Value 0x7d42 ValueRef 0xd7f7 Hit: 0
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1148 Cycle    10714 ReqCycle    10702 Rd Addr 0x609a Value 0x167e ValueRef 0x167e Hit: 0
+# 
+# LOG: ReqNum 1149 Cycle    10716 ReqCycle    10714 Rd Addr 0x66f2 Value 0x4bd1 ValueRef 0x4bd1 Hit: 1
+# 
+# LOG: ReqNum 1150 Cycle    10729 ReqCycle    10717 Rd Addr 0x634c Value 0x9565 ValueRef 0x9565 Hit: 0
+# 
+# LOG: ReqNum 1151 Cycle    10731 ReqCycle    10729 Wr Addr 0x65b8 Value 0x1755 ValueRef 0x1755 Hit: 1
+# 
+# LOG: ReqNum 1152 Cycle    10740 ReqCycle    10732 Rd Addr 0x67d6 Value 0xe810 ValueRef 0xe810 Hit: 0
+# 
+# LOG: ReqNum 1153 Cycle    10742 ReqCycle    10740 Rd Addr 0x64ac Value 0xae72 ValueRef 0xae72 Hit: 1
+# 
+# LOG: ReqNum 1154 Cycle    10752 ReqCycle    10744 Rd Addr 0x64e2 Value 0xfbc4 ValueRef 0x8a0b Hit: 0
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1156 Cycle    10764 ReqCycle    10755 Wr Addr 0x64b0 Value 0x63c9 ValueRef 0x63c9 Hit: 0
+# 
+# LOG: ReqNum 1157 Cycle    10766 ReqCycle    10764 Wr Addr 0x64b8 Value 0x5286 ValueRef 0x5286 Hit: 1
+# 
+# LOG: ReqNum 1158 Cycle    10768 ReqCycle    10766 Wr Addr 0x6630 Value 0x79b4 ValueRef 0x79b4 Hit: 1
+# 
+# LOG: ReqNum 1159 Cycle    10771 ReqCycle    10769 Wr Addr 0x65be Value 0x9281 ValueRef 0x9281 Hit: 1
+# 
+# LOG: ReqNum 1160 Cycle    10783 ReqCycle    10771 Rd Addr 0x67c8 Value 0xf982 ValueRef 0xf982 Hit: 0
+# 
+# LOG: ReqNum 1161 Cycle    10790 ReqCycle    10788 Rd Addr 0x643e Value 0x9fe6 ValueRef 0x9fe6 Hit: 1
+# 
+# LOG: ReqNum 1162 Cycle    10792 ReqCycle    10790 Rd Addr 0x66de Value 0x24f6 ValueRef 0x4632 Hit: 1
+# 
+# ERROR
+# LOG: ReqNum 1163 Cycle    10800 ReqCycle    10792 Rd Addr 0x6412 Value 0xcc4a ValueRef 0xcc4a Hit: 0
+# 
+# LOG: ReqNum 1164 Cycle    10809 ReqCycle    10801 Rd Addr 0x6012 Value 0x0d50 ValueRef 0x0de1 Hit: 0
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1260 Cycle    11381 ReqCycle    11372 Wr Addr 0x61ec Value 0xca35 ValueRef 0xca35 Hit: 0
+# 
+# LOG: ReqNum 1261 Cycle    11387 ReqCycle    11385 Rd Addr 0x675e Value 0x8660 ValueRef 0x8660 Hit: 1
+# 
+# LOG: ReqNum 1262 Cycle    11391 ReqCycle    11389 Rd Addr 0x609a Value 0x167e ValueRef 0x167e Hit: 1
+# 
+# LOG: ReqNum 1263 Cycle    11399 ReqCycle    11391 Rd Addr 0x652c Value 0xe20b ValueRef 0xe20b Hit: 0
+# 
+# LOG: ReqNum 1264 Cycle    11408 ReqCycle    11399 Wr Addr 0x66ca Value 0xe092 ValueRef 0xe092 Hit: 0
+# 
+# LOG: ReqNum 1265 Cycle    11410 ReqCycle    11408 Rd Addr 0x6312 Value 0xb15c ValueRef 0xb15c Hit: 1
+# 
+# LOG: ReqNum 1266 Cycle    11413 ReqCycle    11411 Rd Addr 0x6014 Value 0x0d50 ValueRef 0x4b33 Hit: 1
+# 
+# ERROR
+# LOG: ReqNum 1267 Cycle    11416 ReqCycle    11414 Rd Addr 0x6714 Value 0x1dd5 ValueRef 0x1dd5 Hit: 1
+# 
+# LOG: ReqNum 1268 Cycle    11418 ReqCycle    11416 Wr Addr 0x604e Value 0x092c ValueRef 0x092c Hit: 1
+# 
+# LOG: ReqNum 1269 Cycle    11427 ReqCycle    11418 Wr Addr 0x60ee Value 0x4ac7 ValueRef 0x4ac7 Hit: 0
+# 
+# LOG: ReqNum 1270 Cycle    11444 ReqCycle    11432 Rd Addr 0x63da Value 0x3c39 ValueRef 0x3c39 Hit: 0
+# 
+# LOG: ReqNum 1271 Cycle    11449 ReqCycle    11447 Rd Addr 0x6014 Value 0x0d50 ValueRef 0x4b33 Hit: 1
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1362 Cycle    11930 ReqCycle    11928 Rd Addr 0x6522 Value 0x41ae ValueRef 0x41ae Hit: 1
+# 
+# LOG: ReqNum 1363 Cycle    11932 ReqCycle    11930 Wr Addr 0x6350 Value 0xdd3d ValueRef 0xdd3d Hit: 1
+# 
+# LOG: ReqNum 1364 Cycle    11938 ReqCycle    11936 Wr Addr 0x633a Value 0x8906 ValueRef 0x8906 Hit: 1
+# 
+# LOG: ReqNum 1365 Cycle    11941 ReqCycle    11939 Wr Addr 0x63c4 Value 0x4c83 ValueRef 0x4c83 Hit: 1
+# 
+# LOG: ReqNum 1366 Cycle    11943 ReqCycle    11941 Rd Addr 0x6110 Value 0x3809 ValueRef 0x3809 Hit: 1
+# 
+# LOG: ReqNum 1367 Cycle    11945 ReqCycle    11943 Rd Addr 0x6734 Value 0xe40d ValueRef 0xe40d Hit: 1
+# 
+# LOG: ReqNum 1368 Cycle    11949 ReqCycle    11947 Rd Addr 0x66fc Value 0xda25 ValueRef 0xb22c Hit: 1
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1459 Cycle    12318 ReqCycle    12316 Wr Addr 0x657e Value 0x4efa ValueRef 0x4efa Hit: 1
+# 
+# LOG: ReqNum 1460 Cycle    12323 ReqCycle    12321 Rd Addr 0x6620 Value 0x2741 ValueRef 0x2741 Hit: 1
+# 
+# LOG: ReqNum 1461 Cycle    12326 ReqCycle    12324 Rd Addr 0x6182 Value 0x7199 ValueRef 0x7199 Hit: 1
+# 
+# LOG: ReqNum 1462 Cycle    12330 ReqCycle    12328 Wr Addr 0x66f6 Value 0xf4e2 ValueRef 0xf4e2 Hit: 1
+# 
+# LOG: ReqNum 1463 Cycle    12332 ReqCycle    12330 Wr Addr 0x6264 Value 0xd295 ValueRef 0xd295 Hit: 1
+# 
+# LOG: ReqNum 1464 Cycle    12334 ReqCycle    12332 Rd Addr 0x62ac Value 0x4a6e ValueRef 0x4a6e Hit: 1
+# 
+# LOG: ReqNum 1465 Cycle    12336 ReqCycle    12334 Rd Addr 0x6494 Value 0xc0fb ValueRef 0xfa7c Hit: 1
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1530 Cycle    12606 ReqCycle    12604 Rd Addr 0x6768 Value 0x2c42 ValueRef 0x2c42 Hit: 1
+# 
+# LOG: ReqNum 1531 Cycle    12615 ReqCycle    12606 Wr Addr 0x6704 Value 0x618c ValueRef 0x618c Hit: 0
+# 
+# LOG: ReqNum 1532 Cycle    12617 ReqCycle    12615 Wr Addr 0x6686 Value 0x256b ValueRef 0x256b Hit: 1
+# 
+# LOG: ReqNum 1533 Cycle    12619 ReqCycle    12617 Wr Addr 0x6404 Value 0x8f7c ValueRef 0x8f7c Hit: 1
+# 
+# LOG: ReqNum 1534 Cycle    12628 ReqCycle    12620 Rd Addr 0x60c8 Value 0x241b ValueRef 0x241b Hit: 0
+# 
+# LOG: ReqNum 1535 Cycle    12633 ReqCycle    12631 Wr Addr 0x6412 Value 0xbe3d ValueRef 0xbe3d Hit: 1
+# 
+# LOG: ReqNum 1536 Cycle    12636 ReqCycle    12634 Rd Addr 0x64e4 Value 0xfbc4 ValueRef 0x6bae Hit: 1
+# 
+# ERROR
+--
+# 
+# LOG: ReqNum 1730 Cycle    13359 ReqCycle    13357 Rd Addr 0x656e Value 0x1ae8 ValueRef 0x1ae8 Hit: 1
+# 
+# LOG: ReqNum 1731 Cycle    13361 ReqCycle    13359 Rd Addr 0x6686 Value 0x256b ValueRef 0x256b Hit: 1
+# 
+# LOG: ReqNum 1732 Cycle    13363 ReqCycle    13361 Rd Addr 0x63e4 Value 0x2990 ValueRef 0x2990 Hit: 1
+# 
+# LOG: ReqNum 1733 Cycle    13365 ReqCycle    13363 Rd Addr 0x62f6 Value 0x7fcb ValueRef 0x7fcb Hit: 1
+# 
+# LOG: ReqNum 1734 Cycle    13367 ReqCycle    13365 Rd Addr 0x662e Value 0x3cbb ValueRef 0x3cbb Hit: 1
+# 
+# LOG: ReqNum 1735 Cycle    13370 ReqCycle    13368 Wr Addr 0x67ac Value 0xbe6f ValueRef 0xbe6f Hit: 1
+# 
+# LOG: ReqNum 1736 Cycle    13373 ReqCycle    13371 Rd Addr 0x64e2 Value 0xfbc4 ValueRef 0x8a0b Hit: 1
+# 
+# ERROR
+# LOG: ReqNum 1737 Cycle    13375 ReqCycle    13373 Rd Addr 0x60d8 Value 0x7a7f ValueRef 0x7a7f Hit: 1
+# 
+# LOG: ReqNum 1738 Cycle    13377 ReqCycle    13375 Rd Addr 0x602e Value 0x4941 ValueRef 0x4941 Hit: 1
+# 
+# LOG: ReqNum 1739 Cycle    13386 ReqCycle    13384 Rd Addr 0x6532 Value 0x40a6 ValueRef 0x40a6 Hit: 1
+# 
+# LOG: ReqNum 1740 Cycle    13388 ReqCycle    13386 Rd Addr 0x6730 Value 0x76e6 ValueRef 0x76e6 Hit: 1
+# 
+# LOG: ReqNum 1741 Cycle    13390 ReqCycle    13388 Rd Addr 0x64e0 Value 0xfbc4 ValueRef 0xe73d Hit: 1
+# 
+# ERROR

@@ -134,6 +134,10 @@ module mem_system(/*AUTOARG*/
    assign cacheWrite0 = cacheWriteReg & ~nextCacheSel;
    assign cacheWrite1 = cacheWriteReg & nextCacheSel;
 
+   // cacheSelect = 0 means we want cache 0
+   assign way0_or_way1TagOut = ~nextCacheSel ? cacheTagOut_0 : cacheTagOut_1; 
+
+
 //reg cacheSelect;
 
 
@@ -165,18 +169,16 @@ module mem_system(/*AUTOARG*/
    //#########################################################################################################
    
 
-   // cacheSelect = 0 means we want cache 0
-   assign way0_or_way1TagOut = ~cacheSelect ? cacheTagOut_0 : cacheTagOut_1; 
-
+   
 
    // check dirty and valid
    assign cacheDirty0AndValid = cacheDirtyOut_0 & cacheValidOut_0;
    assign cacheDirty1AndValid = cacheDirtyOut_1 & cacheValidOut_1;
 
+   wire way0_or_way1Dirty;
+    assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1); 
 
-
-
-   assign way0_and_way1Dirty = (cacheDirty0AndValid & cacheDirty1AndValid);
+   //assign way0_and_way1Dirty = (cacheDirty0AndValid & cacheDirty1AndValid);
    
 
    // check cache hits and valid
@@ -322,10 +324,10 @@ module mem_system(/*AUTOARG*/
             cacheCompareTag = assert;
            
 
-            // if (dirty and miss) nextState = EVICT_B0
+             // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
             nextState = (way0_or_way1HitAndValid) ? DONE : 
-                        ((~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0)) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 :
+                        ((~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0)) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 : 
                         (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_RD; 
         end
 
@@ -336,9 +338,7 @@ module mem_system(/*AUTOARG*/
             cacheWriteReg = assert; 
             updateCacheSelect = assert; 
 
-            // if (dirty & miss) nextState = EVICT_B0
-            // if (!dirty & miss) nextState = RD_B0
-             nextState = (way0_or_way1HitAndValid) ? DONE : 
+               nextState = (way0_or_way1HitAndValid) ? DONE : 
                         ((~cacheDirtyOut_0 & (~cacheValidOut_0) | ~cacheHitOut_0) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 :
                         (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_WR;
         end
@@ -352,7 +352,7 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b000}; 
 
           
-           // cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
+          
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b000;
 
@@ -365,7 +365,6 @@ module mem_system(/*AUTOARG*/
 
             cacheEnableReg = assert;
             cacheAddressReg = {Addr[15:3], 3'b010}; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
            
 
             memoryTag = way0_or_way1TagOut; 
@@ -380,7 +379,6 @@ module mem_system(/*AUTOARG*/
 
             cacheEnableReg = assert;
             cacheAddressReg = {Addr[15:3], 3'b100};
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
            
 
             memoryTag = way0_or_way1TagOut; 
@@ -396,8 +394,7 @@ module mem_system(/*AUTOARG*/
 
             cacheEnableReg = assert; 
             cacheAddressReg = {Addr[15:3], 3'b110}; 
-           // cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-           
+          
 
             memoryOffset = 3'b110;
             memoryTag = way0_or_way1TagOut; 
@@ -412,8 +409,7 @@ module mem_system(/*AUTOARG*/
            // start reading bank 0 of four bank mem
             four_bank_ReadReg = assert; 
             memoryOffset = 3'b000;
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-
+           
             nextState = (four_bank_stall_out) ? RD_B0 : RD_B1; 
         end
 
@@ -421,7 +417,7 @@ module mem_system(/*AUTOARG*/
             // start reading bank 1 of four bank mem
             four_bank_ReadReg = assert;
             memoryOffset = 3'b010;
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
+        
 
           
             //memoryTag = cacheTagOut; 
@@ -434,8 +430,7 @@ module mem_system(/*AUTOARG*/
             four_bank_ReadReg = assert;
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-
+           
             // start reading bank 2 of four bank mem
             memoryOffset = 3'b100;
 
@@ -451,7 +446,7 @@ module mem_system(/*AUTOARG*/
             four_bank_ReadReg = assert;
             cacheWriteReg = assert;
             cacheEnableReg = assert;  
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
+          
 
             // start reading bank 3 of four bank mem
             memoryOffset = 3'b110;
@@ -469,7 +464,7 @@ module mem_system(/*AUTOARG*/
         WR_B2 : begin 
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
+           
                       
             // write bank 2 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b100}; 
@@ -483,8 +478,7 @@ module mem_system(/*AUTOARG*/
         WR_B3 : begin
             cacheWriteReg = assert;
             cacheEnableReg = assert; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-           
+            
             
             // write bank 3 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b110}; 
@@ -504,7 +498,6 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert;
             cacheWriteReg = assert;
             cacheCompareTag = assert; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
          
             nextState = WRITE_DONE; 
         end
@@ -516,8 +509,7 @@ module mem_system(/*AUTOARG*/
             Stall = no_assert; 
             cacheEnableReg = assert;
             invertVictim = assert; 
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-
+         
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
         end
@@ -529,8 +521,7 @@ module mem_system(/*AUTOARG*/
             Done = assert;
             memSystemCacheHitReg = assert;
             Stall = no_assert;   
-            //cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
-
+        
             invertVictim = assert; 
             // check if there is still more work to be done
            // so it's possible we can skip the idle and continue reading or writing
