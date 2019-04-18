@@ -23,62 +23,10 @@ module mem_system(/*AUTOARG*/
    output CacheHit;
    output err;
 
+   reg Stall, Done;
+
    localparam assert = 1'b1; 
    localparam no_assert = 1'b0; 
-
-   //##########################FOUR BANK MEM SIGNALS########################################################
-   // Outputs of four_bank_mem
-   wire [15:0] four_bank_DataOut;
-   wire four_bank_stall_out, four_bank_ErrOut;
-   wire [3:0] four_bank_busy_out; 
-   // The input to the four_bank_mem is the DataOut of mem_system
-   // Inputs to four bank mem
-   wire [15:0] four_bank_AddressIn;
-   
-
-   // how git repo does it
-   // assign four_bank_AddressIn = {tag_mem, cAddr_sel[10:3], offset_mem};
-   // assign DataOut = hit ? (hit_sel0 ? ) : (comp ? comp_data_sel : access_data_sel);
-   //#########################################################################################################
-
-
-    //##########################CACHE SIGNALS################################################################
-   //Cache output wires
-   wire [4:0] cacheTagOut_0, cacheTagOut_1; 
-   wire [15:0] cacheDataOut_0, cacheDataOut_1; 
-
-   wire cacheValidIn,
-        cacheHitOut_0, cacheHitOut_1, cacheDirtyOut_0, cacheDirtyOut_1, 
-        cacheValidOut_0, cacheValidOut_1, cacheErrOut_0, 
-        cacheErrOut_1, 
-
-   //Cache input wires
-   wire [4:0] cacheTagIn;  
-   wire [7:0] cacheIndexIn; 
-   wire [2:0] cacheOffsetIn;
-          
-  //#########################################################################################################
-
-   //###################################################FSM SIGNALS#########################################
-   // Done and Stall are outputs of this module
-   reg cacheEnableReg, cacheCompareTag, cacheWriteReg_0, cacheWriteReg_1;
-   reg [15:0] cacheDataIn_Reg, cacheAddressReg;
-   reg [4:0] memoryTag; 
-   reg [2:0] memoryOffset;  
-   reg four_bank_ReadReg, four_bank_WriteReg, memSystemCacheHitReg;
-   // maybe not need 5 bits?
-   wire [4:0] currentState;
-   
-   /*
-    Since we can't use always(@posedge clk, negedge rst) 
-    to update the state, we have to use a flip flop to
-    essentially do the same thing. Enable signal doesn't apply, so always 1
-  */
-
-
-
-
-
    localparam   IDLE            = 5'b00000; //0
    localparam   COMP_RD         = 5'b00001; //1
    localparam   COMP_WR         = 5'b00010; //2
@@ -97,9 +45,149 @@ module mem_system(/*AUTOARG*/
    localparam   DONE            = 5'b01111; //15
    localparam   WRITE_DONE      = 5'b10000; //16
 
+
+   //##########################FOUR BANK MEM SIGNALS########################################################
+   // Outputs of four_bank_mem
+   wire [15:0] four_bank_DataOut;
+   wire four_bank_stall_out, four_bank_ErrOut;
+   wire [3:0] four_bank_busy_out; 
+   // The input to the four_bank_mem is the DataOut of mem_system
+   // Inputs to four bank mem
+   wire [15:0] four_bank_AddressIn;
    //#########################################################################################################
 
-   /* data_mem = 1, inst_mem = 0 *
+
+    //##########################CACHE SIGNALS################################################################
+   //Cache output wires
+   wire [4:0] cacheTagOut_0, cacheTagOut_1; 
+   wire [15:0] cacheDataOut_0, cacheDataOut_1; 
+
+   wire cacheValidIn,
+        cacheHitOut_0, cacheHitOut_1, cacheDirtyOut_0, cacheDirtyOut_1, 
+        cacheValidOut_0, cacheValidOut_1, cacheErrOut_0, 
+        cacheErrOut_1; 
+
+   //Cache input wires
+   wire [4:0] cacheTagIn;  
+   wire [7:0] cacheIndexIn; 
+   wire [2:0] cacheOffsetIn;
+          
+  //#########################################################################################################
+
+   //###################################################FSM SIGNALS#########################################
+   // Done and Stall are outputs of this module
+   reg cacheEnableReg, cacheCompareTag, cacheWriteReg_0, cacheWriteReg_1, cacheWriteReg;
+   reg [15:0] cacheDataIn_Reg, cacheAddressReg;
+   reg [4:0] memoryTag,  nextState;
+   reg [2:0] memoryOffset;  
+   reg four_bank_ReadReg, four_bank_WriteReg, memSystemCacheHitReg;
+   // maybe not need 5 bits?
+   wire [4:0] currentState;
+   
+   /*
+    Since we can't use always(@posedge clk, negedge rst) 
+    to update the state, we have to use a flip flop to
+    essentially do the same thing. Enable signal doesn't apply, so always 1
+  */
+
+   //#########################################################################################################
+
+//##########################################SPECIFIC TO 2-WAY########################
+
+   wire victimwayIN, victimway,  way0_or_way1Dirty, 
+        way0_or_way1Valid, way0_or_way1Hit,
+        cacheHit0AndValid, cacheHit1AndValid,
+        cacheDirty0AndValid, cacheDirty1AndValid;
+
+   wire [4:0] way0_or_way1TagOut;
+
+   reg invertVictim, cacheSelect; 
+
+    wire [15:0] victimWay_DataOut, 
+          cacheHit0_DataOut, 
+          bothNotValid_DataOut, 
+          way0_or_way1Hit_DataOut,
+          cacheValid0_DataOut,
+          cacheValid1_DataOut;
+
+  
+   //###################################DATA OUT ##############################
+   //Use below assign statements to set DataOut
+   //assign DataOut = way0_or_way1Hit_DataOut; 
+   assign DataOut = 16'b0001100000000000; 
+  
+   // Invert victimway based on whether we've read or written
+   assign victimwayIN = (invertVictim) ? ~victimway : victimway; 
+   dff victimwayDFF (.d(victimwayIN), .q(victimway), .clk(clk),.rst(rst), .en(1'b1));
+
+   //checks if there is a (hit in cache0 AND cache 0 is valid) or visa versa for cache1
+   assign way0_or_way1Hit_DataOut = way0_or_way1Hit ? cacheHit0_DataOut : bothNotValid_DataOut; 
+
+   // if above was true, use one of the hit outputs as a select
+   assign cacheHit0_DataOut = cacheHitOut_0 ? cacheDataOut_0 : cacheDataOut_1;
+
+   // if both not valid, select cache0 
+   assign bothNotValid_DataOut =  ~cacheValidOut_0 & ~cacheValidOut_1 ? cacheDataOut_0 : cacheValid0_DataOut;
+
+   // check if cache 0 is valid
+   assign cacheValid0_DataOut = cacheValidOut_0 ? cacheValid1_DataOut : cacheDataOut_0;
+
+   // if it is, check if cache 1 is valid
+   assign cacheValid1_DataOut = cacheValidOut_1 ? victimWay_DataOut : cacheDataOut_1;
+
+   // Finally, valid0 is false, which means valid1 is true, so select cacheData0 (by the choose other policy)  
+   assign victimWay_DataOut = victimway ? cacheDataOut_1 : cacheDataOut_0;
+   //#########################################################################################################
+   
+
+   // cacheSelect = 0 means we want cache 0
+   assign way0_or_way1TagOut = ~cacheSelect ? cacheTagOut_0 : cacheTagOut_1; 
+
+
+   // check dirty and valid
+   assign cacheDirty0AndValid = cacheDirtyOut_0 & cacheValidOut_0;
+   assign cacheDirty1AndValid = cacheDirtyOut_1 & cacheValidOut_1;
+   assign way0_or_way1Dirty = (cacheDirty0AndValid | cacheDirty1AndValid);
+   
+
+   // check cache hits and valid
+   assign cacheHit0AndValid = cacheHitOut_0 & cacheValidOut_0;
+   assign cacheHit1AndValid = cacheHitOut_1 & cacheValidOut_1;
+   assign way0_or_way1Hit = cacheHit0AndValid | cacheHit1AndValid;
+
+   assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
+
+
+   // cacheSelect = 0 means we enable write to cache 0
+   assign cacheWrite0 = cacheWriteReg & ~cacheSelect;
+   assign cacheWrite1 = cacheWriteReg & cacheSelect;
+
+   /*
+    For the D cache, do not invert victimway for instructions that do not read or write cache, 
+    or for invalid instructions, or for instructions that are squashed due to branch misprediction.
+    or the I cache, invert victimway for each instruction fetched.
+
+    Use the memtype parameter to decide
+    memtype = 1 ==> data memory
+    memtype = 0 ==> instruction memory
+    */
+    
+//#########################################################################################################
+
+//###################################Same as Direct#################################
+   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .en(1'b1));
+
+   assign cacheTagIn =   cacheAddressReg [15:11]; 
+   assign cacheValidIn = 1'b1;
+   assign CacheHit  = memSystemCacheHitReg;
+   assign cacheIndexIn = cacheAddressReg[10:3]; 
+   assign cacheOffsetIn = cacheAddressReg[2:0];
+   assign err = cacheErrOut_0 | cacheErrOut_1 | four_bank_ErrOut; 
+   assign four_bank_AddressIn = {memoryTag, Addr[10:3], memoryOffset}; 
+
+//#########################################################################################################
+
+/* data_mem = 1, inst_mem = 0 *
     * needed for cache parameter */
    parameter memtype = 0;
    cache #(0 + memtype) c0(// Outputs
@@ -158,108 +246,6 @@ module mem_system(/*AUTOARG*/
                      .rd                (four_bank_ReadReg));
 
 
-
-   reg [4:0]  nextState;
-   
-  
-
-//////////////////////SPECIFIC TO 2-WAY////////////////////////////
-
-   wire victimwayIN, victimway,  way0_or_way1Dirty, 
-        way0_or_way1Valid, way0_or_way1Hit,
-        cacheHit0AndValid, cacheHit1AndValid;
-
-   wire [4:0] way0_or_way1TagOut;
-
-   reg invertVictim, cacheSelect; 
-
-   dff victimwayDFF (.d(victimwayIN), .q(victimway), .clk(clk),.rst(rst), .en(1'b1));
-   assign victimwayIN = (invertVictim) ? ~victimway : victimway; 
-
-   assign err = cacheErrOut_0 | cacheErrOut_1 | four_bank_ErrOut; 
-
-/*
-   // if cacheHit0 is low, select  cacheDataOut_1, even if cacheHit1 is also low.
-   assign DataOut = (way0_or_way1Hit) ? //checks if there is a (hit in cache0 AND cache 0 is valid) or visa versa for cache1
-   					(cacheHit0 ? cacheDataOut_0 : cacheDataOut_1) : // if above was true, use one of the hit outputs as a select
-   					
-   					//They both missed :(
-
-   					// if both not valid, select cache0 
-   					((~cacheValidOut_0 & ~cacheValidOut_1) ? cacheDataOut_0 : 
-
-   					// check if cache 0 is valid
-   						(cacheValidOut_0 ? 
-   					// if it is, check if cache 1 is valid
-   							(cacheValidOut_1 ? (victimway ? cacheDataOut_1 : cacheDataOut_0)) : cacheDataOut_1 : 
-   					// Finally, valid0 is false, which means valid1 is true, so select cacheData0 (by the choose other policy)  
-   					 cacheDataOut_0); 
-*/
-
-   	wire [15:0] victimWay_DataOut, 
-			   	cacheHit0_DataOut, 
-			   	bothNotValid_DataOut, 
-			   	way0_or_way1Hit_DataOut,
-			   	cacheValid0_DataOut,
-			   	cacheValid1_DataOut;
-
- 
-   assign way0_or_way1Hit_DataOut = way0_or_way1Hit ? cacheHit0_DataOut : bothNotValid_DataOut; 
-
-   assign cacheHit0_DataOut = cacheHit0 ? cacheDataOut_0 : cacheDataOut_1;
-
-   assign bothNotValid_DataOut =  ~cacheValidOut_0 & ~cacheValidOut_1 ? cacheDataOut_0 : cacheValid0_DataOut;
-
-   assign cacheValid0_DataOut = cacheValidOut_0 ? cacheValid1_DataOut : cacheDataOut_0;
-
-   assign cacheValid1_DataOut = cacheValidOut_1 ? victimWay_DataOut : cacheDataOut_1;
-
-   assign victimWay_DataOut = victimway ? cacheDataOut_1 : cacheDataOut_0;
-
-
-
-   assign DataOut = way0_or_way1Hit_DataOut; 
-
-   // cacheSelect = 0 means we want cache 0
-   assign way0_or_way1TagOut = ~cacheSelect ? cacheTagOut_0 : cacheTagOut_1; 
-
-   // FSM stuff - TODO, are dirty and hit assigned right??
-   assign way0_or_way1Dirty = (cacheDirtyOut_0 | cacheDirtyOut_1);
-
-   assign cacheHit0AndValid = cacheHitOut_0 & cacheValidOut_0;
-   assign cacheHit1AndValid = cacheHitOut_1 & cacheValidOut_1;
-   assign way0_or_way1Hit = cacheHit0AndValid | cacheHit1AndValid;
-
-   assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
-
-   // cacheSelect = 0 means we enable write to cache 0
-   assign cacheWrite0 = cacheWriteReg & ~cacheSelect;
-   assign cacheWrite1 = cacheWriteReg & cacheSelect;
-
-   /*
-    For the D cache, do not invert victimway for instructions that do not read or write cache, 
-    or for invalid instructions, or for instructions that are squashed due to branch misprediction.
-    or the I cache, invert victimway for each instruction fetched.
-
-    Use the memtype parameter to decide
-    memtype = 1 ==> data memory
-    memtype = 0 ==> instruction memory
-    */
-    
-///////////////////////////////////////////////////////////////////
-
-//////////////////////Same as Direct//////////////////////////
-   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .en(1'b1));
-
-   assign cacheTagIn =   cacheAddressReg [15:11]; 
-   assign cacheIndexIn = cacheAddressReg[10:3]; 
-   assign cacheOffsetIn = cacheAddressReg[2:0];
-   assign err = cacheErrOut | four_bank_ErrOut;
-   assign four_bank_AddressIn = {memoryTag, Addr[10:3], memoryOffset}; 
-
-//////////////////////////////////////////////////////////////
-
-
    
     always @(*) begin
 
@@ -295,10 +281,10 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
@@ -311,10 +297,10 @@ module mem_system(/*AUTOARG*/
             cacheCompareTag = assert;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // if (dirty and miss) nextState = EVICT_B0
             // if (!dirty and miss) nextState = RD_B0
@@ -330,16 +316,16 @@ module mem_system(/*AUTOARG*/
             cacheWriteReg = assert; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // if (dirty & miss) nextState = EVICT_B0
             // if (!dirty & miss) nextState = RD_B0
             nextState = (way0_or_way1Hit & way0_or_way1Valid) ? DONE : 
                         (~way0_or_way1Dirty & (~way0_or_way1Valid | ~way0_or_way1Hit)) ? RD_B0 :
-                        (way0_or_way1Dirty /*| Wr*/) ? EVICT_B0 : COMP_WR; // Kevin added the | Wr
+                        (way0_or_way1Dirty) ? EVICT_B0 : COMP_WR; 
         end
 
         // only change memoryTag when we want to be writing to the four bank mem, otherwise
@@ -351,10 +337,10 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b000}; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b000;
@@ -370,10 +356,10 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b010}; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b010;
@@ -389,10 +375,10 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b100};
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             memoryTag = way0_or_way1TagOut; 
             memoryOffset = 3'b100; 
@@ -409,10 +395,10 @@ module mem_system(/*AUTOARG*/
             cacheAddressReg = {Addr[15:3], 3'b110}; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             memoryOffset = 3'b110;
             memoryTag = way0_or_way1TagOut; 
@@ -429,10 +415,10 @@ module mem_system(/*AUTOARG*/
             memoryOffset = 3'b000;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             nextState = (four_bank_stall_out) ? RD_B0 : RD_B1; 
         end
@@ -443,10 +429,10 @@ module mem_system(/*AUTOARG*/
             memoryOffset = 3'b010;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             //memoryTag = cacheTagOut; 
             //cacheAddressReg = {Addr[15:3], 3'b010}; 
@@ -463,10 +449,10 @@ module mem_system(/*AUTOARG*/
             memoryOffset = 3'b100;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
            
             // write bank 0 of four bank mem to the cache
             cacheAddressReg = {Addr[15:3], 3'b000}; 
@@ -484,10 +470,10 @@ module mem_system(/*AUTOARG*/
             memoryOffset = 3'b110;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
           
 
             // write bank 1 of four bank mem to the cache
@@ -506,10 +492,10 @@ module mem_system(/*AUTOARG*/
             cacheDataIn_Reg = four_bank_DataOut;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             nextState = WR_B3; 
         end
@@ -524,10 +510,10 @@ module mem_system(/*AUTOARG*/
             cacheDataIn_Reg = four_bank_DataOut;
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             // done writing four bank mem into the cache, so now
             // we can finally write cache line with new data or 
@@ -543,10 +529,10 @@ module mem_system(/*AUTOARG*/
             cacheCompareTag = assert; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             nextState = WRITE_DONE; 
         end
@@ -560,10 +546,10 @@ module mem_system(/*AUTOARG*/
             invertVictim = assert; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             nextState = ((Wr & Rd) | (~Wr & ~Rd)) ? IDLE 
                         : (Rd) ? COMP_RD : COMP_WR; 
@@ -578,10 +564,10 @@ module mem_system(/*AUTOARG*/
             Stall = no_assert; 
 
             // cacheSelect = 0 means we enable write to cache 0
-      		// if cache hit 0 and valid, we want to write to cache 0 and not cache 1
-      		// or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
-      		cacheSelect =  ~( cacheHit0AndValid |  
-      						((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
+          // if cache hit 0 and valid, we want to write to cache 0 and not cache 1
+          // or (if cache 0 is not valid or (cache 0 is valid & cache 1 is valid and victimway = 0) and cache hit 1 and valid 
+          cacheSelect =  ~( cacheHit0AndValid |  
+                  ((~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~victimway)) & ~cacheHit1AndValid));
 
             invertVictim = assert; 
             // check if there is still more work to be done
@@ -597,9 +583,8 @@ module mem_system(/*AUTOARG*/
 
    end
    
-endmodule // mem_system
-
+// mem_system
    
 
-
+endmodule 
 // DUMMY LINE FOR REV CONTROL :9:

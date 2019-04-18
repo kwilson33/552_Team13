@@ -83,7 +83,7 @@ module final_memory (
    
    
     dff ff0 (rd1, rd0, clk, rst, 1'b1);
-    dff ff1 (wr1, wr0, clk, rst. , 1'b1);
+    dff ff1 (wr1, wr0, clk, rst , 1'b1);
     dff reg0 [12:0] (addr_1c[12:0], addr, clk, rst,  1'b1);
     dff reg1 [15:0] (data_in_1c, data_in, clk, rst,  1'b1);
     assign addr_1c[13]=1'b0;
