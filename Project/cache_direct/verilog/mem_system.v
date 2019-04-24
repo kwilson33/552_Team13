@@ -76,7 +76,7 @@ module mem_system(/*AUTOARG*/
    reg [4:0]  nextState;
 
    //TODO: not sure if the [4:0] thing wirjs
-   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .en(1'b1));
+   dff currentStateDFF [4:0] (.d(nextState), .q(currentState), .clk(clk),.rst(rst), .enable(1'b1));
 
 
    localparam   IDLE            = 5'b00000; //0

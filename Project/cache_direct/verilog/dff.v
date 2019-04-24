@@ -15,7 +15,7 @@ module dff (q, d, clk, rst, enable);
 
     assign #(1) q = state;
 
-    wire [0] in; 
+    wire in; 
 
     assign in = enable ? d : q; 
 
