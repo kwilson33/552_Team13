@@ -125,7 +125,7 @@ module mem_system(/*AUTOARG*/
 
   // assign realCacheSel = (~cacheSelect & updateCacheSelect) | (~updateCacheSelect & floppedCacheSelect);
   // assign nextCacheSel = updateCacheSelect ? cacheSelect : realCacheSel;
-	
+  
 /*
    wire cacheSelect, cacheSelectInToFlop;
    assign cacheSelectInToFlop = updateCacheSelect ? cacheSelect : ~cacheSelect;
@@ -226,7 +226,7 @@ module mem_system(/*AUTOARG*/
                           .valid                (cacheValidOut_0),
                           .err                  (cacheErrOut_0),
                           // Inputs
-                          .enable               ((cacheEnableReg& ~floppedCacheSelect)),
+                          .enable               ((cacheEnableReg /*& ~floppedCacheSelect*/)),
                           .clk                  (clk),
                           .rst                  (rst),
                           .createdump           (createdump),
@@ -247,7 +247,7 @@ module mem_system(/*AUTOARG*/
                           .valid                (cacheValidOut_1),
                           .err                  (cacheErrOut_1),
                           // Inputs
-                          .enable               ((cacheEnableReg & floppedCacheSelect)),
+                          .enable               ((cacheEnableReg /*& floppedCacheSelect*/)),
                           .clk                  (clk),
                           .rst                  (rst),
                           .createdump           (createdump),
@@ -256,7 +256,7 @@ module mem_system(/*AUTOARG*/
                           .offset               (cacheOffsetIn),
                           .data_in              (cacheDataIn_Reg),
                           .comp                 (cacheCompareTag),
-                          .write                (cacheWrite1),
+                          .write                (cacheWrite1),      
                           .valid_in             (cacheValidIn)); 
 
    four_bank_mem mem(// Outputs
@@ -270,8 +270,8 @@ module mem_system(/*AUTOARG*/
                      .createdump        (createdump),
                      .addr              (four_bank_AddressIn),
                      .data_in           (DataIn),
-                     .wr                (four_bank_WriteReg),
-                     .rd                (four_bank_ReadReg));
+                     .wr                (four_bank_WriteReg), //TODO: Ask mingyuan
+                     .rd                (four_bank_ReadReg)); //TODO: Ask mingyuan
 
 
    
