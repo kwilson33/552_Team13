@@ -120,22 +120,23 @@ module mem_system(/*AUTOARG*/
    wire cacheSelect, floppedCacheSelect;
    assign cacheSelect = ~(cacheHit0AndValid | (~cacheValidOut_0 | (cacheValidOut_0 & cacheValidOut_1 & ~ victimway)) & ~cacheHit1AndValid);
 
-   dff cacheSelectDFF (.d(nextCacheSel), .q(floppedCacheSelect), .clk(clk),.rst(rst), .enable(1'b1));
+   dff cacheSelectDFF (.d(cacheSelect), .q(floppedCacheSelect), .clk(clk),.rst(rst), .enable(updateCacheSelect));
+  // dff cacheSelectDFF (.d(nextCacheSel), .q(floppedCacheSelect), .clk(clk),.rst(rst), .enable(1'b1));
 
-   assign realCacheSel = (~cacheSelect & updateCacheSelect) | (~updateCacheSelect & floppedCacheSelect);
-   assign nextCacheSel = updateCacheSelect ? cacheSelect : realCacheSel;
+  // assign realCacheSel = (~cacheSelect & updateCacheSelect) | (~updateCacheSelect & floppedCacheSelect);
+  // assign nextCacheSel = updateCacheSelect ? cacheSelect : realCacheSel;
 	
 /*
    wire cacheSelect, cacheSelectInToFlop;
    assign cacheSelectInToFlop = updateCacheSelect ? cacheSelect : ~cacheSelect;
    dff cacheSelectDFF (.d(cacheSelectInToFlop), .q(cacheSelect), .clk(clk), .rst(rst), .enable(1'b1));
 */
-    // cacheSelect = 0 means we enable write to cache 0
-   assign cacheWrite0 = cacheWriteReg & ~nextCacheSel;
-   assign cacheWrite1 = cacheWriteReg & nextCacheSel;
+    // cacheSelect = 0 means we enable write to cache 0//
+   assign cacheWrite0 = cacheWriteReg & ~floppedCacheSelect;
+   assign cacheWrite1 = cacheWriteReg & floppedCacheSelect;
 
    // cacheSelect = 0 means we want cache 0
-   assign way0_or_way1TagOut = ~nextCacheSel ? cacheTagOut_0 : cacheTagOut_1; 
+   assign way0_or_way1TagOut = ~floppedCacheSelect ? cacheTagOut_0 : cacheTagOut_1; 
 
 
 //reg cacheSelect;
@@ -189,7 +190,6 @@ module mem_system(/*AUTOARG*/
 
    assign way0_or_way1Valid = cacheValidOut_0 | cacheValidOut_1;
 
-
    /*
     For the D cache, do not invert victimway for instructions that do not read or write cache, 
     or for invalid instructions, or for instructions that are squashed due to branch misprediction.
@@ -226,7 +226,7 @@ module mem_system(/*AUTOARG*/
                           .valid                (cacheValidOut_0),
                           .err                  (cacheErrOut_0),
                           // Inputs
-                          .enable               (cacheEnableReg),
+                          .enable               ((cacheEnableReg& ~floppedCacheSelect)),
                           .clk                  (clk),
                           .rst                  (rst),
                           .createdump           (createdump),
@@ -247,7 +247,7 @@ module mem_system(/*AUTOARG*/
                           .valid                (cacheValidOut_1),
                           .err                  (cacheErrOut_1),
                           // Inputs
-                          .enable               (cacheEnableReg),
+                          .enable               ((cacheEnableReg & floppedCacheSelect)),
                           .clk                  (clk),
                           .rst                  (rst),
                           .createdump           (createdump),
@@ -324,7 +324,7 @@ module mem_system(/*AUTOARG*/
             // if (!dirty and miss) nextState = RD_B0
             nextState = (way0_or_way1HitAndValid) ? DONE : // tried with just one cache hit and valid, but same results
                         ((~cacheDirtyOut_0 & (~cacheValidOut_0 | ~cacheHitOut_0)) | (~cacheDirtyOut_1 & (~cacheValidOut_1 | ~cacheHitOut_1))) ? RD_B0 : 
-                        (cacheDirtyOut_1 | cacheDirtyOut_0) ? EVICT_B0 : COMP_RD; 
+                        ((cacheDirtyOut_1 & floppedCacheSelect) | (cacheDirtyOut_0 & ~floppedCacheSelect)) ? EVICT_B0 : COMP_RD; 
         end
 
 
@@ -494,7 +494,9 @@ module mem_system(/*AUTOARG*/
             cacheEnableReg = assert;
             cacheWriteReg = assert;
             cacheCompareTag = assert; 
-         
+
+         //    updateCacheSelect = assert;
+         //  invertVictim = assert; //This made the test we made pass
             nextState = WRITE_DONE; 
         end
 
