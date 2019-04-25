@@ -3,13 +3,13 @@
 /* $Rev: 45 $ */
 // D-flipflop
 
-module dff (en, q, d, clk, rst);
+module dff (q, d, clk, rst, enable);
 
     output         q;
     input          d;
     input          clk;
     input          rst;
-    input 			en; 
+    input          enable; 
 
     reg            state;
 
@@ -17,7 +17,7 @@ module dff (en, q, d, clk, rst);
 
     wire in; 
 
-    assign in = en ? d : q; 
+    assign in = enable ? d : q; 
 
     always @(posedge clk) begin
       state = rst ? 0 : in; //changed from d to in

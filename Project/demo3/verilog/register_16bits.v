@@ -15,6 +15,6 @@ module register_16bits (readData, clk, rst, writeData, writeEnable);
 	
 	// attach the 16 bit in to the input of a
 	// D Flip Flop. The output will also be 16 bits.
-	dff  dff_16_bits[15:0] (.q(readData), .d(in), .clk(clk), .rst(rst), .en(writeEnable)); 
+	dff  dff_16_bits[15:0] (.q(readData), .d(in), .clk(clk), .rst(rst), .enable(writeEnable)); 
 
 endmodule

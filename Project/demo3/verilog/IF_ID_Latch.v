@@ -19,7 +19,7 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       
       // if we have a random stall from instr mem, then we should NOT halt
       assign valid_in = ~(rst | instructionMemoryStall);
-      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .en(en));
+      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .enable(en));
 
       // use 16 bit registers to decide if we should use current saved output or update output for
       // the PC and the instruction
