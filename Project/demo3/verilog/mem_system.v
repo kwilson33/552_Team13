@@ -78,51 +78,51 @@ module mem_system(/*AUTOARG*/
 
    // selDCache logic - if not stalling, not memory stalling, not flushing, not an
    // invalid instruction and we're doing a Read or Write - then invert victimway
-   assign selDCache = (~invalidOP && ~memStall &&~Stall && (Rd || Wr));   
+   assign selDCache = (~invalidOP && ~memStall && ~Stall && (Rd || Wr));   
    
    // first of 2 caches (way 0)
-   cache #(0 + memtype) c0 (// Inputs
-                            .enable(FSMEnC0),
-                            .clk(clk),           
-                            .rst(rst),
-                            .createdump(createdump),
-                            .tag_in(FSMAddrOut[15:11]),   
-                            .index(FSMAddrOut[10:3]),    
-                            .offset({FSMWordOut, 1'b0}),   
-                            .data_in(FSMDataOut),   
-                            .comp(FSMCompC0),
-                            .write(cacheWriteC0),
-                            .valid_in(1'b1),            
-                            // Outputs
-                            .tag_out(cacheTagOutC0),
-                            .data_out(cacheDataOutC0),
-                            .hit(cacheHitOutC0),
-                            .dirty(cacheDirtyOutC0),
-                            .valid(cacheValidOutC0),
-                            .err(cacheErrC0)
-                            );
+   cache #(.cache_id(0 + memtype)) c0 (// Inputs
+                                       .enable(FSMEnC0),
+                                       .clk(clk),           
+                                       .rst(rst),
+                                       .createdump(createdump),
+                                       .tag_in(FSMAddrOut[15:11]),   
+                                       .index(FSMAddrOut[10:3]),    
+                                       .offset({FSMWordOut, 1'b0}),   
+                                       .data_in(FSMDataOut),   
+                                       .comp(FSMCompC0),
+                                       .write(cacheWriteC0),
+                                       .valid_in(1'b1),            
+                                       // Outputs
+                                       .tag_out(cacheTagOutC0),
+                                       .data_out(cacheDataOutC0),
+                                       .hit(cacheHitOutC0),
+                                       .dirty(cacheDirtyOutC0),
+                                       .valid(cacheValidOutC0),
+                                       .err(cacheErrC0)
+                                       );
 
    // second of 2 caches (way 1)
-   cache #(2 + memtype) c1 (// Inputs
-                            .enable(FSMEnC1),
-                            .clk(clk),
-                            .rst(rst),
-                            .createdump(createdump),
-                            .tag_in(FSMAddrOut[15:11]),
-                            .index(FSMAddrOut[10:3]),
-                            .offset({FSMWordOut, 1'b0}),
-                            .data_in(FSMDataOut),             
-                            .comp(FSMCompC1),
-                            .write(cacheWriteC1),             
-                            .valid_in(1'b1),
-                            // Outputs
-                            .tag_out(cacheTagOutC1),
-                            .data_out(cacheDataOutC1),
-                            .hit(cacheHitOutC1),   
-                            .dirty(cacheDirtyOutC1),
-                            .valid(cacheValidOutC1),
-                            .err(cacheErrC1)
-                            );        
+   cache #(.cache_id(2 + memtype)) c1 (// Inputs
+                                       .enable(FSMEnC1),
+                                       .clk(clk),
+                                       .rst(rst),
+                                       .createdump(createdump),
+                                       .tag_in(FSMAddrOut[15:11]),
+                                       .index(FSMAddrOut[10:3]),
+                                       .offset({FSMWordOut, 1'b0}),
+                                       .data_in(FSMDataOut),             
+                                       .comp(FSMCompC1),
+                                       .write(cacheWriteC1),             
+                                       .valid_in(1'b1),
+                                       // Outputs
+                                       .tag_out(cacheTagOutC1),
+                                       .data_out(cacheDataOutC1),
+                                       .hit(cacheHitOutC1),   
+                                       .dirty(cacheDirtyOutC1),
+                                       .valid(cacheValidOutC1),
+                                       .err(cacheErrC1)
+                                       );        
 
    // 2-1 16-bit mux to decide which cacheDataOut should go into the FSM
    // select uses logic from caches / FSM
@@ -153,7 +153,7 @@ module mem_system(/*AUTOARG*/
                                         // Inputs
                                         .tagInC0(cacheTagOutC0),
                                         .tagInC1(cacheTagOutC1),
-                                        .victimway(victimway),
+                                        .victimway(inVictimWay),
                                         .cacheDataOut(fsmCacheDataIn), 
                                         .memDataOut(memDataOut), 
                                         .data_in(DataIn), 
@@ -244,7 +244,8 @@ module mem_system(/*AUTOARG*/
 
    // we want to hold the enable signal for an entire "cycle" of signals, only
    // changing when we're in Idle
-   dffe #(1) holdEnC1 (.d(FSMEnC1 && cacheValidOut1 && cacheDirtyOut1 && ~cacheHitOut1 && victimway),
+   dffe #(1) holdEnC1 (.d(FSMEnC1 && cacheValidOutC1 && cacheDirtyOutC1 && 
+                          ~cacheHitOutC1 && inVictimWay),
                        .q(holdEn1),
                        .en((state == 4'b0000)),
                        .clk(clk),

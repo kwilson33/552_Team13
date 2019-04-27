@@ -43,7 +43,7 @@ module fetchInstruction(clk, rst,
 								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								.Stall(instructionMemoryStall_out), .Rd(1'b1), .CacheHit(cacheHit), 
 								.Done(instructionMemDone_out)); // probably do nothing with this
-								*/
+	*/						
 
 	
 	mem_system instructionMemory(.DataIn(16'b0), .Addr(currentPC),
@@ -51,7 +51,7 @@ module fetchInstruction(clk, rst,
 								 .createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								 .Stall(instructionMemoryStall_out), .Rd(1'b1), .CacheHit(cacheHit),
 								 .Done(instructionMemDone_out));
-
+	
 	
 
 	// Adding 2 to the PC
