@@ -1,4 +1,4 @@
-module forwarding(IDEX_Rs, IDEX_Rt, EXMEM_Rd, MEMWB_Rd, MEMWB_WriteReg, EXMEM_WriteReg
+module forwarding(IDEX_Rs, IDEX_Rt, EXMEM_Rd, MEMWB_Rd, MEMWB_WriteReg, EXMEM_WriteReg,
 				  fw_EXMEM_Rs, fw_EXMEM_Rt, fw_MEMWB_Rs, fw_MEMWB_Rt);
 
 input [2:0] IDEX_Rs, IDEX_Rt, EXMEM_Rd, MEMWB_Rd; 
