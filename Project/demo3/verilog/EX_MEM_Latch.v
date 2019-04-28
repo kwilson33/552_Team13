@@ -25,7 +25,7 @@ module EX_MEM_Latch (// Inputs
 		 branchingPCEnable_out, BranchingOrJumping_out,
 		 ReadingRs_out, ReadingRt_out, NOP_or_regular; 
 
-    assign NOP_or_regular = (~en) ? 16'b0000000000000000 : RegWrite_out; 
+    assign NOP_or_regular = (en) ? RegWrite_out: 1'b0 ; 
 
 	// use connection by reference to these modules to pass from EX_MEM to Memory and Writeback, Hazard Detection
 	register_16bits rf_EXMEM_aluOutput_out(.readData(aluOutput_out), .clk(clk), .rst(rst), .writeData(aluOutput_in), .writeEnable(en));

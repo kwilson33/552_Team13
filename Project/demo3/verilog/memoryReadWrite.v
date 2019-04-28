@@ -18,12 +18,12 @@ module memoryReadWrite (aluOutput, writeData,
 								.createdump(dump), .DataOut(readData), .err(unalignedMemErr),
 								.Stall(dataMemoryStallOut), .Rd(memRead), .CacheHit(cacheHit), 
 								.Done(dataMemoryDone)); 
-	*/							
+	*/				
 	
 	mem_system dataMemoryModule(.DataIn(writeData), .Addr(aluOutput),
 								 .Wr(memWrite), .clk(clk), .rst(rst), 
 								.createdump(dump), .DataOut(readData), .err(unalignedMemErr),
 								.Stall(dataMemoryStallOut), .Rd(memRead), .CacheHit(cacheHit), 
 								.Done(dataMemoryDone));
-	
+
 endmodule
