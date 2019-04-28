@@ -54,6 +54,7 @@ module Hazard_Detector (  ID_EX_RegWrite_in,
 
 	// outputs of Hazard Detector
 	assign stall = (ID_EX_stall | EX_MEM_stall); // Since we're doing bypassing, don't have to worry about MEM_WB
+//	assign stall = 1'b0; 
 	assign PC_Write_Enable_out = ~stall;
 	assign IF_ID_WriteEnable_out = ~stall;
 

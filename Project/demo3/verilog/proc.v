@@ -150,25 +150,24 @@ module proc (/*AUTOARG*/
 
                                      .BranchingOrJumping_in(instructionDecode.controlUnit.BranchingOrJumping));
 
-  
+
   // ################################################### FORWARDING BLOCK ##################################################
 
-  forwarding         fw_unit(.IDEX_Rs(alu_A),
-                             .IDEX_Rt(alu_B),
-                             .EXMEM_Rd(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
-                             .MEMWB_Rd(EX_MEM_writeRegister_out), 
-                             .MEMWB_WriteReg(EX_MEM_Stage.NOP_or_regular), 
-                             .EXMEM_WriteReg(executeWriteRegister),
-                             .fw_EXMEM_Rs(), 
-                             .fw_EXMEM_Rt(), 
-                             .fw_MEMWB_Rs(), 
-                             .fw_MEMWB_Rt()); 
+  forwarding         fw_unit(.IDEX_Rs(ID_EX_Stage.instr_fwd.readData[10:8]),
+                             .IDEX_Rt(ID_EX_Stage.instr_fwd.readData[7:5]),
+                             .EXMEM_Rd(EX_MEM_writeRegister_out), 
+                             .MEMWB_Rd(MEM_WB_writeRegister_out), 
+                             .MEMWB_WriteReg(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), 
+                             .EXMEM_WriteReg(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+                             .nakedA(ID_EX_Stage.rf_IDEX_Aout.readData), 
+                             .nakedB(ID_EX_Stage.rf_IDEX_Bout.readData), 
+                             .fwMEM(dataMemory.dataMemoryModule.DataOut),
+                             .fwEX(aluOutput)); 
                                                                    
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
   										                     .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
-  									                   	   .A(ID_EX_Stage.rf_IDEX_Aout.readData), 
-                                           .B(ID_EX_Stage.rf_IDEX_Bout.readData), 
+
                                            .S_extend5_in(ID_EX_Stage.rf_IDEX_S_extend5_out.readData), 
                     										   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
                     										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
@@ -177,8 +176,19 @@ module proc (/*AUTOARG*/
 
                                            .invA(ID_EX_Stage.dff_IDEX_invA_out.q),
                                            .invB(ID_EX_Stage.dff_IDEX_invB_out.q), 
-                                           .Cin(ID_EX_Stage.dff_IDEX_Cin_out.q), 
-                                           .ALUSrc2(ID_EX_Stage.dff_IDEX_ALUSrc2_out.q),               
+                                           .Cin(ID_EX_Stage.dff_IDEX_Cin_out.q),
+
+                                           .ALUSrc2(ID_EX_Stage.dff_IDEX_ALUSrc2_out.q),
+
+                                           ///////////////////Forwarding stuff here//////////////////////     
+                                         
+                                       //    .A(ID_EX_Stage.rf_IDEX_Aout.readData), //Old way
+                                       //    .B(ID_EX_Stage.rf_IDEX_Bout.readData), //Old way
+                                             .A(fw_unit.chosenAluA),
+                                             .B(fw_unit.chosenAluB),
+
+                                          ///////////////////////////////////////////////////////////////
+
                                            .Branching(ID_EX_Stage.dff_IDEX_Branching_out.q), 
 
                                            .SESel(ID_EX_SESel_out),
