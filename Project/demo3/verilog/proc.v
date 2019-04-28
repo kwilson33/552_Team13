@@ -107,6 +107,7 @@ module proc (/*AUTOARG*/
                                        .ReadingRs_in(instructionDecode.controlUnit.ReadingRs),
                                        .ReadingRt_in(instructionDecode.controlUnit.ReadingRt));
 
+
   // ################################################### ID_EX Stage #######################################################
 
   //TODO: connect a few signals
@@ -147,6 +148,20 @@ module proc (/*AUTOARG*/
                                      .RegDst_out(ID_EX_RegDst_out),
 
                                      .BranchingOrJumping_in(instructionDecode.controlUnit.BranchingOrJumping));
+
+  
+  // ################################################### FORWARDING BLOCK ##################################################
+
+  forwarding         fw_unit(.IDEX_Rs(alu_A),
+                             .IDEX_Rt(alu_B),
+                             .EXMEM_Rd(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
+                             .MEMWB_Rd(EX_MEM_writeRegister_out), 
+                             .MEMWB_WriteReg(EX_MEM_Stage.NOP_or_regular), 
+                             .EXMEM_WriteReg(executeWriteRegister),
+                             .fw_EXMEM_Rs(), 
+                             .fw_EXMEM_Rt(), 
+                             .fw_MEMWB_Rs(), 
+                             .fw_MEMWB_Rt()); 
                                                                    
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
