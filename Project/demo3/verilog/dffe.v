@@ -30,7 +30,7 @@ module dffe (/*AUTOARG*/
                                  .d(inD),
                                  .clk(clk),
                                  .rst(rst),
-                                 .enable(1'b1));
+                                .enable(1'b1));
 
    // enable the output of the D FF
    mux2_1_16b #(DATA_SIZE) enabler (// Inputs

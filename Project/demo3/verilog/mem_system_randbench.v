@@ -85,7 +85,7 @@ module mem_system_randbench(/*AUTOARG*/);
    always @ (posedge clk) begin
       #2;
       // simulation delay
-      
+
       if (Done) begin
          n_replies = n_replies + 1;
          if (CacheHit) begin

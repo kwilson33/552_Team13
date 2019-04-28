@@ -74,7 +74,7 @@ module memStateMachine_Set (/*AUTOARG*/
 
    // regs
    reg [STATE_SIZE-1:0]       state;
-
+   
    // wire
    wire [STATE_SIZE-1:0]      nextState;
    reg                        compRead_Write, compWrite_Read;
@@ -141,10 +141,9 @@ module memStateMachine_Set (/*AUTOARG*/
              state = ((rst || stall || hitStayInIdle) ? IDLE :    
                       (({Rd,Wr} == 2'b01 || {Rd,Wr} == 2'b10) ? wayState : IDLE));
              
-             // we want to take the newly inputted values when in reset
+             // we want to take the newly inputted values when in Idle
              enLatches = ON;
-             // don't stall when in Idle
-             stallOut = OFF;
+             stallOut = OFF; // don't stall when in Idle
              
              // assign compRead_Write and compWrite_Read as listed in table
              compWrite_Read = ((~stall && ~rst && ~(hitValid0 || hitValid1) && 
@@ -177,6 +176,8 @@ module memStateMachine_Set (/*AUTOARG*/
         // first cycle of Access Read (read word0 from cache, store word0 to mem bank0)
         ACCREAD1 :
           begin
+			 //enLatches = ON; // ** TODO: Ok?
+
              // since not worrying about stalling, just go to the next Access Read 
              // state
              state = ACCREAD2;
@@ -533,8 +534,7 @@ module memStateMachine_Set (/*AUTOARG*/
                           .clk(clk), 
                           .rst(rst),
                           .en(enLatches));
-   
-   
+      
    // dff to latch data_in
    dffe latchDataSignal (.d(data_in), 
                          .q(latchDataIn), 

@@ -102,7 +102,7 @@ module mem_system_perfbench(/*AUTOARG*/);
 
       #2;
       // simulation delay
-      
+
       if (Done) begin
          n_replies = n_replies + 1;
          if (CacheHit) begin
