@@ -42,7 +42,7 @@ module ID_EX_Latch(clk, rst, en,
             BranchingOrJumping_in, ReadingRs_in, ReadingRt_in; 
 
       wire [15:0] PC_Out, A_out, B_out, S_extend5_out, Z_extend5_out, S_extend8_out, Z_extend8_out, S_extend11_out, 
-                  stall_or_instruction_out, stall_or_instruction_in; 
+                  stall_or_instruction_out, stall_or_instruction_in, instruction_out; 
       
       wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out,  
             Branching_out, DMemDump_out, invA_out, invB_out, Cin_out, ALUSrc2_out,
@@ -70,6 +70,9 @@ module ID_EX_Latch(clk, rst, en,
       register_16bits rf_IDEX_Z_extend8_out(.readData(Z_extend8_out), .clk(clk), .rst(rst), .writeData(Z_extend8_in), .writeEnable(en));
       register_16bits rf_IDEX_S_extend11_out(.readData(S_extend11_out), .clk(clk), .rst(rst), .writeData(S_extend11_in), .writeEnable(en));
       register_16bits rf_IDEX_instruction_out(.readData(stall_or_instruction_out), .clk(clk), .rst(rst), .writeData(stall_or_instruction_in), .writeEnable(en));
+
+      register_16bits instr_fwd(.readData(instruction_out), .clk(clk), .rst(rst), .writeData(instruction_in), .writeEnable(en));
+
 
       dff dff_IDEX_RegWrite_out(.d(RegWrite_or_stall), .q(RegWrite_out), .clk(clk), .rst(rst), .enable(en));
       dff dff_IDEX_DMemWrite_out(.d(DMemWrite_or_stall), .q(DMemWrite_out), .clk(clk), .rst(rst), .enable(en));

@@ -1,6 +1,6 @@
 # vsim -c proc_hier_pbench -lib __work 
-# Start time: 15:14:55 on Apr 27,2019
-# //  ModelSim DE 10.7c Aug 17 2018Linux 4.15.0-47-generic
+# Start time: 17:03:46 on Apr 29,2019
+# //  ModelSim DE 10.7c Aug 17 2018Linux 4.15.0-48-generic
 # //
 # //  Copyright 1991-2018 Mentor Graphics Corporation
 # //  All Rights Reserved.
@@ -19,18 +19,7 @@
 # Loading __work.proc
 # Loading __work.fetchInstruction
 # Loading __work.register_16bits
-# Loading __work.mem_system
-# Loading __work.cache
-# Loading __work.memc
-# Loading __work.memv
-# Loading __work.mux2_1_16b
-# Loading __work.memStateMachine_Set
-# Loading __work.waySelect
-# Loading __work.dffe
-# Loading __work.four_bank_mem
-# Loading __work.final_memory
-# Loading __work.dff
-# Loading __work.invalidOpCode
+# Loading __work.stallmem
 # Loading __work.rca_16b
 # Loading __work.rca_4b
 # Loading __work.fullAdder_1b
@@ -38,6 +27,7 @@
 # Loading __work.nand2
 # Loading __work.nand3
 # Loading __work.IF_ID_Latch
+# Loading __work.dff
 # Loading __work.decodeInstruction
 # Loading __work.control
 # Loading __work.rf_bypass
@@ -49,6 +39,7 @@
 # Loading __work.zeroExt16_5
 # Loading __work.Hazard_Detector
 # Loading __work.ID_EX_Latch
+# Loading __work.forwarding
 # Loading __work.executeInstruction
 # Loading __work.mux4_1
 # Loading __work.mux2_1
@@ -64,10 +55,18 @@
 # Loading __work.memoryReadWrite
 # Loading __work.MEM_WB_Latch
 # Loading __work.writebackOutput
+# ** Warning: (vsim-PLI-3691) Expected a system task, not a system function '$value$plusargs'.
+#    Time: 0 ns  Iteration: 0  Instance: /proc_hier_pbench/DUT/p0/instructionFetch/instructionMemory File: stallmem.v Line: 86
+# ** Warning: (vsim-PLI-3691) Expected a system task, not a system function '$value$plusargs'.
+#    Time: 0 ns  Iteration: 0  Instance: /proc_hier_pbench/DUT/p0/dataMemory/dataMemoryModule File: stallmem.v Line: 86
 run -all
+# Using seed           0
+# rand_pat=12153524 00010010000101010011010100100100
+# Using seed           0
+# rand_pat=12153524 00010010000101010011010100100100
 # Hello world...simulation starting
 # See verilogsim.log and verilogsim.ptrace for output
 # ** Note: $finish    : proc_hier_pbench.v(115)
-#    Time: 2005 ns  Iteration: 0  Instance: /proc_hier_pbench
-# End time: 15:14:55 on Apr 27,2019, Elapsed time: 0:00:00
-# Errors: 0, Warnings: 0
+#    Time: 41805 ns  Iteration: 0  Instance: /proc_hier_pbench
+# End time: 17:03:48 on Apr 29,2019, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 2

@@ -35,23 +35,24 @@ module fetchInstruction(clk, rst,
 	//Output: [15:0]readData 
 	register_16bits PC_Register( .readData(currentPC), .clk(clk), .rst(rst), .writeData(pcUpdated), .writeEnable(~dump)); 
 
-	/*
+	
 	// instruction Memory
 	// instruction comes from the current PC
+	
 	stallmem instructionMemory (.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(1'b0), .clk(clk), .rst(rst),
 								.createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								.Stall(instructionMemoryStall_out), .Rd(1'b1), .CacheHit(cacheHit), 
 								.Done(instructionMemDone_out)); // probably do nothing with this
-	*/						
+							
 
-	
-	mem_system instructionMemory(.DataIn(16'b0), .Addr(currentPC),
+	/*
+	mem_system #(0) instructionMemory(.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(1'b0), .clk(clk), .rst(rst),
 								 .createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								 .Stall(instructionMemoryStall_out), .Rd(1'b1), .CacheHit(cacheHit),
 								 .Done(instructionMemDone_out));
-	
+	*/
 	
 
 	// Adding 2 to the PC

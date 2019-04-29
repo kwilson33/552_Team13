@@ -106,7 +106,13 @@ module proc (/*AUTOARG*/
                   									   .ID_EX_WriteRegister_in(executeWriteRegister), 
                   									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),
                                        .ReadingRs_in(instructionDecode.controlUnit.ReadingRs),
-                                       .ReadingRt_in(instructionDecode.controlUnit.ReadingRt));
+                                       .ReadingRt_in(instructionDecode.controlUnit.ReadingRt),
+                                       .ID_EX_Rs_in(ID_EX_Stage.instr_fwd.readData[10:8]),
+                                       .ID_EX_Rt_in(ID_EX_Stage.instr_fwd.readData[7:5]),
+                                       .ID_EX_ReadingRs(ID_EX_Stage.dff_IDEX_ReadingRs_out.q),
+                                       .ID_EX_ReadingRt(ID_EX_Stage.dff_IDEX_ReadingRt_out.q),
+                                       .EX_MEM_DMemEn(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+                                       .ID_EX_DMemEn(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q));
 
 
   // ################################################### ID_EX Stage #######################################################
