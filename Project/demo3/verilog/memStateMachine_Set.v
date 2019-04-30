@@ -43,7 +43,8 @@ module memStateMachine_Set (/*AUTOARG*/
                             dirtyOutC1,           
                             hitC0,
                             hitC1, 
-                            stall);
+                            stall,
+                            isBranch);
 
    parameter                  DATA_SIZE = 16, TAG_SIZE = 5, STATE_SIZE = 4;
 
@@ -70,7 +71,7 @@ module memStateMachine_Set (/*AUTOARG*/
    input [TAG_SIZE-1:0]       tagInC0, tagInC1;
    input [3:0]                busy;
    input                      Rd, Wr, clk, rst, validOutC0, validOutC1, dirtyOutC0,
-                              dirtyOutC1, hitC0, hitC1, stall, victimway;
+                              dirtyOutC1, hitC0, hitC1, stall, victimway, isBranch;
 
    // regs
    reg [STATE_SIZE-1:0]       state;
@@ -138,7 +139,7 @@ module memStateMachine_Set (/*AUTOARG*/
               (if either hits, use that one and ignore the other, output right away)
               see State Transition Table for rest
               */
-             state = ((rst || stall || hitStayInIdle) ? IDLE :    
+             state = ((rst || stall || hitStayInIdle || isBranch) ? IDLE :    
                       (({Rd,Wr} == 2'b01 || {Rd,Wr} == 2'b10) ? wayState : IDLE));
              
              // we want to take the newly inputted values when in reset

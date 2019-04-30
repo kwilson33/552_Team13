@@ -15,7 +15,7 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       // this goes into control.v and will determine if DMemDump should actually be asserted
       wire valid_in;
 
-      assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in) ?  16'b0000100000000000 : instruction_in;
+      assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in)?  16'b0000100000000000 : instruction_in;
       
       // if we have a random stall from instr mem, then we should NOT halt
       assign valid_in = ~(rst | instructionMemoryStall);

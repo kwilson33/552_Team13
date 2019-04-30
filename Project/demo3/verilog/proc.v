@@ -34,7 +34,8 @@ module proc (/*AUTOARG*/
         masterBorJ,
         // signals for hazard detector
         PC_WriteEn_from_hazardDet, IF_ID_WriteEn,
-        instructionMemoryStall_out, dataMemoryStallOut,
+        instructionMemoryStall_out, 
+        dataMemoryStallOut, dataMemoryDoneOut,
         IF_ID_valid_out;
 
    assign err = (errDecode |
@@ -60,7 +61,7 @@ module proc (/*AUTOARG*/
 								     	.PC_Next(nextPC_from_fetch), 
                       .PC_WriteEn_in(PC_WriteEn_from_hazardDet),
 									    .instruction(fetch_instruction_Out),
-                      .branchingPCEnable_in(masterBorJ),
+                      .branchingPCEnable_in(masterBorJ /*| dataMemoryDoneOut*/), // TODO: not sure if right branching signal or if dataMemDone should be here
                       .stall(stall_from_HazardDet),
                       .instructionMemoryStall_out(instructionMemoryStall_out),
                       .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q),
@@ -178,7 +179,7 @@ module proc (/*AUTOARG*/
 
 
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
-                                      .en(~dataMemoryStallOut),
+                                      .en(~dataMemoryStallOut /*& ~instructionMemoryStall_out*/),
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
 									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
@@ -206,7 +207,8 @@ module proc (/*AUTOARG*/
                     .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),  
                     .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
                     .readData(readData),
-                    .dataMemoryStallOut(dataMemoryStallOut)); //output
+                    .dataMemoryStallOut(dataMemoryStallOut),
+                    .dataMemoryDoneOut(dataMemoryDoneOut)); //output
 
   // ################################################### MEM_WB Stage #######################################################
 
@@ -216,8 +218,8 @@ module proc (/*AUTOARG*/
                    //Send NOP into write regwrite_in
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
-									//  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
-									.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
+									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+									//.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
 									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
 									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
 									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),

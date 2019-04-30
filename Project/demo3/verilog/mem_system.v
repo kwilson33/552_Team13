@@ -21,14 +21,14 @@ module mem_system(/*AUTOARG*/
                   Wr,   
                   createdump,   
                   clk,   
-                  rst  
-                  );    
+                  rst,  
+                  isBranch);    
    
    input [15:0] Addr;
    input [15:0] DataIn;
    input        Rd;
    input        Wr;
-   input        createdump;
+   input        createdump, isBranch;
    input        clk;
    input        rst;
    
@@ -169,7 +169,8 @@ module mem_system(/*AUTOARG*/
                                         .dirtyOutC1(cacheDirtyOutC1),
                                         .hitC0(cacheHitOutC0),
                                         .hitC1(cacheHitOutC1), 
-                                        .stall(memStall)
+                                        .stall(memStall),
+                                        .isBranch(isBranch)
                                         );
 
    four_bank_mem fourBankMem (// Inputs
