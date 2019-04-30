@@ -6,14 +6,15 @@ module EX_MEM_Latch (// Inputs
 					aluOutput_in, B_in, updatedPC_in,
 					nextPC_in, branchingPCEnable_in,
 					BranchingOrJumping_in,
-					ReadingRs_in, ReadingRt_in, instruction_in);
+					ReadingRs_in, ReadingRt_in, instruction_in,
+					instructionMemoryStall_in);
 				
 
 	input clk, rst, en, RegWrite_in, DMemWrite_in,
 		 DMemEn_in, MemToReg_in, 
 		 DMemDump_in, Branching_in, Jump_in,
 		 branchingPCEnable_in, BranchingOrJumping_in,
-		 ReadingRs_in, ReadingRt_in;
+		 ReadingRs_in, ReadingRt_in, instructionMemoryStall_in;
 	input [15:0] aluOutput_in, B_in, updatedPC_in, nextPC_in, instruction_in; 
 	input [2:0] WriteRegister_in;
 
@@ -23,7 +24,8 @@ module EX_MEM_Latch (// Inputs
 	wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out, 
 		 DMemDump_out, Branching_out, Jump_out,
 		 branchingPCEnable_out, BranchingOrJumping_out,
-		 ReadingRs_out, ReadingRt_out, NOP_or_regular; 
+		 ReadingRs_out, ReadingRt_out, NOP_or_regular,
+		 instructionMemoryStall_out; 
 
     assign NOP_or_regular = (~en) ? 16'b0000000000000000 : RegWrite_out; 
 
@@ -45,6 +47,9 @@ module EX_MEM_Latch (// Inputs
 
 	dff dff_EXMEM_ReadingRs_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_EXMEM_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));
+
+	// KEVIN: Added this for stalling
+	dff dff_EXMEM_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(en));
 
 
 	// dff for WriteRegister

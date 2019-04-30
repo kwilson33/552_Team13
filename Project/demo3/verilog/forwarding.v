@@ -2,13 +2,13 @@ module forwarding(IDEX_Rs, IDEX_Rt, EXMEM_Rd,
 				 MEMWB_Rd, MEMWB_RegWrite,
 				 EXMEM_RegWrite, nakedA, nakedB, fwMEM, 
 				 fwEX, ReadingRs_IDEX, ReadingRt_IDEX, ReadingRs_EXMEM, 
-				 EXMEM_Rs, MEMWB_Rs);
+				 EXMEM_Rs, MEMWB_Rs, ReadingRs_MEMWB);
 
 input [15:0] nakedA, nakedB, fwMEM, fwEX;  
 
 input [2:0] IDEX_Rs, IDEX_Rt, EXMEM_Rd, MEMWB_Rd, EXMEM_Rs, MEMWB_Rs; 
 input		MEMWB_RegWrite, EXMEM_RegWrite, 
-			ReadingRs_IDEX, ReadingRt_IDEX, ReadingRs_EXMEM; 
+			ReadingRs_IDEX, ReadingRt_IDEX, ReadingRs_EXMEM, ReadingRs_MEMWB; 
 
 
 wire   fw_EXMEM_Rs, fw_EXMEM_Rt, 
@@ -31,13 +31,13 @@ assign fw_EXMEM_Rt = (EXMEM_RegWrite  & (EXMEM_Rd == IDEX_Rt)) |
 
 //MEM_WB FORWARDING CONDITIONS
 
-assign fw_MEMWB_Rs = (MEMWB_RegWrite & (MEMWB_Rd == IDEX_Rs)) |
-					 (~ReadingRs_EXMEM & (IDEX_Rs == MEMWB_Rs)) &
+assign fw_MEMWB_Rs = (MEMWB_RegWrite & (MEMWB_Rd == IDEX_Rs)) | // for XtoX.asm, this goes high too early
+					 (~ReadingRs_MEMWB & (IDEX_Rs == MEMWB_Rs)) & // change to ~ReadingRs_MEMWB
 					 ReadingRs_IDEX ? 1'b1 : 1'b0;
 
 					
 assign fw_MEMWB_Rt = (MEMWB_RegWrite & (MEMWB_Rd == IDEX_Rt))|
-					 (~ReadingRs_EXMEM & (IDEX_Rt == MEMWB_Rs)) &
+					 (~ReadingRs_MEMWB & (IDEX_Rt == MEMWB_Rs)) &
 					 ReadingRt_IDEX ? 1'b1 : 1'b0; 
 
 assign chosenAluA = (fw_EXMEM_Rs) ? fwEX : (fw_MEMWB_Rs) ? fwMEM : nakedA; 

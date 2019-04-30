@@ -68,13 +68,13 @@ module Hazard_Detector (  ID_EX_RegWrite_in,
 
 
 	// outputs of Hazard Detector
-	assign stall = (ID_EX_stall | EX_MEM_stall); // Since we're doing bypassing, don't have to worry about MEM_WB
+	//assign stall = (ID_EX_stall | EX_MEM_stall); // Since we're doing bypassing, don't have to worry about MEM_WB
 
 				// (memReadIDEX && (((ifidRD1 == idexRD2) & hasAB[1]) || ((ifidRD2 == idexRD2) & hasAB[0]))) ? 1'b1 : 1'b0;
 //	assign stall2 = (ID_EX_RegWrite_in && ID_EX_DMemEn && (((IF_ID_Rs_in == ID_EX_Rt_in) & 
 //					ReadingRt_in) || ((IF_ID_Rt_in == ID_EX_Rt_in) & ReadingRs_in))) ? 1'b1 : 1'b0; 
 
-	//assign stall = MATT_stall ; 
+	assign stall = MATT_stall ; 
 
 	assign PC_Write_Enable_out = ~stall;
 	assign IF_ID_WriteEnable_out = ~stall;

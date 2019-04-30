@@ -5,7 +5,6 @@ module fetchInstruction(clk, rst,
 						dump, 
 						PC_Next, 
 						instruction,
-						PC_WriteEn_in,
 						stall,
 						instructionMemoryStall_out,
 						dataMemoryStallOut);
@@ -14,7 +13,7 @@ module fetchInstruction(clk, rst,
 
 
 	input [15:0] PC_In; 
-	input clk, dump, rst, branchingPCEnable_in, PC_WriteEn_in, stall, MEM_WB_Branch_in, dataMemoryStallOut; 
+	input clk, dump, rst, branchingPCEnable_in, stall, MEM_WB_Branch_in, dataMemoryStallOut; 
 
 	output [15:0] PC_Next;
 	output [15:0] instruction; 
@@ -26,7 +25,7 @@ module fetchInstruction(clk, rst,
 	wire c_out; 
 
 	// if we are branching or stalling halt the PC
-	assign pc_increment = (stall | branchingPCEnable_in | instructionMemoryStall_out | dataMemoryStallOut ) ? 16'h0 : 16'h2;
+	assign pc_increment = (stall | branchingPCEnable_in | instructionMemoryStall_out | dataMemoryStallOut) ? 16'h0 : 16'h2;
 
 ///////////////////////////////////////////////////////////
 	assign pcUpdated = (MEM_WB_Branch_in) ? PC_In : PC_Next; 

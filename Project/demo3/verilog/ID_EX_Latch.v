@@ -22,7 +22,8 @@ module ID_EX_Latch(clk, rst, en,
                    BranchingOrJumping_in,
                    ReadingRs_in,
                    ReadingRt_in,
-                   stall);
+                   stall,
+                   instructionMemoryStall_in);
 
       //TODO: Figure out what instruction_in is for
       //TODO: Figure out PC stuff
@@ -39,7 +40,7 @@ module ID_EX_Latch(clk, rst, en,
 
       input clk, rst, en, RegWrite_in, DMemWrite_in, DMemEn_in, MemToReg_in,  
             Branching_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall, 
-            BranchingOrJumping_in, ReadingRs_in, ReadingRt_in; 
+            BranchingOrJumping_in, ReadingRs_in, ReadingRt_in, instructionMemoryStall_in; 
 
       wire [15:0] PC_Out, A_out, B_out, S_extend5_out, Z_extend5_out, S_extend8_out, Z_extend8_out, S_extend11_out, 
                   stall_or_instruction_out, stall_or_instruction_in, instruction_out; 
@@ -48,7 +49,7 @@ module ID_EX_Latch(clk, rst, en,
             Branching_out, DMemDump_out, invA_out, invB_out, Cin_out, ALUSrc2_out,
             RegWrite_or_stall, DMemWrite_or_stall, DMemEn_or_stall,
              MemToReg_or_stall, DMemDump_or_stall, BranchingOrJumping_out,
-             ReadingRt_out,ReadingRs_out;
+             ReadingRt_out,ReadingRs_out, instructionMemoryStall_out;
 
       assign stall_or_instruction_in = stall ? 16'b0000100000000000 : instruction_in;
 
@@ -84,6 +85,9 @@ module ID_EX_Latch(clk, rst, en,
       dff dff_IDEX_Cin_out(.d(Cin_in), .q(Cin_out), .clk(clk), .rst(rst), .enable(en));
       dff dff_IDEX_ALUSrc2_out(.d(ALUSrc2_in), .q(ALUSrc2_out), .clk(clk), .rst(rst), .enable(en));
       dff dff_IDEX_Branching_out(.d(Branching_in), .q(Branching_out), .clk(clk), .rst(rst), .enable(en));
+
+      //KEVIN: Added this for stalling logic
+      dff dff_IDEX_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(en));
 
       dff dff_IDEX_ReadingRs_out(.d(ReadingRs_in), .q(ReadingRs_out), .clk(clk), .rst(rst), .enable(en));
       dff dff_IDEX_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));

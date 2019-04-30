@@ -1,11 +1,11 @@
 module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst, 
                     instruction_out, PC_Out, BranchingOrJumping_in,
-                    instructionMemoryStall, dataMemoryStall,
+                    instructionMemoryStall_in, dataMemoryStall,
                     valid_out);
 
       //Input from instruction memory
       input [15:0] instruction_in, PC_In; 
-      input en, clk, rst, BranchingOrJumping_in,instructionMemoryStall, dataMemoryStall;
+      input en, clk, rst, BranchingOrJumping_in,instructionMemoryStall_in, dataMemoryStall;
 
       output [15:0] instruction_out, PC_Out; 
       output valid_out;
@@ -13,12 +13,12 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       // if rst is asserted, set instruction to the NOP opcode 
       wire [15:0] instruction_in_NOP_sel;
       // this goes into control.v and will determine if DMemDump should actually be asserted
-      wire valid_in;
+      wire valid_in, instructionMemoryStall_out;
 
       assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in)?  16'b0000100000000000 : instruction_in;
       
       // if we have a random stall from instr mem, then we should NOT halt
-      assign valid_in = ~(rst | instructionMemoryStall | dataMemoryStall);
+      assign valid_in = ~(rst | instructionMemoryStall_in | dataMemoryStall);
       dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .enable(1'b1));
 
       // use 16 bit registers to decide if we should use current saved output or update output for
@@ -30,6 +30,10 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       register_16bits regFile_PC(.readData(PC_Out), .clk(clk), 
                             .rst(rst), .writeData(PC_In), 
                             .writeEnable(en));
+
+      dff dff_IFID_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(en));
+
+
 
 endmodule 
 
