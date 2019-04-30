@@ -162,7 +162,7 @@ module control (/*AUTOARG*/
 	assign ALUSrc2 		= ALUSrc2Register; 
 	assign PCSrc 		= PCSrcRegister;
 	assign MemToReg 	= MemToRegRegister; 
-	assign DMemDump 	= DMemDumpRegister & valid;
+	assign DMemDump 	= DMemDumpRegister; //& valid;
 	assign invA 		= invA_Register;
 	assign invB 		= invB_Register;
 	assign Cin 			= Cin_Register;

@@ -71,7 +71,7 @@ module proc (/*AUTOARG*/
 
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
                                     .instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEn & ~(dataMemoryStallOut | instructionMemoryStall_out)), 
+                                    .en(IF_ID_WriteEn), 
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
@@ -98,17 +98,23 @@ module proc (/*AUTOARG*/
 
   Hazard_Detector       detectHazards (.IF_ID_WriteEnable_out(IF_ID_WriteEn), 
                                         .stall(stall_from_HazardDet), 
-  									                   .PC_Write_Enable_out(PC_WriteEn_from_hazardDet),
-                  									   .ID_EX_RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
-                  									   .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
-                  									   .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
-                  									   .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q), 
-                  									   .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), 
-                  									   .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), 
-                  									   .ID_EX_WriteRegister_in(executeWriteRegister), 
-                  									   .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),
+                                       .PC_Write_Enable_out(PC_WriteEn_from_hazardDet),
+                                       .ID_EX_RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
+                                       .EXMEM_RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+                                       .EXMEM_DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+                                       .EXMEM_DMemWrite_in(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q), 
+                                       .IF_ID_Rs_in(IF_ID_instruction_Out[10:8]), 
+                                       .IF_ID_Rt_in(IF_ID_instruction_Out[7:5]), 
+                                       .ID_EX_WriteRegister_in(executeWriteRegister), 
+                                       .EX_Mem_WriteRegister_in(EX_MEM_writeRegister_out),
                                        .ReadingRs_in(instructionDecode.controlUnit.ReadingRs),
-                                       .ReadingRt_in(instructionDecode.controlUnit.ReadingRt));
+                                       .ReadingRt_in(instructionDecode.controlUnit.ReadingRt),
+                                       .ID_EX_Rs_in(ID_EX_Stage.instr_fwd.readData[10:8]),
+                                       .ID_EX_Rt_in(ID_EX_Stage.instr_fwd.readData[7:5]),
+                                       .ID_EX_ReadingRs(ID_EX_Stage.dff_IDEX_ReadingRs_out.q),
+                                       .ID_EX_ReadingRt(ID_EX_Stage.dff_IDEX_ReadingRt_out.q),
+                                       .EX_MEM_DMemEn(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+                                        .ID_EX_DMemEn(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q));
 
   // ################################################### ID_EX Stage #######################################################
 
@@ -117,13 +123,13 @@ module proc (/*AUTOARG*/
                                      .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
                                      .A_in(alu_A),
                                        
-                                        
+                                     .instruction_in(IF_ID_instruction_Out), 
                                      .B_in(alu_B),
 
                                      .stall(stall_from_HazardDet),
 
                                      .PC_In(IF_ID_PC_Out), 
-                                     .instruction_in(IF_ID_instruction_Out), 
+                                
                                       // Sign Extended Signals
                                      .S_extend5_in(instructionDecode.signExtend5.out),                                    
                                      .Z_extend5_in(instructionDecode.zeroExtend5.out),                                      
@@ -150,12 +156,40 @@ module proc (/*AUTOARG*/
                                      .RegDst_out(ID_EX_RegDst_out),
 
                                      .BranchingOrJumping_in(instructionDecode.controlUnit.BranchingOrJumping));
+
+
+
+  // ################################################### FORWARDING BLOCK ##################################################
+
+  forwarding         fw_unit(.IDEX_Rs(ID_EX_Stage.instr_fwd.readData[10:8]),
+                             .IDEX_Rt(ID_EX_Stage.instr_fwd.readData[7:5]),
+                             //.IDEX_Rs(fetch_instruction_Out[10:8]),
+                            // .IDEX_Rt(fetch_instruction_Out[7:5]),
+                             .EXMEM_Rs(EX_MEM_Stage.rf_EXMEM_instruction_out.readData[10:8]),
+                             .MEMWB_Rs(MEM_WB_Stage.rf_MEMWB_instruction_out.readData[10:8]),
+                             .EXMEM_Rd(EX_MEM_writeRegister_out), 
+                             .MEMWB_Rd(MEM_WB_writeRegister_out), 
+                             .MEMWB_RegWrite(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), 
+                             .EXMEM_RegWrite(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+                             .nakedA(ID_EX_Stage.rf_IDEX_Aout.readData), 
+                             .nakedB(ID_EX_Stage.rf_IDEX_Bout.readData), 
+                             .fwMEM(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData), //Beginning of WB
+                             .fwEX(EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData), //Beginning of MEM
+                             .ReadingRs_IDEX(ID_EX_Stage.dff_IDEX_ReadingRs_out.q), //
+                             .ReadingRt_IDEX(ID_EX_Stage.dff_IDEX_ReadingRt_out.q), //
+                            .ReadingRs_EXMEM(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q)); // 
                                                                    
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
   										                     .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
+
   									                   	   .A(ID_EX_Stage.rf_IDEX_Aout.readData), 
                                            .B(ID_EX_Stage.rf_IDEX_Bout.readData), 
+
+                                           //.A(fw_unit.chosenAluA),
+                                           //.B(fw_unit.chosenAluB),
+
+
                                            .S_extend5_in(ID_EX_Stage.rf_IDEX_S_extend5_out.readData), 
                     										   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
                     										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
@@ -182,6 +216,7 @@ module proc (/*AUTOARG*/
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
                                       .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
+                    .instruction_in(ID_EX_Stage.rf_IDEX_instruction_out.readData),
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
 									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
 									  .MemToReg_in(ID_EX_Stage.dff_IDEX_MemToReg_out.q),
@@ -216,7 +251,7 @@ module proc (/*AUTOARG*/
   MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), //.en(~dataMemoryStallOut), 
                     .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
 
-                   //Send NOP into write regwrite_in
+                     .instruction_in(EX_MEM_Stage.rf_EXMEM_instruction_out.readData),
 
 									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
 									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),

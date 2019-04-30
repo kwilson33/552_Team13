@@ -6,7 +6,7 @@ module EX_MEM_Latch (// Inputs
 					aluOutput_in, B_in, updatedPC_in,
 					nextPC_in, branchingPCEnable_in,
 					BranchingOrJumping_in,
-					ReadingRs_in, ReadingRt_in);
+					ReadingRs_in, ReadingRt_in, instruction_in);
 				
 
 	input clk, rst, en, RegWrite_in, DMemWrite_in,
@@ -14,12 +14,12 @@ module EX_MEM_Latch (// Inputs
 		 DMemDump_in, Branching_in, Jump_in,
 		 branchingPCEnable_in, BranchingOrJumping_in,
 		 ReadingRs_in, ReadingRt_in;
-	input [15:0] aluOutput_in, B_in, updatedPC_in, nextPC_in; 
+	input [15:0] aluOutput_in, B_in, updatedPC_in, nextPC_in, instruction_in; 
 	input [2:0] WriteRegister_in;
 
 	output  [2:0] WriteRegister_out;
 	
-	wire [15:0] aluOutput_out, B_out, updatedPC_out, nextPC_out; 
+	wire [15:0] aluOutput_out, B_out, updatedPC_out, nextPC_out, instruction_out; 
 	wire RegWrite_out, DMemWrite_out, DMemEn_out, MemToReg_out, 
 		 DMemDump_out, Branching_out, Jump_out,
 		 branchingPCEnable_out, BranchingOrJumping_out,
@@ -32,6 +32,7 @@ module EX_MEM_Latch (// Inputs
 	register_16bits rf_EXMEM_B_out(.readData(B_out), .clk(clk), .rst(rst), .writeData(B_in), .writeEnable(en));
 	register_16bits rf_EXMEM_updatedPC_out(.readData(updatedPC_out), .clk(clk), .rst(rst), .writeData(updatedPC_in), .writeEnable(en));
 	register_16bits rf_EXMEM_nextPC_out(.readData(nextPC_out), .clk(clk), .rst(rst), .writeData(nextPC_in), .writeEnable(en));
+	register_16bits rf_EXMEM_instruction_out(.readData(instruction_out), .clk(clk), .rst(rst), .writeData(instruction_in), .writeEnable(en));
 
 	dff dff_EXMEM_RegWrite_out(.d(RegWrite_in), 	.q(RegWrite_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_EXMEM_DMemWrite_out(.d(DMemWrite_in),   .q(DMemWrite_out), .clk(clk), .rst(rst),  .enable(en));

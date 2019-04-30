@@ -7,7 +7,8 @@ module MEM_WB_Latch (clk, rst, en,
 					DMemDump_in, BranchingOrJumping_in,
 					branchingPCEnable_in,
 					ReadingRs_in,
-					ReadingRt_in);
+					ReadingRt_in,
+					instruction_in);
 
 	//TODO: Jump and Link (JAL enable) - Kevin : I added Jump_in
 	//TODO: is Branching_in what we want?
@@ -16,12 +17,12 @@ module MEM_WB_Latch (clk, rst, en,
 	input clk, rst, en, Branching_in, RegWrite_in,
 		BranchingOrJumping_in, MemToReg_in, DMemEn_in, 
 		Jump_in, branchingPCEnable_in, DMemDump_in, ReadingRs_in, ReadingRt_in;
-	input [15:0] aluOutput_in, readData_in, updatedPC_in, nextPC_in;
+	input [15:0] aluOutput_in, readData_in, updatedPC_in, nextPC_in, instruction_in;
 
 	input [2:0] WriteRegister_in; 
 	output  [2:0] WriteRegister_out;
 
-	wire [15:0] aluOutput_out, readData_out, updatedPC_out, nextPC_out;
+	wire [15:0] aluOutput_out, readData_out, updatedPC_out, nextPC_out, instruction_out;
 	wire Branching_out, RegWrite_out, MemToReg_out,
 		BranchingOrJumping_out, DMemEn_out, Jump_out, branchingPCEnable_out, DMemDump_out,
 		ReadingRs_out, ReadingRt_out;
@@ -30,6 +31,8 @@ module MEM_WB_Latch (clk, rst, en,
 	register_16bits rf_MEMWB_aluOutput_out(.readData(aluOutput_out), .clk(clk), .rst(rst), .writeData(aluOutput_in), .writeEnable(en));
 	register_16bits rf_MEMWB_readData_out(.readData(readData_out), .clk(clk), .rst(rst), .writeData(readData_in), .writeEnable(en));
 	register_16bits rf_MEMWB_updatedPC_out(.readData(updatedPC_out), .clk(clk), .rst(rst), .writeData(updatedPC_in), .writeEnable(en));
+
+	register_16bits rf_MEMWB_instruction_out(.readData(instruction_out), .clk(clk), .rst(rst), .writeData(instruction_in), .writeEnable(en));
 
 	register_16bits rf_MEMWB_nextPC_out(.readData(nextPC_out), .clk(clk), .rst(rst), .writeData(nextPC_in), .writeEnable(en));
 
