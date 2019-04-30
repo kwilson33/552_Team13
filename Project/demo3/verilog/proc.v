@@ -71,11 +71,12 @@ module proc (/*AUTOARG*/
 
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
                                     .instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEn & ~dataMemoryStallOut), 
+                                    .en(IF_ID_WriteEn & ~(dataMemoryStallOut | instructionMemoryStall_out)), 
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
                                     .PC_Out(IF_ID_PC_Out),
                                     .instructionMemoryStall(instructionMemoryStall_out),
+                                    .dataMemoryStall(dataMemoryStallOut),
                                     .valid_out(IF_ID_valid_out),
                                     .BranchingOrJumping_in(masterBorJ));
 
@@ -113,7 +114,7 @@ module proc (/*AUTOARG*/
 
   //TODO: connect a few signals
   ID_EX_Latch           ID_EX_Stage (.clk(clk), .rst(rst), //.en(1'b1), //TODO: Fix Enable??
-                                     .en(~dataMemoryStallOut),
+                                     .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
                                      .A_in(alu_A),
                                        
                                         
@@ -179,7 +180,7 @@ module proc (/*AUTOARG*/
 
 
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
-                                      .en(~dataMemoryStallOut /*& ~instructionMemoryStall_out*/),
+                                      .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
 									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
 									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
 									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
@@ -213,7 +214,7 @@ module proc (/*AUTOARG*/
   // ################################################### MEM_WB Stage #######################################################
 
   MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), //.en(~dataMemoryStallOut), 
-                    .en(1'b1),
+                    .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
 
                    //Send NOP into write regwrite_in
 

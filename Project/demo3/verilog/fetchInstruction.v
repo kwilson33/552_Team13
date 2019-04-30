@@ -26,7 +26,7 @@ module fetchInstruction(clk, rst,
 	wire c_out; 
 
 	// if we are branching or stalling halt the PC
-	assign pc_increment = (stall | branchingPCEnable_in | ~instructionMemDone_out) ? 16'h0 : 16'h2;
+	assign pc_increment = (stall | branchingPCEnable_in /*| instructionMemoryStall_out | dataMemoryStallOut*/ ) ? 16'h0 : 16'h2;
 
 ///////////////////////////////////////////////////////////
 	assign pcUpdated = (MEM_WB_Branch_in) ? PC_In : PC_Next; 
@@ -48,13 +48,13 @@ module fetchInstruction(clk, rst,
 	
 	mem_system #(.memtype(0)) instructionMemory(.DataIn(16'b0), .Addr(currentPC),
 								 .Wr(1'b0), .clk(clk), .rst(rst),
-								 .createdump(dump), .DataOut(instr_mem_system), .err(unalignedMemErr),
+								 .createdump(dump), .DataOut(instruction), .err(unalignedMemErr),
 								 .Stall(instructionMemoryStall_out), .Rd(1'b1), .CacheHit(cacheHit),
-								 .Done(instructionMemDone_out), .isBranch(branchingPCEnable_in));
+								 .Done(instructionMemDone_out), .isBranch(1'b0));
 	
 
 	// if Instruction Memory not done, do a NOP.
-	assign instruction = (~instructionMemDone_out) ? 16'b0000100000000000 : instr_mem_system;
+	//assign instruction = (~instructionMemDone_out) ? 16'b0000100000000000 : instr_mem_system;
 
 	
 

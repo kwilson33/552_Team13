@@ -1,11 +1,11 @@
 module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst, 
                     instruction_out, PC_Out, BranchingOrJumping_in,
-                    instructionMemoryStall,
+                    instructionMemoryStall, dataMemoryStall,
                     valid_out);
 
       //Input from instruction memory
       input [15:0] instruction_in, PC_In; 
-      input en, clk, rst, BranchingOrJumping_in,instructionMemoryStall;
+      input en, clk, rst, BranchingOrJumping_in,instructionMemoryStall, dataMemoryStall;
 
       output [15:0] instruction_out, PC_Out; 
       output valid_out;
@@ -18,8 +18,8 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
       assign instruction_in_NOP_sel = (rst | BranchingOrJumping_in)?  16'b0000100000000000 : instruction_in;
       
       // if we have a random stall from instr mem, then we should NOT halt
-      assign valid_in = ~(rst | instructionMemoryStall);
-      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .enable(en));
+      assign valid_in = ~(rst | instructionMemoryStall | dataMemoryStall);
+      dff dff_IF_ID_valid_out(.d(valid_in), .q(valid_out), .clk(clk), .rst(rst), .enable(1'b1));
 
       // use 16 bit registers to decide if we should use current saved output or update output for
       // the PC and the instruction
