@@ -235,11 +235,13 @@ module proc (/*AUTOARG*/
       									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
       									  .Jump_in(JAL_en),
       									  .aluOutput_in(aluOutput), 
-      									  .B_in(ID_EX_Stage.rf_IDEX_Bout.readData), 
+
+      									  // used for forwarding
+      									  .B_in(fw_unit.chosenAluB), 
 
       									 
                                       .nextPC_in(ID_EX_Stage.rf_IDEX_PC_Out.readData), // this is from ID_EX, not updated
-                  									  .updatedPC_in(updatedPC),  // this contains address a jump or branch should go to
+                  					  .updatedPC_in(updatedPC),  // this contains address a jump or branch should go to
 
                                       .branchingPCEnable_in(EX_branchingPCEnable_to_EX_MEM),
                                       .BranchingOrJumping_in(ID_EX_Stage.dff_IDEX_BorJ_out.q));
@@ -248,12 +250,16 @@ module proc (/*AUTOARG*/
   memoryReadWrite       dataMemory (.clk(clk), .rst(rst), 
                   									.writeData(EX_MEM_Stage.rf_EXMEM_B_out.readData),
                   									.aluOutput(EX_MEM_Stage.rf_EXMEM_aluOutput_out.readData),
+
+                  									// TODO
                   									.memWrite(EX_MEM_Stage.dff_EXMEM_DMemWrite_out.q),
-                                    .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),  
-                                    .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
-                                    .readData(readData),
-                                    .dataMemoryStallOut(dataMemoryStallOut),
-                                    .dataMemoryDoneOut(dataMemoryDoneOut)); //output
+				                                    .memRead(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q), 
+
+
+				                                    .dump(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
+				                                    .readData(readData),
+				                                    .dataMemoryStallOut(dataMemoryStallOut),
+				                                    .dataMemoryDoneOut(dataMemoryDoneOut)); //output
 
   // ################################################### MEM_WB Stage #######################################################
 
