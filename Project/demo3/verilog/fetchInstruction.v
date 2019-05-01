@@ -7,7 +7,8 @@ module fetchInstruction(clk, rst,
 						instruction,
 						stall,
 						instructionMemoryStall_out,
-						dataMemoryStallOut);
+						dataMemoryStallOut,
+						instructionMemDone_out);
 
 
 
@@ -17,7 +18,7 @@ module fetchInstruction(clk, rst,
 
 	output [15:0] PC_Next;
 	output [15:0] instruction; 
-	output instructionMemoryStall_out;
+	output instructionMemoryStall_out, instructionMemDone_out;
 
 	wire [15:0] currentPC, pc_increment, pcUpdated, instr_mem_system;
 	wire cacheHit, instructionMemDone_out, unalignedMemErr;
@@ -53,7 +54,7 @@ module fetchInstruction(clk, rst,
 	
 
 	// if Instruction Memory not done, do a NOP.
-	//assign instruction = (~instructionMemDone_out) ? 16'b0000100000000000 : instr_mem_system;
+	//assign instruction = (instructionMemoryStall_out) ? 16'b0000100000000000 : instr_mem_system;
 
 	
 

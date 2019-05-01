@@ -36,7 +36,7 @@ module proc (/*AUTOARG*/
         PC_WriteEn_from_hazardDet, IF_ID_WriteEn,
         instructionMemoryStall_out, 
         dataMemoryStallOut, dataMemoryDoneOut,
-        IF_ID_valid_out;
+        IF_ID_valid_out, instructionMemDone_out;
 
    assign err = (errDecode |
                  instructionExecute.mainALU.err | 
@@ -63,6 +63,7 @@ module proc (/*AUTOARG*/
                       .branchingPCEnable_in(masterBorJ /*| dataMemoryDoneOut*/), // TODO: not sure if right branching signal or if dataMemDone should be here
                       .stall(stall_from_HazardDet),
                       .instructionMemoryStall_out(instructionMemoryStall_out),
+                      .instructionMemDone_out(instructionMemDone_out),
                       
                       .MEM_WB_Branch_in(MEM_WB_Stage.dff_MEMWB_branchingPCEnable_out.q),
                       .dataMemoryStallOut(dataMemoryStallOut));
@@ -71,7 +72,7 @@ module proc (/*AUTOARG*/
 
    IF_ID_Latch          IF_ID_Stage (.instruction_in(fetch_instruction_Out), 
                                     .instruction_out(IF_ID_instruction_Out),
-                                    .en(IF_ID_WriteEn/* & ~(dataMemoryStallOut | instructionMemoryStall_out)*/), 
+                                    .en(IF_ID_WriteEn /*& ~(dataMemoryStallOut | instructionMemoryStall_out)*/), 
                                     .instructionMemoryStall_in(instructionMemoryStall_out),
                                     .clk(clk), .rst(rst),
                                     .PC_In(nextPC_from_fetch), 
@@ -183,9 +184,9 @@ module proc (/*AUTOARG*/
                                                                    
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
-  										                     .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
+  										   .next_PC_normal(ID_EX_Stage.rf_IDEX_PC_Out.readData), 
 
-  									                   	   //.A(ID_EX_Stage.rf_IDEX_Aout.readData), 
+  									       //.A(ID_EX_Stage.rf_IDEX_Aout.readData), 
                                            //.B(ID_EX_Stage.rf_IDEX_Bout.readData), 
 
                                            .A(fw_unit.chosenAluA),
@@ -216,7 +217,7 @@ module proc (/*AUTOARG*/
 
 
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
-                                      .en(~(dataMemoryStallOut | ID_EX_Stage.dff_IDEX_instructionMemoryStall_out.q)),
+                                      .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
                   									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
                                       .instruction_in(ID_EX_Stage.rf_IDEX_instruction_out.readData),
                   									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
@@ -252,7 +253,7 @@ module proc (/*AUTOARG*/
   // ################################################### MEM_WB Stage #######################################################
 
   MEM_WB_Latch      MEM_WB_Stage (.clk(clk), .rst(rst), //.en(~dataMemoryStallOut), 
-                    .en(~(dataMemoryStallOut | EX_MEM_Stage.dff_EXMEM_instructionMemoryStall_out.q)),
+                    .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
 
                      .instruction_in(EX_MEM_Stage.rf_EXMEM_instruction_out.readData),
 
@@ -283,9 +284,9 @@ module proc (/*AUTOARG*/
   // ################################################### WRITEBACK #######################################################
   writebackOutput       instructionWriteback(
                          .writeData(writeData), 
-  											 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
-  											 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
-  											 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData),
+						 .readData(MEM_WB_Stage.rf_MEMWB_readData_out.readData), 
+						 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
+						 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData),
 
                          .memToReg(MEM_WB_Stage.dff_MEMWB_MemToReg_in_out.q),
                          .JAL_en(MEM_WB_Stage.dff_MEMWB_Jump_in_out.q));
