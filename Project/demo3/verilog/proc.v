@@ -91,7 +91,7 @@ module proc (/*AUTOARG*/
 									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
-				                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), // maybe add the stall from mem module  here 
+				                        .RegWrite_in(MEM_WB_Stage.RegWrite_out), // maybe add the stall from mem module  here 
 				                        .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
 
   // ################################################### DETECT HAZARDS #######################################################

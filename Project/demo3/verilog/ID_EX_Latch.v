@@ -49,7 +49,7 @@ module ID_EX_Latch(clk, rst, en,
             Branching_out, DMemDump_out, invA_out, invB_out, Cin_out, ALUSrc2_out,
             RegWrite_or_stall, DMemWrite_or_stall, DMemEn_or_stall,
              MemToReg_or_stall, DMemDump_or_stall, BranchingOrJumping_out,
-             ReadingRt_out,ReadingRs_out, instructionMemoryStall_out;
+             ReadingRt_out,ReadingRs_out, instructionMemoryStall_out, stallRegWrite;
 
       assign stall_or_instruction_in = stall ? 16'b0000100000000000 : instruction_in;
 
