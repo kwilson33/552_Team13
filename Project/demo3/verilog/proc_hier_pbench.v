@@ -130,6 +130,7 @@ module proc_hier_pbench();
  	  assign PC = DUT.p0.instructionFetch.PC_Register.readData;
     assign Inst = DUT.p0.instructionFetch.instruction;
     
+    // Kevin: I changed this for stalling stuff
     assign RegWrite = DUT.p0.MEM_WB_Stage.RegWrite_out;
 
     assign WriteRegister = DUT.p0.instructionDecode.writeRegister;

@@ -25,6 +25,7 @@ module control (/*AUTOARG*/
                 BranchingOrJumping,
 				ReadingRs,
 				ReadingRt,
+				WritingToRs,
                 // Inputs
                 OpCode,
                 Funct,
@@ -42,7 +43,7 @@ module control (/*AUTOARG*/
    output       err;
    output       RegWrite, DMemWrite, DMemEn, ALUSrc2, PCSrc, 
                 PCImm, MemToReg, DMemDump, Jump, invA, invB, Cin, 
-                Branching, BranchingOrJumping,ReadingRs,ReadingRt;
+                Branching, BranchingOrJumping,ReadingRs,ReadingRt, WritingToRs;
    output [1:0] RegDst;
    output [2:0] SESel;
 
@@ -63,6 +64,7 @@ module control (/*AUTOARG*/
 	reg BranchingRegister;
 	reg BranchOrJumpRegister;
 	reg ReadingRsRegister, ReadingRtRegister;
+	reg WritingToRsRegister;
 
 
 	
@@ -170,6 +172,7 @@ module control (/*AUTOARG*/
 	assign BranchingOrJumping = BranchOrJumpRegister;
 	assign ReadingRs 			  = ReadingRsRegister;
 	assign ReadingRt 			  = ReadingRtRegister;
+	assign WritingToRs 			 = WritingToRsRegister;
 	
 	
 
@@ -189,6 +192,9 @@ module control (/*AUTOARG*/
 		
 		// Only case this is asserted is for HALT
 		DMemDumpRegister = no_assert;
+
+		// only in LBI, SLBI, and STU. used for forwarding
+		WritingToRsRegister = no_assert;
 		
 		// In most cases we want the PC to increment by
 		// 2 which happens when PCSrc = 0
@@ -400,6 +406,8 @@ module control (/*AUTOARG*/
 				DMemWriteRegister = assert;
 				RegDstRegister = 2'b10;
 
+				WritingToRsRegister = assert;
+
 				// WE ARE ACTUALLY READING FROM RT EVEN THOUGH IT SAYS RD
 				//10000 sss ddd iiiii ST Rd, Rs, immediate Mem[Rs + I(sign ext.)] <- Rd 
 			end	
@@ -471,6 +479,7 @@ module control (/*AUTOARG*/
 				ALUSrc2Register = no_assert;
 				ReadingRtRegister = no_assert;
 				ReadingRsRegister = no_assert;
+				WritingToRsRegister = assert;
 			end
 			// Write to Rs for SLBI
 			SLBI : begin
@@ -479,6 +488,7 @@ module control (/*AUTOARG*/
 				RegDstRegister = 2'b10;
 				ALUSrc2Register = no_assert;
 				ReadingRtRegister = no_assert;
+				WritingToRsRegister = assert;
 			end	
 			
 			JR : begin

@@ -21,7 +21,7 @@ module decodeInstruction (//inputs
 		 MemToReg, DMemEn, 
 		 Branching, BranchingOrJumping,
 		 DMemDump, Jump,
-		 invA, invB, Cin, ReadingRs, ReadingRt;
+		 invA, invB, Cin, ReadingRs, ReadingRt, WritingToRs;
 
 	wire [1:0] RegDest;
 	wire [2:0] SESel; 
@@ -46,6 +46,7 @@ module decodeInstruction (//inputs
 					.Branching(Branching), .BranchingOrJumping(BranchingOrJumping), 
 					.ReadingRs(ReadingRs), 
 					.ReadingRt(ReadingRt),
+					.WritingToRs(WritingToRs),
 					// Inputs
 					.OpCode(instruction[15:11]),
 					.Funct(instruction[1:0]),

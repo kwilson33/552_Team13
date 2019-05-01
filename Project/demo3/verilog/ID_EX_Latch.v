@@ -40,7 +40,7 @@ module ID_EX_Latch(clk, rst, en,
 
       input clk, rst, en, RegWrite_in, DMemWrite_in, DMemEn_in, MemToReg_in,  
             Branching_in, DMemDump_in, invA_in, invB_in, Cin_in, ALUSrc2_in, stall, 
-            BranchingOrJumping_in, ReadingRs_in, ReadingRt_in, instructionMemoryStall_in; 
+            BranchingOrJumping_in, ReadingRs_in, ReadingRt_in, instructionMemoryStall_in;
 
       wire [15:0] PC_Out, A_out, B_out, S_extend5_out, Z_extend5_out, S_extend8_out, Z_extend8_out, S_extend11_out, 
                   stall_or_instruction_out, stall_or_instruction_in, instruction_out; 
@@ -88,6 +88,7 @@ module ID_EX_Latch(clk, rst, en,
 
       //KEVIN: Added this for stalling logic
       dff dff_IDEX_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(1'b1));
+   //   dff dff_IDEX_WritingToRs_in_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(1'b1));
 
       dff dff_IDEX_ReadingRs_out(.d(ReadingRs_in), .q(ReadingRs_out), .clk(clk), .rst(rst), .enable(en));
       dff dff_IDEX_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));

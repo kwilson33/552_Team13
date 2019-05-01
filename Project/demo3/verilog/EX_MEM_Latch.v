@@ -45,7 +45,7 @@ module EX_MEM_Latch (// Inputs
 	dff dff_EXMEM_Jump_out		(.d(Jump_in), 	  	.q(Jump_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_EXMEM_branchingPCEnable_out	(.d(branchingPCEnable_in), 	  	.q(branchingPCEnable_out), .clk(clk), .rst(rst), .enable(en));
 
-	dff dff_EXMEM_ReadingRs_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));
+	dff dff_EXMEM_ReadingRs_out(.d(ReadingRs_in), .q(ReadingRs_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_EXMEM_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));
 
 	// KEVIN: Added this for stalling

@@ -29,12 +29,12 @@ module MEM_WB_Latch (clk, rst, en,
 		ReadingRs_out, ReadingRt_out,instructionMemoryStall_out;
 
 
-	wire stallRegWrite; // stallJump_out, stallDMemEn_out
+	wire stallRegWrite, stallJump_out, stallMemToReg_out;
 
 	//TODO: Maybe fix these
 	assign RegWrite_out = ~en ? 1'b0 : stallRegWrite; 
-	// assign Jump_out = ~en ? 1'b0 : stallJumpout;
-	// assign DMemEn_out = ~en ? 1'b0 : stallDMemEn_out;
+	 assign Jump_out = ~en ? 1'b0 : stallJump_out;
+	 assign MemToReg_out = ~en ? 1'b0 : stallMemToReg_out;
 
 	// use connection by reference to these modules to pass from MEM_WB to  Writeback, Decode, Hazard Detection
 	register_16bits rf_MEMWB_aluOutput_out(.readData(aluOutput_out), .clk(clk), .rst(rst), .writeData(aluOutput_in), .writeEnable(en));
@@ -48,8 +48,8 @@ module MEM_WB_Latch (clk, rst, en,
 
 	dff dff_MEMWB_Branching_out(.d(Branching_in), 	.q(Branching_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_MEMWB_RegWrite_out(.d(RegWrite_in), 	.q(stallRegWrite), .clk(clk), .rst(rst), .enable(en));
-	dff dff_MEMWB_MemToReg_in_out(.d(MemToReg_in), 	.q(MemToReg_out), .clk(clk), .rst(rst), .enable(en));
-	dff dff_MEMWB_Jump_in_out(.d(Jump_in), 			.q(Jump_out), .clk(clk), .rst(rst), .enable(en));
+	dff dff_MEMWB_MemToReg_in_out(.d(MemToReg_in), 	.q(stallMemToReg_out), .clk(clk), .rst(rst), .enable(en));
+	dff dff_MEMWB_Jump_in_out(.d(Jump_in), 			.q(stallJump_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_MEMWB_DMemEn_out(.d(DMemEn_in), 		.q(DMemEn_out), .clk(clk), .rst(rst), .enable(en));
 	dff dff_MEMWB_DMemDump_out(.d(DMemEn_in), 		.q(DMemDump_out), .clk(clk), .rst(rst), .enable(en));
 

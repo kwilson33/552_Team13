@@ -131,6 +131,7 @@ module proc (/*AUTOARG*/
                                      .instructionMemoryStall_in(instructionMemoryStall_out),
 
                                      .PC_In(IF_ID_PC_Out), 
+                                 
                                 
                                       // Sign Extended Signals
                                      .S_extend5_in(instructionDecode.signExtend5.out),                                    
@@ -180,7 +181,7 @@ module proc (/*AUTOARG*/
                              .ReadingRs_IDEX(ID_EX_Stage.dff_IDEX_ReadingRs_out.q), //
                              .ReadingRt_IDEX(ID_EX_Stage.dff_IDEX_ReadingRt_out.q), //
                              .ReadingRs_EXMEM(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q),
-                             .ReadingRs_MEMWB(MEM_WB_Stage.dff_MEMWB_ReadingRs_out.q)); // 
+                             .ReadingRs_MEMWB(MEM_WB_Stage.dff_MEMWB_ReadingRs_out.q));
                                                                    
    // ################################################### EXECUTE #######################################################
   executeInstruction    instructionExecute(.instr(ID_EX_Stage.rf_IDEX_instruction_out.readData), 
@@ -218,21 +219,25 @@ module proc (/*AUTOARG*/
 
   EX_MEM_Latch          EX_MEM_Stage (.clk(clk), .rst(rst), //.en(1'b1), /*TODO: Fix enable */ 
                                       .en(~(dataMemoryStallOut | instructionMemoryStall_out)),
-                  									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
-                                      .instruction_in(ID_EX_Stage.rf_IDEX_instruction_out.readData),
-                  									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
-                                      .instructionMemoryStall_in(ID_EX_Stage.dff_IDEX_instructionMemoryStall_out.q),
-                  									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
-                  									  .MemToReg_in(ID_EX_Stage.dff_IDEX_MemToReg_out.q),
-                  									  .DMemDump_in(ID_EX_Stage.dff_IDEX_DMemDump_out.q), 
-                  									  .Branching_in(ID_EX_Stage.dff_IDEX_Branching_out.q),
-                  										.ReadingRs_in(ID_EX_Stage.dff_IDEX_ReadingRs_out.q),
-                  									  .ReadingRt_in(ID_EX_Stage.dff_IDEX_ReadingRt_out.q),
-                  									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
-                  									  .Jump_in(JAL_en),
-                  									  .aluOutput_in(aluOutput), 
-                  									  .B_in(ID_EX_Stage.rf_IDEX_Bout.readData), 
+      									  .RegWrite_in(ID_EX_Stage.dff_IDEX_RegWrite_out.q), 
+                          				.instruction_in(ID_EX_Stage.rf_IDEX_instruction_out.readData),
+      									  .DMemWrite_in(ID_EX_Stage.dff_IDEX_DMemWrite_out.q), 
+                         				 .instructionMemoryStall_in(ID_EX_Stage.dff_IDEX_instructionMemoryStall_out.q),
+      									  .DMemEn_in(ID_EX_Stage.dff_IDEX_DMemEn_in_out.q), 
+      									  .MemToReg_in(ID_EX_Stage.dff_IDEX_MemToReg_out.q),
+      									  .DMemDump_in(ID_EX_Stage.dff_IDEX_DMemDump_out.q), 
+      									  .Branching_in(ID_EX_Stage.dff_IDEX_Branching_out.q),
 
+      										.ReadingRs_in(ID_EX_Stage.dff_IDEX_ReadingRs_out.q),
+      									  .ReadingRt_in(ID_EX_Stage.dff_IDEX_ReadingRt_out.q),
+
+
+      									  .WriteRegister_in(executeWriteRegister), .WriteRegister_out(EX_MEM_writeRegister_out),
+      									  .Jump_in(JAL_en),
+      									  .aluOutput_in(aluOutput), 
+      									  .B_in(ID_EX_Stage.rf_IDEX_Bout.readData), 
+
+      									 
                                       .nextPC_in(ID_EX_Stage.rf_IDEX_PC_Out.readData), // this is from ID_EX, not updated
                   									  .updatedPC_in(updatedPC),  // this contains address a jump or branch should go to
 
@@ -259,6 +264,7 @@ module proc (/*AUTOARG*/
 
                     .instructionMemoryStall_in(EX_MEM_Stage.dff_EXMEM_instructionMemoryStall_out.q),
 
+                
 
 				  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
 				  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
@@ -288,8 +294,8 @@ module proc (/*AUTOARG*/
 						 .aluOutput(MEM_WB_Stage.rf_MEMWB_aluOutput_out.readData),
 						 .PC_Next(MEM_WB_Stage.rf_MEMWB_nextPC_out.readData),
 
-                         .memToReg(MEM_WB_Stage.dff_MEMWB_MemToReg_in_out.q),
-                         .JAL_en(MEM_WB_Stage.dff_MEMWB_Jump_in_out.q));
+                         .memToReg(MEM_WB_Stage.MemToReg_out),
+                         .JAL_en(MEM_WB_Stage.Jump_out));
 
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:
