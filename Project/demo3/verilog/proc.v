@@ -57,9 +57,9 @@ module proc (/*AUTOARG*/
   // ################################################### FETCH #######################################################
   fetchInstruction     instructionFetch(.clk(clk), .rst(rst), 
                       .PC_In(MEM_WB_Stage.rf_MEMWB_updatedPC_out.readData), 
-								     	.dump(createDump), 
-								     	.PC_Next(nextPC_from_fetch), 
-									    .instruction(fetch_instruction_Out),
+			     	.dump(createDump), 
+			     	.PC_Next(nextPC_from_fetch), 
+				    .instruction(fetch_instruction_Out),
                       .branchingPCEnable_in(masterBorJ /*| dataMemoryDoneOut*/), // TODO: not sure if right branching signal or if dataMemDone should be here
                       .stall(stall_from_HazardDet),
                       .instructionMemoryStall_out(instructionMemoryStall_out),
@@ -90,8 +90,8 @@ module proc (/*AUTOARG*/
 									      .instruction(IF_ID_instruction_Out), 
 									      .err(errDecode), .dump(createDump),
 									      .writeRegister(MEM_WB_writeRegister_out),
-                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), // maybe add the stall from mem module  here 
-                        .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
+				                        .RegWrite_in(MEM_WB_Stage.dff_MEMWB_RegWrite_out.q), // maybe add the stall from mem module  here 
+				                        .A(alu_A), .B(alu_B), .valid_in(IF_ID_valid_out));
 
   // ################################################### DETECT HAZARDS #######################################################
 
@@ -193,10 +193,10 @@ module proc (/*AUTOARG*/
 
 
                                            .S_extend5_in(ID_EX_Stage.rf_IDEX_S_extend5_out.readData), 
-                    										   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
-                    										   .S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
-                  						  				   .Z_extend8_in(ID_EX_Stage.rf_IDEX_Z_extend8_out.readData), 
-                  						  				   .Z_extend5_in(ID_EX_Stage.rf_IDEX_Z_extend5_out.readData),
+                    					   .S_extend8_in(ID_EX_Stage.rf_IDEX_S_extend8_out.readData), 
+                    						.S_extend11_in(ID_EX_Stage.rf_IDEX_S_extend11_out.readData),
+                  						  	.Z_extend8_in(ID_EX_Stage.rf_IDEX_Z_extend8_out.readData), 
+                  						  	.Z_extend5_in(ID_EX_Stage.rf_IDEX_Z_extend5_out.readData),
 
                                            .invA(ID_EX_Stage.dff_IDEX_invA_out.q),
                                            .invB(ID_EX_Stage.dff_IDEX_invB_out.q), 
@@ -259,12 +259,12 @@ module proc (/*AUTOARG*/
                     .instructionMemoryStall_in(EX_MEM_Stage.dff_EXMEM_instructionMemoryStall_out.q),
 
 
-									  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
-									  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
-									//.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
-									  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
-									  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
-									  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
+				  .Branching_in(EX_MEM_Stage.dff_EXMEM_Branching_out.q), 
+				  .RegWrite_in(EX_MEM_Stage.dff_EXMEM_RegWrite_out.q),
+				//.RegWrite_in(EX_MEM_Stage.NOP_or_regular), 
+				  .DMemEn_in(EX_MEM_Stage.dff_EXMEM_DMemEn_out.q),
+				  .MemToReg_in(EX_MEM_Stage.dff_EXMEM_MemToReg_in_out.q),
+				  .Jump_in(EX_MEM_Stage.dff_EXMEM_Jump_out.q),
                     .DMemDump_in(EX_MEM_Stage.dff_EXMEM_DMemDump_out.q),
 					           .ReadingRs_in(EX_MEM_Stage.dff_EXMEM_ReadingRs_out.q),
 									   .ReadingRt_in(EX_MEM_Stage.dff_EXMEM_ReadingRt_out.q),

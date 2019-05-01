@@ -49,7 +49,7 @@ module EX_MEM_Latch (// Inputs
 	dff dff_EXMEM_ReadingRt_out(.d(ReadingRt_in), .q(ReadingRt_out), .clk(clk), .rst(rst), .enable(en));
 
 	// KEVIN: Added this for stalling
-	dff dff_EXMEM_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(en));
+	dff dff_EXMEM_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(1'b1));
 
 
 	// dff for WriteRegister

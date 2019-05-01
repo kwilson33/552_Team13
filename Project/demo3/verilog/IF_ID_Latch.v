@@ -31,7 +31,7 @@ module IF_ID_Latch ( instruction_in, PC_In, en, clk, rst,
                             .rst(rst), .writeData(PC_In), 
                             .writeEnable(en));
 
-      dff dff_IFID_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(en));
+      dff dff_IFID_instructionMemoryStall_out(.d(instructionMemoryStall_in), .q(instructionMemoryStall_out), .clk(clk), .rst(rst), .enable(1'b1));
 
 
 
